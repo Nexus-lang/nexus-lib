@@ -1,25 +1,27 @@
 mod tokens;
+mod errors;
 
 use std::fs::File;
 use std::io::Read;
+use errors::throw_error;
 
 fn main() {
-    println!("Hello, world!");
     let content = read_file("examples/main.nex");
     println!("{}", content);
 }
 
 fn read_file(path: &str) -> String {
-    let char_path: Vec<char> = path.chars().collect();
-    let path_length = char_path.len() - 1;
-    let file_ending: Vec<char> = vec![char_path[path_length - 3], char_path[path_length - 2], char_path[path_length - 1], char_path[path_length]];
-    let file_ending_string: String = file_ending.into_iter().collect();
-    println!("{}", file_ending_string);
     let mut file = File::open(path).expect("Failed to find file");    
     let mut buffer = String::new();
+    let file_ending = match path.split('.').last() {
+        Some(ending) => ending,
+        None => {"unknown"}
+    };
 
-    if file_ending_string != ".nex" {
-        panic!("Not a valid nexus file");
+    let error_message = format!("Wrong file format. Current: {}, expected: nex" , file_ending);
+
+    if file_ending != "nex" {
+        throw_error(&error_message);
     }
 
     file.read_to_string(&mut buffer)
