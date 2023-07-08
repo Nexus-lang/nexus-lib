@@ -1,0 +1,18 @@
+var myString = "Hello World"
+// There are not chars but strings consist of single letter strings instead
+
+var myBoolean = true
+
+var myNumber = 3.0
+// There is no int or float but instead only one data type that combines both of them
+
+
+
+if condition == true {
+    // do something
+}
+
+// inverted (similar to python)
+if not condition == true {
+    // do something
+}
