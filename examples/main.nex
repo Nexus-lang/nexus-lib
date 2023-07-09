@@ -1,10 +1,10 @@
-var myString = "Hello World"
 // There are not chars but strings consist of single letter strings instead
+var myString = "Hello World"
 
 var myBoolean = true
 
-var myNumber = 3.0
 // There is no int or float but instead only one data type that combines both of them
+var myNumber = 3.0
 
 
 
@@ -15,4 +15,9 @@ if condition == true {
 // inverted (similar to python)
 if not condition == true {
     // do something
+}
+
+// name and age are function parameters
+fun doSomething name, age {
+    // function body (more design required before being able to showcase command syntax)
 }

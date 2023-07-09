@@ -1,0 +1,13 @@
+
+// only 1 'use' allowed per file. Must be first thing in file. (Empty lines and comments excluded)
+use {
+    // files in a 'critical' or 'crit' directory will lead to a warning
+    // files in a 'unacess' or 'private' directory cannot be imported
+    factorization::critical::logger as logger, // use comma to seperate imports. Use 'as' to name use different name for your import
+    factorization::biomes::biome_list // optional comma can be added here
+}
+
+@logger
+fun (log) message, info_type {
+
+}
