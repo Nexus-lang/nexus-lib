@@ -1,4 +1,4 @@
-pub enum Tokens {
+pub enum TokenTypes {
     // Keywords
     VAR,
     FUN,
@@ -47,51 +47,56 @@ pub enum Tokens {
     ENUM,
 }
 
-impl Tokens {
+impl TokenTypes {
     pub fn literal(&self) -> &str {
         match self {
-            Tokens::VAR => {"var"}
-            Tokens::FUN => {"fun"}
-            Tokens::FOR => {"for"}
-            Tokens::WHILE => {"while"}
-            Tokens::IF => {"if"}
-            Tokens::ELSE => {"else"}
+            TokenTypes::VAR => {"var"}
+            TokenTypes::FUN => {"fun"}
+            TokenTypes::FOR => {"for"}
+            TokenTypes::WHILE => {"while"}
+            TokenTypes::IF => {"if"}
+            TokenTypes::ELSE => {"else"}
 
-            Tokens::IDENT => {"IDENT"}
-            Tokens::INTEGER => {"INT"}
-            Tokens::STRING => {"STRING"}
-            Tokens::TRUE => {"true"}
-            Tokens::FALSE => {"false"}
+            TokenTypes::IDENT => {"IDENT"}
+            TokenTypes::INTEGER => {"INT"}
+            TokenTypes::STRING => {"STRING"}
+            TokenTypes::TRUE => {"true"}
+            TokenTypes::FALSE => {"false"}
 
-            Tokens::EOL => {"EOL"}
-            Tokens::ILLEGAL => {"ILLEGAL"}
+            TokenTypes::EOL => {"EOL"}
+            TokenTypes::ILLEGAL => {"ILLEGAL"}
 
-            Tokens::ASSIGN => {"="}
-            Tokens::PLUS => {"+"}
-            Tokens::MINUS => {"-"}
-            Tokens::MULTIPLY => {"*"}
-            Tokens::DIVIDE => {"/"}
+            TokenTypes::ASSIGN => {"="}
+            TokenTypes::PLUS => {"+"}
+            TokenTypes::MINUS => {"-"}
+            TokenTypes::MULTIPLY => {"*"}
+            TokenTypes::DIVIDE => {"/"}
             
-            Tokens::EQUAL => {"=="}
-            Tokens::GREATERTHAN => {">"}
-            Tokens::LESSERTHAN => {"<"}
-            Tokens::GREATEROREQUALTHAN => {">="}
-            Tokens::LESSEROREQUALTHAN => {"<="}
+            TokenTypes::EQUAL => {"=="}
+            TokenTypes::GREATERTHAN => {">"}
+            TokenTypes::LESSERTHAN => {"<"}
+            TokenTypes::GREATEROREQUALTHAN => {">="}
+            TokenTypes::LESSEROREQUALTHAN => {"<="}
 
-            Tokens::COMMENT => {"//"}
+            TokenTypes::COMMENT => {"//"}
             
-            Tokens::COLON => {":"}
-            Tokens::COMMA => {","}
-            Tokens::LBRAC => {"{"}
-            Tokens::RBRAC => {"}"}
-            Tokens::LPARENT => {"("}
-            Tokens::RPARENT => {")"}
-            Tokens::LSQUAREBRAC => {"["}
-            Tokens::RSQUAREBRAC => {"]"}
-            Tokens::QUOTMARKS => {"\""}
+            TokenTypes::COLON => {":"}
+            TokenTypes::COMMA => {","}
+            TokenTypes::LBRAC => {"{"}
+            TokenTypes::RBRAC => {"}"}
+            TokenTypes::LPARENT => {"("}
+            TokenTypes::RPARENT => {")"}
+            TokenTypes::LSQUAREBRAC => {"["}
+            TokenTypes::RSQUAREBRAC => {"]"}
+            TokenTypes::QUOTMARKS => {"\""}
 
-            Tokens::STRUCT => {"struct"}
-            Tokens::ENUM => {"enum"}
+            TokenTypes::STRUCT => {"struct"}
+            TokenTypes::ENUM => {"enum"}
         }
     }
+}
+
+pub struct Token {
+    token_type: TokenTypes,
+    literal: String
 }

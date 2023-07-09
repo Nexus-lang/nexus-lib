@@ -1,5 +1,6 @@
 mod tokens;
 mod errors;
+mod lexer;
 
 use std::fs::File;
 use std::io::Read;
