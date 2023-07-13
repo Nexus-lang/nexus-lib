@@ -11,10 +11,24 @@
 
 ## Structs, enums, functions, vars
 
-1. 'priv'
+1. 'local'
     - Allows you to prevent other files from accessing the specified struct, enum, function or var
 
+```text
+local var meow = "Hello"
+
+local enum Names {
+    JAMES,
+    LENA,
+    ADDY
+}
+
+local struct ContactInfo {
+    name: String,
+    age: num
+}
+
+local fun sign_in name, age {
+    var contact = ContactInfo(name, age)
+}
 ```
-var meow = "Hello"
-```
-<span style="color: rgb(255, 255, 0);">red</span>

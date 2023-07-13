@@ -96,7 +96,4 @@ impl TokenTypes {
     }
 }
 
-pub struct Token {
-    token_type: TokenTypes,
-    literal: String
-}
+pub struct Token(pub TokenTypes, pub &'static str);
