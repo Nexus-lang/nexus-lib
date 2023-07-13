@@ -1,4 +1,4 @@
-use crate::tokens::{token_to_string, Token, TokenTypes};
+use crate::tokens::{Token, TokenTypes};
 
 pub fn lex() {
     fn tokenize(input: &str) -> Vec<Token> {

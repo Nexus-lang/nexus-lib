@@ -104,12 +104,6 @@ impl TokenTypes {
 
 pub struct Token(pub TokenTypes, pub &'static str);
 
-pub fn token_to_string(token: &Token) -> String {
-    // Convert Token parameters to a String representation
-    // For example, concatenate the parameters with a separator
-    format!("{:?}-{}", token.0, token.1)
-}
-
 impl ToString for Token {
     fn to_string(&self) -> String {
         format!("Token({:?}, {})", self.0, self.1)
