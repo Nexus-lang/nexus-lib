@@ -1,3 +1,5 @@
+#[derive(Debug)]
+#[allow(dead_code)]
 pub enum TokenTypes {
     // Keywords
     VAR,
@@ -8,8 +10,8 @@ pub enum TokenTypes {
     ELSE,
 
     // Special character
-    LBRAC,       // {
-    RBRAC,       // }
+    LCURLY,       // {
+    RCURLY,       // }
     LPARENT,     // (
     RPARENT,     // )
     LSQUAREBRAC, // [
@@ -36,7 +38,9 @@ pub enum TokenTypes {
     DIVIDE,      // /
     MULTIPLY,    // *
     ASSIGN,      // =
+
     EQUAL,       // ==
+    NOTEQUAL,    // !=
     GREATERTHAN, // >
     LESSERTHAN,    // <
     GREATEROREQUALTHAN, // >=
@@ -48,6 +52,7 @@ pub enum TokenTypes {
 }
 
 impl TokenTypes {
+    #[allow(dead_code)]
     pub fn literal(&self) -> &str {
         match self {
             TokenTypes::VAR => {"var"}
@@ -73,6 +78,7 @@ impl TokenTypes {
             TokenTypes::DIVIDE => {"/"}
             
             TokenTypes::EQUAL => {"=="}
+            TokenTypes::NOTEQUAL => {"!="}
             TokenTypes::GREATERTHAN => {">"}
             TokenTypes::LESSERTHAN => {"<"}
             TokenTypes::GREATEROREQUALTHAN => {">="}
@@ -82,8 +88,8 @@ impl TokenTypes {
             
             TokenTypes::COLON => {":"}
             TokenTypes::COMMA => {","}
-            TokenTypes::LBRAC => {"{"}
-            TokenTypes::RBRAC => {"}"}
+            TokenTypes::LCURLY => {"{"}
+            TokenTypes::RCURLY => {"}"}
             TokenTypes::LPARENT => {"("}
             TokenTypes::RPARENT => {")"}
             TokenTypes::LSQUAREBRAC => {"["}
@@ -97,3 +103,15 @@ impl TokenTypes {
 }
 
 pub struct Token(pub TokenTypes, pub &'static str);
+
+pub fn token_to_string(token: &Token) -> String {
+    // Convert Token parameters to a String representation
+    // For example, concatenate the parameters with a separator
+    format!("{:?}-{}", token.0, token.1)
+}
+
+impl ToString for Token {
+    fn to_string(&self) -> String {
+        format!("Token({:?}, {})", self.0, self.1)
+    }
+}
