@@ -106,6 +106,6 @@ pub struct Token(pub TokenTypes, pub &'static str);
 
 impl ToString for Token {
     fn to_string(&self) -> String {
-        format!("Token({:?}, {})", self.0, self.1)
+        format!("Token(TokenTypes::{:?}, '{}')", self.0, self.1)
     }
 }
