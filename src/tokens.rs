@@ -1,5 +1,6 @@
 #[derive(Debug)]
 #[allow(dead_code)]
+#[allow(macro_use_extern_crate)]
 pub enum TokenTypes {
     // Keywords
     VAR,
@@ -52,7 +53,6 @@ pub enum TokenTypes {
 }
 
 impl TokenTypes {
-    #[allow(dead_code)]
     pub fn literal(&self) -> &str {
         match self {
             TokenTypes::VAR => {"var"}
