@@ -17,9 +17,9 @@ pub fn lex(input: &str) -> Vec<Token> {
             c if c.is_whitespace() => {
                 current_pos += 1;
             }
-            c if c.is_ascii() => {
+            c if c.is_alphabetic() => {
                 let mut identifier: String = String::new();
-                while current_pos < input.len() && input_stream[current_pos].is_ascii() && !input_stream[current_pos].is_whitespace() {
+                while current_pos < input.len() && input_stream[current_pos].is_alphanumeric() && !input_stream[current_pos].is_whitespace() {
                     identifier.push(input_stream[current_pos]);
                     current_pos += 1;
                 }
@@ -57,7 +57,17 @@ pub fn lex(input: &str) -> Vec<Token> {
                     }
                 }
             }
-            _ => {}
+            c if c.is_ascii() && !c.is_alphanumeric() => {
+                println!("{}", char);
+                current_pos += 1;
+            }
+            c if c.is_numeric() => {
+                println!("{}", char);
+                current_pos += 1;
+            }
+            _ => {
+                break;
+            }
         }
     }
     tokens

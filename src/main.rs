@@ -16,7 +16,7 @@ fn main() {
     */
 
     let example_code = r#"
-        var test = 0
+        var test1 = 0
         if test == 0 {
             test = 1
         }
