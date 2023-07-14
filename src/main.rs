@@ -14,7 +14,15 @@ fn main() {
     let content = read_file("examples/main.nex");
     println!("{}", content);
     */
-    let token_stream = lex(" if var");
+
+    let example_code = r#"
+        var test = 0
+        if test == 0 {
+            test = 1
+        }
+    "#;
+
+    let token_stream = lex(example_code);
     for token in token_stream {
         print!("{}", token.to_string());
         print!(", ");

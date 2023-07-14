@@ -24,8 +24,7 @@ pub enum TokenTypes {
 
     // Identifier, literals
     IDENT,
-    INTEGER,
-    STRING,
+    NUMBER,
     FALSE,
     TRUE,
 
@@ -53,56 +52,55 @@ pub enum TokenTypes {
 }
 
 impl TokenTypes {
-    pub fn literal(&self) -> &str {
+    pub fn literal(&self) -> String {
         match self {
-            TokenTypes::VAR => {"var"}
-            TokenTypes::FUN => {"fun"}
-            TokenTypes::FOR => {"for"}
-            TokenTypes::WHILE => {"while"}
-            TokenTypes::IF => {"if"}
-            TokenTypes::ELSE => {"else"}
+            TokenTypes::VAR => {String::from("var")}
+            TokenTypes::FUN => {String::from("fun")}
+            TokenTypes::FOR => {String::from("for")}
+            TokenTypes::WHILE => {String::from("while")}
+            TokenTypes::IF => {String::from("if")}
+            TokenTypes::ELSE => {String::from("else")}
 
-            TokenTypes::IDENT => {"IDENT"}
-            TokenTypes::INTEGER => {"INT"}
-            TokenTypes::STRING => {"STRING"}
-            TokenTypes::TRUE => {"true"}
-            TokenTypes::FALSE => {"false"}
+            TokenTypes::IDENT => {String::from("IDENT")}
+            TokenTypes::NUMBER => {String::from("NUMBER")}
+            TokenTypes::TRUE => {String::from("true")}
+            TokenTypes::FALSE => {String::from("false")}
 
-            TokenTypes::EOL => {"EOL"}
-            TokenTypes::ILLEGAL => {"ILLEGAL"}
+            TokenTypes::EOL => {String::from("EOL")}
+            TokenTypes::ILLEGAL => {String::from("ILLEGAL")}
 
-            TokenTypes::ASSIGN => {"="}
-            TokenTypes::PLUS => {"+"}
-            TokenTypes::MINUS => {"-"}
-            TokenTypes::MULTIPLY => {"*"}
-            TokenTypes::DIVIDE => {"/"}
+            TokenTypes::ASSIGN => {String::from("=")}
+            TokenTypes::PLUS => {String::from("+")}
+            TokenTypes::MINUS => {String::from("-")}
+            TokenTypes::MULTIPLY => {String::from("*")}
+            TokenTypes::DIVIDE => {String::from("/")}
             
-            TokenTypes::EQUAL => {"=="}
-            TokenTypes::NOTEQUAL => {"!="}
-            TokenTypes::GREATERTHAN => {">"}
-            TokenTypes::LESSERTHAN => {"<"}
-            TokenTypes::GREATEROREQUALTHAN => {">="}
-            TokenTypes::LESSEROREQUALTHAN => {"<="}
+            TokenTypes::EQUAL => {String::from("==")}
+            TokenTypes::NOTEQUAL => {String::from("!=")}
+            TokenTypes::GREATERTHAN => {String::from(">")}
+            TokenTypes::LESSERTHAN => {String::from("<")}
+            TokenTypes::GREATEROREQUALTHAN => {String::from(">=")}
+            TokenTypes::LESSEROREQUALTHAN => {String::from("<=")}
 
-            TokenTypes::COMMENT => {"//"}
+            TokenTypes::COMMENT => {String::from("//")}
             
-            TokenTypes::COLON => {":"}
-            TokenTypes::COMMA => {","}
-            TokenTypes::LCURLY => {"{"}
-            TokenTypes::RCURLY => {"}"}
-            TokenTypes::LPARENT => {"("}
-            TokenTypes::RPARENT => {")"}
-            TokenTypes::LSQUAREBRAC => {"["}
-            TokenTypes::RSQUAREBRAC => {"]"}
-            TokenTypes::QUOTMARKS => {"\""}
+            TokenTypes::COLON => {String::from(":")}
+            TokenTypes::COMMA => {String::from(",")}
+            TokenTypes::LCURLY => {String::from("{")}
+            TokenTypes::RCURLY => {String::from("}")}
+            TokenTypes::LPARENT => {String::from("(")}
+            TokenTypes::RPARENT => {String::from(")")}
+            TokenTypes::LSQUAREBRAC => {String::from("[")}
+            TokenTypes::RSQUAREBRAC => {String::from("]")}
+            TokenTypes::QUOTMARKS => {String::from("\"")}
 
-            TokenTypes::STRUCT => {"struct"}
-            TokenTypes::ENUM => {"enum"}
+            TokenTypes::STRUCT => {String::from("struct")}
+            TokenTypes::ENUM => {String::from("enum")}
         }
     }
 }
 
-pub struct Token(pub TokenTypes, pub &'static str);
+pub struct Token(pub TokenTypes, pub String);
 
 impl ToString for Token {
     fn to_string(&self) -> String {

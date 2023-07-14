@@ -15,22 +15,19 @@ pub fn lex(input: &str) -> Vec<Token> {
 
         match char {
             c if c.is_whitespace() => {
-                println!("whitespace");
                 current_pos += 1;
             }
             c if c.is_ascii() => {
-                let mut identifier: Vec<char> = Vec::new();
+                let mut identifier: String = String::new();
                 while current_pos < input.len() && input_stream[current_pos].is_ascii() && !input_stream[current_pos].is_whitespace() {
                     identifier.push(input_stream[current_pos]);
                     current_pos += 1;
                 }
-                let identifier_string: String = identifier.iter().collect();
-                let identifier_str = identifier_string.as_str();
-                println!("{}", identifier_str);
 
-                match identifier_str {
+                match identifier {
+                    // Keywords
                     i if i == TokenTypes::VAR.literal() => {
-                        push_token!(tokens ,TokenTypes::VAR);
+                        push_token!(tokens, TokenTypes::VAR);
                     }
                     i if i == TokenTypes::IF.literal() => {
                         push_token!(tokens, TokenTypes::IF);
@@ -41,7 +38,23 @@ pub fn lex(input: &str) -> Vec<Token> {
                     i if i == TokenTypes::FOR.literal() => {
                         push_token!(tokens, TokenTypes::FOR);
                     }
-                    _ => {}
+                    i if i == TokenTypes::WHILE.literal() => {
+                        push_token!(tokens, TokenTypes::WHILE);
+                    }
+                    i if i == TokenTypes::FUN.literal() => {
+                        push_token!(tokens, TokenTypes::FUN);
+                    }
+
+                    // Literals
+                    i if i == TokenTypes::TRUE.literal() => {
+                        push_token!(tokens, TokenTypes::TRUE);
+                    }
+                    i if i == TokenTypes::FALSE.literal() => {
+                        push_token!(tokens, TokenTypes::FALSE);
+                    }
+                    _ => {
+                        tokens.push(Token(TokenTypes::IDENT, identifier));
+                    }
                 }
             }
             _ => {}
