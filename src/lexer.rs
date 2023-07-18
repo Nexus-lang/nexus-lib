@@ -41,8 +41,8 @@ pub fn lex(input: &str) -> Vec<Token> {
                     i if i == TokenTypes::WHILE.literal() => {
                         push_token!(tokens, TokenTypes::WHILE);
                     }
-                    i if i == TokenTypes::FUN.literal() => {
-                        push_token!(tokens, TokenTypes::FUN);
+                    i if i == TokenTypes::FUNC.literal() => {
+                        push_token!(tokens, TokenTypes::FUNC);
                     }
 
                     // Literals

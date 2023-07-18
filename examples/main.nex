@@ -1,23 +1,65 @@
 // There are not chars but strings consist of single letter strings instead
+/* Hello */
+
+use {
+    factori
+}
+
 var myString = "Hello World"
+
+local myString = "amogus"
+
+myString = 0
 
 var myBoolean = true
 
 // There is no int or float but instead only one data type that combines both of them
 var myNumber = 3.0
 
-
-
 if condition == true {
     // do something
 }
 
-// inverted (similar to python)
-if not condition == true {
-    // do something
+// inverted
+if condition != true {
+
+}
+
+if condition != true and myBoolean != true {
+
 }
 
 // name and age are function parameters
-fun doSomething name, age {
+func doSomething name, age {
     // function body (more design required before being able to showcase command syntax)
+}
+
+for i in range(100) {
+
+}
+
+for i in myArray {
+    print(i)
+}
+
+while true {
+
+}
+
+// list, hashmap (dictionary), sets (Set items are unordered, unchangeable, and do not allow duplicate values)
+
+var myList = ["uwu", "owo", "qwq"]
+var mySet = {"uwu", "uwu", "amogus"}
+var myMap = {"uwu": "owo", "amogus": "amogus"}
+
+when myString {
+    "My String" -> {
+
+    }
+    "Amogus" - {
+
+    }
+    other -> {
+
+    }
 }

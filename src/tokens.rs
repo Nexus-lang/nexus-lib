@@ -1,14 +1,19 @@
 #[derive(Debug)]
-#[allow(dead_code)]
-#[allow(macro_use_extern_crate)]
+#[allow(dead_code)] // Can be removed once all entries are used
 pub enum TokenTypes {
     // Keywords
     VAR,
-    FUN,
+    FUNC,
     FOR,
     WHILE,
     IF,
     ELSE,
+    WHEN,
+    USE,
+
+
+    // Other keywords
+    
 
     // Special character
     LCURLY,       // {
@@ -46,6 +51,12 @@ pub enum TokenTypes {
     GREATEROREQUALTHAN, // >=
     LESSEROREQUALTHAN,    // <=
 
+    AND,
+    OR,
+    IN,
+    ARROW, // ->
+    OTHER,
+
     // Structures
     STRUCT,
     ENUM,
@@ -55,7 +66,7 @@ impl TokenTypes {
     pub fn literal(&self) -> String {
         match self {
             TokenTypes::VAR => {String::from("var")}
-            TokenTypes::FUN => {String::from("fun")}
+            TokenTypes::FUNC => {String::from("func")}
             TokenTypes::FOR => {String::from("for")}
             TokenTypes::WHILE => {String::from("while")}
             TokenTypes::IF => {String::from("if")}
@@ -96,6 +107,7 @@ impl TokenTypes {
 
             TokenTypes::STRUCT => {String::from("struct")}
             TokenTypes::ENUM => {String::from("enum")}
+            _ => {String::from("Amogus")}
         }
     }
 }
