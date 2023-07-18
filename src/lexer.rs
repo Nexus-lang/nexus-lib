@@ -66,7 +66,7 @@ pub fn lex(input: &str) -> Vec<Token> {
                 current_pos += 1;
             }
             _ => {
-                break;
+                panic!("Not a valid character");
             }
         }
     }
