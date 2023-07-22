@@ -1,5 +1,4 @@
 #[derive(Debug)]
-#[allow(dead_code)] // Can be removed once all entries are used
 pub enum TokenTypes {
     // Keywords
     VAR,
@@ -23,7 +22,7 @@ pub enum TokenTypes {
     LSQUAREBRAC, // [
     RSQUAREBRAC, // ]
     COMMENT,     // //
-    QUOTMARKS,   // ""
+    QUOTMARK,   // "
     COMMA,       // ,
     COLON,       // :
 
@@ -71,6 +70,8 @@ impl TokenTypes {
             TokenTypes::WHILE => {String::from("while")}
             TokenTypes::IF => {String::from("if")}
             TokenTypes::ELSE => {String::from("else")}
+            TokenTypes::WHEN => {String::from("when")}
+            TokenTypes::USE => {String::from("use")}
 
             TokenTypes::IDENT => {String::from("IDENT")}
             TokenTypes::NUMBER => {String::from("NUMBER")}
@@ -93,6 +94,12 @@ impl TokenTypes {
             TokenTypes::GREATEROREQUALTHAN => {String::from(">=")}
             TokenTypes::LESSEROREQUALTHAN => {String::from("<=")}
 
+            TokenTypes::AND => {String::from("and")}
+            TokenTypes::OR => {String::from("or")}
+            TokenTypes::IN => {String::from("in")}
+            TokenTypes::ARROW => {String::from("->")}
+            TokenTypes::OTHER => {String::from("other")}
+
             TokenTypes::COMMENT => {String::from("//")}
             
             TokenTypes::COLON => {String::from(":")}
@@ -103,15 +110,18 @@ impl TokenTypes {
             TokenTypes::RPARENT => {String::from(")")}
             TokenTypes::LSQUAREBRAC => {String::from("[")}
             TokenTypes::RSQUAREBRAC => {String::from("]")}
-            TokenTypes::QUOTMARKS => {String::from("\"")}
+            TokenTypes::QUOTMARK => {String::from("\"")}
 
             TokenTypes::STRUCT => {String::from("struct")}
             TokenTypes::ENUM => {String::from("enum")}
-            _ => {String::from("Amogus")}
+            _ => {
+                panic!("{:?} is missing a literal type", self)
+            }
         }
     }
 }
 
+#[derive(Debug)]
 pub struct Token(pub TokenTypes, pub String);
 
 impl ToString for Token {

@@ -10,26 +10,24 @@ use std::io::Read;
 use crate::lexer::lex;
 
 fn main() {
-    /*
-    let content = read_file("examples/main.nex");
-    println!("{}", content);
-    */
 
-    let example_code = r#"
-        var test1 = 3
-        if test == 0 {
-            test = 1
-        }
-    "#;
+    let example_code = &read_file("examples/test_2.nex");
 
     let token_stream = lex(example_code);
-    for token in token_stream {
-        print!("{}", token.to_string());
-        print!(", ");
+    for token in &token_stream {
+        println!("{:?}", token);
     }
+
+    println!("");
+    println!("----------------------------------");
+
+    let mut reconstructed: Vec<String> = vec![];
+    for token in &token_stream {
+        reconstructed.push(token.1.to_string());
+    }
+    println!("{}", reconstructed.join(" "));
 }
 
-#[allow(dead_code)]
 fn read_file(path: &str) -> String {
     let mut file = File::open(path).expect("Failed to find file");
     let mut buffer = String::new();
