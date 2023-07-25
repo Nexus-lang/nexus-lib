@@ -65,6 +65,8 @@ cargo# Comparing languages
 
     test("amogogogus")
 
+    thisVar = None
+
 ```
 
 ```java
@@ -72,5 +74,6 @@ cargo# Comparing languages
         int hello = 0;
         float hello1 = 0.000;
         double hello2 = 0.000000000;
+        int amogus = null;
     }
 ```

@@ -22,8 +22,15 @@ func test1(): String {
     "Test1"
 }
 
-enum
-struct
+enum Example {
+    STRING,
+    INT
+}
+
+struct Item {
+    mass: number,
+    sus_word: string
+}
 
 // optional function parameters 
 func test2(amogus=0): String {
