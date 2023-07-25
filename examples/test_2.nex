@@ -21,3 +21,6 @@ when test1 {
 func test(): String {
     "Test1"
 }
+
+enum
+struct

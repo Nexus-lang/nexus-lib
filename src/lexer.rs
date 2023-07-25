@@ -81,6 +81,14 @@ pub fn lex(input: &str) -> Vec<Token> {
                     i if i == TokenTypes::OR.literal() => {
                         push_token!(tokens, TokenTypes::OR);
                     }
+
+                    // Data Structures
+                    i if i == TokenTypes::STRUCT.literal() => {
+                        push_token!(tokens, TokenTypes::STRUCT);
+                    }
+                    i if i == TokenTypes::ENUM.literal() => {
+                        push_token!(tokens, TokenTypes::ENUM);
+                    }
                     _ => {
                         tokens.push(Token(TokenTypes::IDENT, identifier));
                     }
