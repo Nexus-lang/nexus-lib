@@ -63,3 +63,7 @@ when myString {
 
     }
 }
+
+fn test69(): String {
+    return "Amogus"
+}
