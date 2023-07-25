@@ -23,6 +23,7 @@ pub enum TokenTypes {
     RSQUAREBRAC, // ]
     COMMENT,     // //
     QUOTMARK,   // "
+    EXCLAMMARK,
     COMMA,       // ,
     COLON,       // :
 
@@ -58,7 +59,7 @@ pub enum TokenTypes {
 
     // Structures
     STRUCT,
-    ENUM,
+    ENUM
 }
 
 impl TokenTypes {
@@ -111,6 +112,7 @@ impl TokenTypes {
             TokenTypes::LSQUAREBRAC => {String::from("[")}
             TokenTypes::RSQUAREBRAC => {String::from("]")}
             TokenTypes::QUOTMARK => {String::from("\"")}
+            TokenTypes::EXCLAMMARK => {String::from("!")}
 
             TokenTypes::STRUCT => {String::from("struct")}
             TokenTypes::ENUM => {String::from("enum")}

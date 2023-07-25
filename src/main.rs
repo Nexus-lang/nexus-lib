@@ -2,6 +2,7 @@
 mod tokens;
 mod errors;
 mod lexer;
+mod parser;
 
 use errors::throw_error;
 use std::fs::File;

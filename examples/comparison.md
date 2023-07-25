@@ -60,10 +60,15 @@
         "door": "Tür"
     }
 
+    def test(amogus, sus="ooooooo") -> str:
+        return "amogus"
+
+    test("amogogogus")
+
 ```
 
 ```java
-    void main() {
+    void main(String amogus) {
         int hello = 0;
         float hello1 = 0.000;
         double hello2 = 0.000000000;

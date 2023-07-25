@@ -18,9 +18,14 @@ when test1 {
     }
 }
 
-func test(): String {
+func test1(): String {
     "Test1"
 }
 
 enum
 struct
+
+// optional function parameters 
+func test2(amogus=0): String {
+    "Test2"
+}
