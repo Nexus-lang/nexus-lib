@@ -38,7 +38,7 @@ fn read_file(path: &str) -> String {
 
     let error_message = format!("Wrong file format. Current: {}, expected: nex", file_ending);
 
-    if file_ending != "nex" {
+    if file_ending != "nex" && file_ending != "nx" {
         throw_error(&error_message);
     }
 
