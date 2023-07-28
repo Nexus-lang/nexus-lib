@@ -3,6 +3,7 @@ mod tokens;
 mod errors;
 mod lexer;
 mod parser;
+mod ast;
 
 use errors::throw_error;
 use std::fs::File;
@@ -26,6 +27,7 @@ fn main() {
     for token in &token_stream {
         reconstructed.push(token.1.to_string());
     }
+
     println!("{}", reconstructed.join(" "));
 }
 

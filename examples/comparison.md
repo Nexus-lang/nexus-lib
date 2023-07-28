@@ -1,4 +1,4 @@
-cargo# Comparing languages
+# Comparing languages
 
 ```rust
     let myVar1 = "This is a string";
