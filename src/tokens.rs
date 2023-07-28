@@ -116,6 +116,8 @@ impl TokenTypes {
 
             TokenTypes::STRUCT => {String::from("struct")}
             TokenTypes::ENUM => {String::from("enum")}
+            // Not always unreachable so it is disabled for now
+            #[allow(unreachable_patterns)]
             _ => {
                 panic!("{:?} is missing a literal type", self)
             }
