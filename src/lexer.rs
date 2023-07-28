@@ -31,6 +31,10 @@ pub fn lex(input: &str) -> Vec<Token> {
                 // Constructs word as long as the next char is a letter or digit
                 while current_pos < input.len() && input_stream[current_pos].is_alphanumeric() && !input_stream[current_pos].is_whitespace() {
                     if current_pos > 1 && !input_stream[current_pos - 2].is_alphanumeric() && !input_stream[current_pos - 2].is_whitespace() {
+                        // Note: this was only written to solve the issue
+                        // The lexer might be fully refactored to solve this
+                        // issue in a proper way
+
                         // This is to push a character to the identifier
                         // if the character before it is not a digit or letter
                         // Caused the issue that '!test' would lex to '! est'
