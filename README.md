@@ -1,6 +1,8 @@
 # Nexus
 A modern, simple, interpreted scripting language
 
+<br>
+
 We have a few [examples](https://github.com/MuffinGroup/Nexus/tree/main/examples) here.
 
 <br>
