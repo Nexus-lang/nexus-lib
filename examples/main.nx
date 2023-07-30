@@ -16,6 +16,8 @@ var myBoolean = true
 // There is no int or float but instead only one data type that combines both of them
 var myNumber = 3.0
 
+const = 0
+
 if condition == true {
     // do something
 }
