@@ -50,6 +50,9 @@ pub fn lex(input: &str) -> Vec<Token> {
                     i if i == TokenTypes::VAR.literal() => {
                         push_token!(tokens, TokenTypes::VAR);
                     }
+                    i if i == TokenTypes::CONST.literal() => {
+                        push_token!(tokens, TokenTypes::CONST)
+                    }
                     i if i == TokenTypes::IF.literal() => {
                         push_token!(tokens, TokenTypes::IF);
                     }

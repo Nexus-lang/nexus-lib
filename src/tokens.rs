@@ -2,6 +2,7 @@
 pub enum TokenTypes {
     // Keywords
     VAR,
+    CONST,
     FUNC,
     FOR,
     WHILE,
@@ -66,6 +67,7 @@ impl TokenTypes {
     pub fn literal(&self) -> String {
         match self {
             TokenTypes::VAR => {String::from("var")}
+            TokenTypes::CONST => {String::from("const")}
             TokenTypes::FUNC => {String::from("func")}
             TokenTypes::FOR => {String::from("for")}
             TokenTypes::WHILE => {String::from("while")}
