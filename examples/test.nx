@@ -1,1 +1,5 @@
-if const == 0
+const amogus = 1
+
+if amogus == 0 {
+    print("sus")
+}
