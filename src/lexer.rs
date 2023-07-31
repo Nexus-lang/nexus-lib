@@ -1,4 +1,4 @@
-use crate::tokens::{Token, TokenTypes};
+use crate::tokens::{Token, TokenType};
 
 macro_rules! push_token {
     ($tokens:expr, $variant:path) => {
@@ -20,7 +20,7 @@ pub fn lex(input: &str) -> Vec<Token> {
                 current_pos += 1;
             }
             '\n' => {
-                push_token!(tokens, TokenTypes::EOL);
+                push_token!(tokens, TokenType::EOL);
                 current_pos += 1;
             }
 
@@ -47,65 +47,65 @@ pub fn lex(input: &str) -> Vec<Token> {
 
                 match identifier {
                     // Keywords
-                    i if i == TokenTypes::VAR.literal() => {
-                        push_token!(tokens, TokenTypes::VAR);
+                    i if i == TokenType::VAR.literal() => {
+                        push_token!(tokens, TokenType::VAR);
                     }
-                    i if i == TokenTypes::CONST.literal() => {
-                        push_token!(tokens, TokenTypes::CONST)
+                    i if i == TokenType::CONST.literal() => {
+                        push_token!(tokens, TokenType::CONST)
                     }
-                    i if i == TokenTypes::IF.literal() => {
-                        push_token!(tokens, TokenTypes::IF);
+                    i if i == TokenType::IF.literal() => {
+                        push_token!(tokens, TokenType::IF);
                     }
-                    i if i == TokenTypes::ELSE.literal() => {
-                        push_token!(tokens, TokenTypes::ELSE);
+                    i if i == TokenType::ELSE.literal() => {
+                        push_token!(tokens, TokenType::ELSE);
                     }
-                    i if i == TokenTypes::FOR.literal() => {
-                        push_token!(tokens, TokenTypes::FOR);
+                    i if i == TokenType::FOR.literal() => {
+                        push_token!(tokens, TokenType::FOR);
                     }
-                    i if i == TokenTypes::WHILE.literal() => {
-                        push_token!(tokens, TokenTypes::WHILE);
+                    i if i == TokenType::WHILE.literal() => {
+                        push_token!(tokens, TokenType::WHILE);
                     }
-                    i if i == TokenTypes::FUNC.literal() => {
-                        push_token!(tokens, TokenTypes::FUNC);
+                    i if i == TokenType::FUNC.literal() => {
+                        push_token!(tokens, TokenType::FUNC);
                     }
-                    i if i == TokenTypes::WHEN.literal() => {
-                        push_token!(tokens, TokenTypes::WHEN);
+                    i if i == TokenType::WHEN.literal() => {
+                        push_token!(tokens, TokenType::WHEN);
                     }
-                    i if i == TokenTypes::USE.literal() => {
-                        push_token!(tokens, TokenTypes::USE);
+                    i if i == TokenType::USE.literal() => {
+                        push_token!(tokens, TokenType::USE);
                     }
-                    i if i == TokenTypes::OTHER.literal() => {
-                        push_token!(tokens, TokenTypes::OTHER);
+                    i if i == TokenType::OTHER.literal() => {
+                        push_token!(tokens, TokenType::OTHER);
                     }
-                    i if i == TokenTypes::IN.literal() => {
-                        push_token!(tokens, TokenTypes::IN);
+                    i if i == TokenType::IN.literal() => {
+                        push_token!(tokens, TokenType::IN);
                     }
 
                     // Literals
-                    i if i == TokenTypes::TRUE.literal() => {
-                        push_token!(tokens, TokenTypes::TRUE);
+                    i if i == TokenType::TRUE.literal() => {
+                        push_token!(tokens, TokenType::TRUE);
                     }
-                    i if i == TokenTypes::FALSE.literal() => {
-                        push_token!(tokens, TokenTypes::FALSE);
+                    i if i == TokenType::FALSE.literal() => {
+                        push_token!(tokens, TokenType::FALSE);
                     }
 
                     // Comparison
-                    i if i == TokenTypes::AND.literal() => {
-                        push_token!(tokens, TokenTypes::AND);
+                    i if i == TokenType::AND.literal() => {
+                        push_token!(tokens, TokenType::AND);
                     }
-                    i if i == TokenTypes::OR.literal() => {
-                        push_token!(tokens, TokenTypes::OR);
+                    i if i == TokenType::OR.literal() => {
+                        push_token!(tokens, TokenType::OR);
                     }
 
                     // Data Structures
-                    i if i == TokenTypes::STRUCT.literal() => {
-                        push_token!(tokens, TokenTypes::STRUCT);
+                    i if i == TokenType::STRUCT.literal() => {
+                        push_token!(tokens, TokenType::STRUCT);
                     }
-                    i if i == TokenTypes::ENUM.literal() => {
-                        push_token!(tokens, TokenTypes::ENUM);
+                    i if i == TokenType::ENUM.literal() => {
+                        push_token!(tokens, TokenType::ENUM);
                     }
                     _ => {
-                        tokens.push(Token(TokenTypes::IDENT, identifier));
+                        tokens.push(Token(TokenType::IDENT, identifier));
                     }
                 }
             }
@@ -116,87 +116,87 @@ pub fn lex(input: &str) -> Vec<Token> {
                     current_pos += 1;
                 }
                 match identifier {
-                    i if i == TokenTypes::LCURLY.literal() => {
-                        push_token!(tokens, TokenTypes::LCURLY);
+                    i if i == TokenType::LCURLY.literal() => {
+                        push_token!(tokens, TokenType::LCURLY);
                     }
-                    i if i == TokenTypes::RCURLY.literal() => {
-                        push_token!(tokens, TokenTypes::RCURLY);
+                    i if i == TokenType::RCURLY.literal() => {
+                        push_token!(tokens, TokenType::RCURLY);
                     }
-                    i if i == TokenTypes::LPARENT.literal() => {
-                        push_token!(tokens, TokenTypes::LPARENT);
+                    i if i == TokenType::LPARENT.literal() => {
+                        push_token!(tokens, TokenType::LPARENT);
                     }
-                    i if i == TokenTypes::RPARENT.literal() => {
-                        push_token!(tokens, TokenTypes::RPARENT);
+                    i if i == TokenType::RPARENT.literal() => {
+                        push_token!(tokens, TokenType::RPARENT);
                     }
-                    i if i == TokenTypes::LSQUAREBRAC.literal() => {
-                        push_token!(tokens, TokenTypes::LSQUAREBRAC);
+                    i if i == TokenType::LSQUAREBRAC.literal() => {
+                        push_token!(tokens, TokenType::LSQUAREBRAC);
                     }
-                    i if i == TokenTypes::RSQUAREBRAC.literal() => {
-                        push_token!(tokens, TokenTypes::RSQUAREBRAC);
+                    i if i == TokenType::RSQUAREBRAC.literal() => {
+                        push_token!(tokens, TokenType::RSQUAREBRAC);
                     }
 
                     // Arithmetic operations
-                    i if i == TokenTypes::PLUS.literal() => {
-                        push_token!(tokens, TokenTypes::PLUS);
+                    i if i == TokenType::PLUS.literal() => {
+                        push_token!(tokens, TokenType::PLUS);
                     }
-                    i if i == TokenTypes::MINUS.literal() => {
-                        push_token!(tokens, TokenTypes::MINUS);
+                    i if i == TokenType::MINUS.literal() => {
+                        push_token!(tokens, TokenType::MINUS);
                     }
-                    i if i == TokenTypes::MULTIPLY.literal() => {
-                        push_token!(tokens, TokenTypes::MULTIPLY);
+                    i if i == TokenType::MULTIPLY.literal() => {
+                        push_token!(tokens, TokenType::MULTIPLY);
                     }
-                    i if i == TokenTypes::DIVIDE.literal() => {
-                        push_token!(tokens, TokenTypes::DIVIDE);
+                    i if i == TokenType::DIVIDE.literal() => {
+                        push_token!(tokens, TokenType::DIVIDE);
                     }
-                    i if i == TokenTypes::ASSIGN.literal() => {
-                        push_token!(tokens, TokenTypes::ASSIGN);
+                    i if i == TokenType::ASSIGN.literal() => {
+                        push_token!(tokens, TokenType::ASSIGN);
                     }
 
                     // Comparison
-                    i if i == TokenTypes::EQUAL.literal() => {
-                        push_token!(tokens, TokenTypes::EQUAL);
+                    i if i == TokenType::EQUAL.literal() => {
+                        push_token!(tokens, TokenType::EQUAL);
                     }
-                    i if i == TokenTypes::NOTEQUAL.literal() => {
-                        push_token!(tokens, TokenTypes::NOTEQUAL);
+                    i if i == TokenType::NOTEQUAL.literal() => {
+                        push_token!(tokens, TokenType::NOTEQUAL);
                     }
-                    i if i == TokenTypes::GREATERTHAN.literal() => {
-                        push_token!(tokens, TokenTypes::GREATERTHAN);
+                    i if i == TokenType::GREATERTHAN.literal() => {
+                        push_token!(tokens, TokenType::GREATERTHAN);
                     }
-                    i if i == TokenTypes::GREATEROREQUALTHAN.literal() => {
-                        push_token!(tokens, TokenTypes::GREATEROREQUALTHAN);
+                    i if i == TokenType::GREATEROREQUALTHAN.literal() => {
+                        push_token!(tokens, TokenType::GREATEROREQUALTHAN);
                     }
-                    i if i == TokenTypes::LESSERTHAN.literal() => {
-                        push_token!(tokens, TokenTypes::LESSERTHAN);
+                    i if i == TokenType::LESSERTHAN.literal() => {
+                        push_token!(tokens, TokenType::LESSERTHAN);
                     }
-                    i if i == TokenTypes::LESSEROREQUALTHAN.literal() => {
-                        push_token!(tokens, TokenTypes::LESSEROREQUALTHAN);
+                    i if i == TokenType::LESSEROREQUALTHAN.literal() => {
+                        push_token!(tokens, TokenType::LESSEROREQUALTHAN);
                     }
 
                     // Misc types
-                    i if i == TokenTypes::QUOTMARK.literal() => {
-                        push_token!(tokens, TokenTypes::QUOTMARK);
+                    i if i == TokenType::QUOTMARK.literal() => {
+                        push_token!(tokens, TokenType::QUOTMARK);
                     }
-                    i if i == TokenTypes::COMMENT.literal() => {
-                        push_token!(tokens, TokenTypes::COMMENT);
+                    i if i == TokenType::COMMENT.literal() => {
+                        push_token!(tokens, TokenType::COMMENT);
                     }
-                    i if i == TokenTypes::COMMA.literal() => {
-                        push_token!(tokens, TokenTypes::COMMA);
+                    i if i == TokenType::COMMA.literal() => {
+                        push_token!(tokens, TokenType::COMMA);
                     }
-                    i if i == TokenTypes::COLON.literal() => {
-                        push_token!(tokens, TokenTypes::COLON);
+                    i if i == TokenType::COLON.literal() => {
+                        push_token!(tokens, TokenType::COLON);
                     }
-                    i if i == TokenTypes::ARROW.literal() => {
-                        push_token!(tokens, TokenTypes::ARROW);
+                    i if i == TokenType::ARROW.literal() => {
+                        push_token!(tokens, TokenType::ARROW);
                     }
-                    i if i == TokenTypes::EXCLAMMARK.literal() => {
-                        push_token!(tokens, TokenTypes::EXCLAMMARK)
+                    i if i == TokenType::EXCLAMMARK.literal() => {
+                        push_token!(tokens, TokenType::EXCLAMMARK)
                     }
                     _ => {}
                 }
                 current_pos += 1;
             }
             c if c.is_numeric() => {
-                tokens.push(Token(TokenTypes::NUMBER, c.to_string()));
+                tokens.push(Token(TokenType::NUMBER, c.to_string()));
                 println!("{}", c);
                 current_pos += 1;
             }

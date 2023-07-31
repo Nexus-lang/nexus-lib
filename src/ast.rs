@@ -1,4 +1,4 @@
-use crate::tokens::TokenTypes;
+use crate::tokens::TokenType;
 
 pub trait Node {
     fn token_literal(&self) -> String;
@@ -13,7 +13,7 @@ trait Expression: Node {
 }
 
 struct Identifier {
-    token: TokenTypes,
+    token: TokenType,
     value: String
 }
 
@@ -55,7 +55,7 @@ impl Node for Program {
 
 
 struct VarStatement {
-    token: TokenTypes, // var
+    token: TokenType, // var
     name: Identifier, // name
     value: Box<dyn Expression>,
 }
