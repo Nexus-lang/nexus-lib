@@ -1,6 +1,7 @@
+use crate::tokens::TokenTypes;
+
 pub trait Node {
     fn token_literal(&self) -> String;
-    fn to_string(&self) -> String;
 }
 
 trait Statement: Node {
@@ -11,31 +12,62 @@ trait Expression: Node {
     fn expression_node(&self);
 }
 
-pub struct Program {
-    pub statements: Vec<Box<dyn Statement>>,
+struct Identifier {
+    token: TokenTypes,
+    value: String
 }
 
+impl Node for Identifier {
+    fn token_literal(&self) -> String {
+        self.token.literal()
+    }
+}
+
+impl Expression for Identifier {
+    fn expression_node(&self) {
+        todo!()
+    }
+}
+
+pub struct Program {
+    statements: Vec<Box<dyn Statement>>,
+}
+
+/*
+// Not needed atm
+// Uncomment when used
 impl Program {
-    pub fn new(statements: Vec<Box<dyn Statement>>) -> Self {
+    fn new(statements: Vec<Box<dyn Statement>>) -> Self {
         Program { statements: statements }
     }
 }
+*/
 
 impl Node for Program {
     fn token_literal(&self) -> String {
         if !self.statements.is_empty() {
-            self.statements[0].token_literal() // Corrected call to amogus()
-            // You can also use: Statement::amogus(); if it's a static method
+            self.statements[0].token_literal()
         } else {
             "".to_string()
-        } // Just for demonstration purposes; you can return the actual token literal here
-    }
-
-    fn to_string(&self) -> String {
-        let mut result = String::new();
-        for stmt in &self.statements {
-            result.push_str(&stmt.to_string());
         }
-        result
+    }
+}
+
+
+struct VarStatement {
+    token: TokenTypes, // var
+    name: Identifier, // name
+    value: Box<dyn Expression>,
+}
+
+impl Node for VarStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal()
+    }
+}
+
+impl Statement for VarStatement {
+    fn statement_node(&self) {
+        todo!()    
     }
 }
