@@ -28,10 +28,10 @@ pub fn lex(input: String) -> Vec<Token> {
 
             match identifier.as_str() {
                 i if i == TokenType::VAR.literal() => {
-                    tokens.push(Token(TokenType::VAR, TokenType::VAR.literal().to_string()))
+                    push_token!(tokens, TokenType::VAR)
                 }
                 i if i == TokenType::ASSIGN.literal() => {
-                    tokens.push(Token(TokenType::ASSIGN, TokenType::ASSIGN.literal().to_string()))
+                    push_token!(tokens, TokenType::ASSIGN)
                 }
                 _ => {
                     tokens.push(Token(TokenType::IDENT, identifier));
