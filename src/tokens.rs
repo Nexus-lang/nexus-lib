@@ -60,7 +60,7 @@ pub enum TokenType {
 
     // Structures
     STRUCT,
-    ENUM
+    ENUM,
 }
 
 impl TokenType {
