@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::lexer::Lexer;
+use crate::parser::Parser;
 use crate::tokens::TokenType;
 
 fn main() {
@@ -18,6 +19,11 @@ fn main() {
     let mut lexer = Lexer::new(example_code);
 
     let token_stream = lexer.lex();
+
+    let mut parser = Parser::new(lexer);
+
+    parser.next_token();
+    
     println!("{:?}", token_stream);
 
     println!("");
