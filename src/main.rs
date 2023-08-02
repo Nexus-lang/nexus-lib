@@ -1,18 +1,18 @@
 #[macro_use]
 mod tokens;
+mod ast;
 mod errors;
 mod lexer;
 mod parser;
-mod ast;
 
 use errors::throw_error;
 use std::fs::File;
 use std::io::Read;
 
 use crate::lexer::lex;
+use crate::tokens::TokenType;
 
 fn main() {
-
     let example_code = read_file("examples/test.nx");
 
     let token_stream = lex(example_code);
@@ -23,7 +23,11 @@ fn main() {
 
     let mut reconstructed: Vec<String> = vec![];
     for token in &token_stream {
-        reconstructed.push(token.1.to_string());
+        if token.1 != TokenType::EOL.literal() {
+            reconstructed.push(token.1.to_string());
+        } else {
+            reconstructed.push("\n".to_string())
+        }
     }
 
     println!("{}", reconstructed.join(" "));

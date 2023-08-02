@@ -1,6 +1,8 @@
-var 🦀 = 100
-const amgous = "Hello World"
+var myVar = 1
+var myVar2 = "Amogus"
 
-if amogus != "Hello World" {
-    print("sus baka")
+if myVar == 1 {
+    print "1"
+} else {
+    print "sus"
 }
