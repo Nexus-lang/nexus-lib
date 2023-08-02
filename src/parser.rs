@@ -1,7 +1,8 @@
-use crate::{lexer::lex, tokens::TokenType};
+use crate::tokens::Token;
 
 struct Parser {
-    cur_token: TokenType,
-    peek_token: TokenType
+    token_stream: Vec<Token>,
+    cur_token: Token,
+    peek_token: Token
 }
 

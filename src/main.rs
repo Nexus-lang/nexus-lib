@@ -9,13 +9,15 @@ use errors::throw_error;
 use std::fs::File;
 use std::io::Read;
 
-use crate::lexer::lex;
+use crate::lexer::Lexer;
 use crate::tokens::TokenType;
 
 fn main() {
     let example_code = read_file("examples/test.nx");
 
-    let token_stream = lex(example_code);
+    let mut lexer = Lexer::new(example_code);
+
+    let token_stream = lexer.lex();
     println!("{:?}", token_stream);
 
     println!("");
