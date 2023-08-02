@@ -13,12 +13,10 @@ use crate::lexer::lex;
 
 fn main() {
 
-    let example_code = &read_file("examples/test.nx");
+    let example_code = read_file("examples/test.nx");
 
     let token_stream = lex(example_code);
-    for token in &token_stream {
-        println!("{:?}", token);
-    }
+    println!("{:?}", token_stream);
 
     println!("");
     println!("----------------------------------");
