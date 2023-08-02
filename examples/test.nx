@@ -1,1 +1,6 @@
-var 🦀 =100
+var 🦀 = 100
+const amgous = "Hello World"
+
+if amogus != "Hello World" {
+    print("sus baka")
+}
