@@ -16,19 +16,28 @@ pub fn lex(input: String) -> Vec<Token> {
         let ch = input_chars[current_pos];
 
         match ch {
-            c if c.is_alphabetic() || is_utf8_and_not_ascii(c)=> {
+            // new lines
+            c if c == '\n' => {
+                push_token!(tokens, TokenType::EOL);
+                current_pos += 1;
+            }
+            // skipping white spaces
+            c if c.is_whitespace() && c != '\n' => {
+                current_pos += 1;
+            }
+            c if !c.is_whitespace() => {
                 let mut identifier = String::new();
                 identifier.push(ch);
 
                 let mut next_pos = current_pos + 1;
-                while next_pos < input_chars.len() && (input_chars[next_pos].is_alphanumeric() || is_utf8_and_not_ascii(input_chars[next_pos])) {
+                while next_pos < input_chars.len() && !input_chars[next_pos].is_whitespace() {
                     identifier.push(input_chars[next_pos]);
                     next_pos += 1;
                 }
 
                 current_pos = next_pos;
 
-                match identifier.as_str() {
+                match identifier {
                     i if i == TokenType::VAR.literal() => {
                         push_token!(tokens, TokenType::VAR)
                     }
@@ -46,15 +55,17 @@ pub fn lex(input: String) -> Vec<Token> {
             }
         }
     }
+
     tokens
 }
 
+/*
 fn is_utf8_and_not_ascii(c: char) -> bool {
     let s = c.to_string();
     let bytes = s.as_bytes();
 
     // Check if the bytes form a valid UTF-8 string
-    
+
     if !s.is_ascii() {
         if let Ok(_) = std::str::from_utf8(bytes) {
             return true;
@@ -64,3 +75,4 @@ fn is_utf8_and_not_ascii(c: char) -> bool {
     }
     false
 }
+*/
