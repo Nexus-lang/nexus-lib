@@ -21,36 +21,34 @@ impl Lexer {
     }
 
     pub fn lex(&mut self) -> Vec<Token> {
-        let input = &self.input;
-        let input_chars: Vec<char> = input.chars().collect();
+        let input_chars: Vec<char> = self.input.chars().collect();
         let mut tokens: Vec<Token> = Vec::new();
 
-        let mut current_pos = 0;
-        self.current_pos = current_pos;
-        while current_pos < input_chars.len() {
-            self.ch = input_chars[current_pos];
+        self.current_pos = 0;
+        while self.current_pos < input_chars.len() {
+            self.ch = input_chars[self.current_pos];
 
             match self.ch {
                 // new lines
                 c if c == '\n' => {
                     push_token!(tokens, TokenType::EOL);
-                    current_pos += 1;
+                    self.current_pos += 1;
                 }
                 // skipping white spaces
                 c if c.is_whitespace() && c != '\n' => {
-                    current_pos += 1;
+                    self.current_pos += 1;
                 }
                 c if !c.is_whitespace() => {
                     let mut identifier = String::new();
                     identifier.push(self.ch);
 
-                    let mut next_pos = current_pos + 1;
+                    let mut next_pos = self.current_pos + 1;
                     while next_pos < input_chars.len() && !input_chars[next_pos].is_whitespace() {
                         identifier.push(input_chars[next_pos]);
                         next_pos += 1;
                     }
 
-                    current_pos = next_pos;
+                    self.current_pos = next_pos;
 
                     match identifier {
                         i if i == TokenType::VAR.literal() => {
@@ -192,7 +190,7 @@ impl Lexer {
                 }
                 _ => {
                     println!("uwu");
-                    current_pos += 1;
+                    self.current_pos += 1;
                 }
             }
         }
