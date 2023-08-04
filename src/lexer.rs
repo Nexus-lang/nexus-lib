@@ -234,6 +234,9 @@ impl Lexer {
                     self.current_pos = next_pos;
                     println!("{}", c);
                 }
+                c if c.is_ascii() && !c.is_alphanumeric() => {
+                    self.current_pos += 1;
+                }
                 _ => {
                     println!("{}", self.ch);
                     self.current_pos += 1;
