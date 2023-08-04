@@ -1,1 +1,5 @@
-var test = "0"
+test : "Amogus popiiu ßihknzbvd, z bdk"
+
+if !test.is_alphabetic() {
+    print("not a letter")
+}

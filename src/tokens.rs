@@ -27,6 +27,7 @@ pub enum TokenType {
     APOSTROPHE, // '
     EXCLAMMARK,
     COMMA,       // ,
+    DOT,         // .
     COLON,       // :
 
     // Identifier, literals
@@ -46,13 +47,14 @@ pub enum TokenType {
     DIVIDE,      // /
     MULTIPLY,    // *
     ASSIGN,      // =
+    CONSTASSIGN, // c:
 
     EQUAL,       // ==
     NOTEQUAL,    // !=
     GREATERTHAN, // >
-    LESSERTHAN,    // <
+    LESSTHAN,    // <
     GREATEROREQUALTHAN, // >=
-    LESSEROREQUALTHAN,    // <=
+    LESSOREQUALTHAN,    // <=
 
     AND,
     OR,
@@ -67,6 +69,7 @@ pub enum TokenType {
 
 impl TokenType {
     pub fn literal(&self) -> String {
+        // When changing token literals for symbols there might be some issue due to symbols with two characters like arrow or not-equal
         match self {
             TokenType::VAR => {String::from("var")}
             TokenType::CONST => {String::from("const")}
@@ -88,17 +91,18 @@ impl TokenType {
             TokenType::ILLEGAL => {String::from("ILLEGAL")}
 
             TokenType::ASSIGN => {String::from("=")}
+            TokenType::CONSTASSIGN => {String::from("c:")}
             TokenType::PLUS => {String::from("+")}
             TokenType::MINUS => {String::from("-")}
             TokenType::MULTIPLY => {String::from("*")}
             TokenType::DIVIDE => {String::from("/")}
-            
+
             TokenType::EQUAL => {String::from("==")}
             TokenType::NOTEQUAL => {String::from("!=")}
             TokenType::GREATERTHAN => {String::from(">")}
-            TokenType::LESSERTHAN => {String::from("<")}
+            TokenType::LESSTHAN => {String::from("<")}
             TokenType::GREATEROREQUALTHAN => {String::from(">=")}
-            TokenType::LESSEROREQUALTHAN => {String::from("<=")}
+            TokenType::LESSOREQUALTHAN => {String::from("<=")}
 
             TokenType::AND => {String::from("and")}
             TokenType::OR => {String::from("or")}
@@ -107,9 +111,10 @@ impl TokenType {
             TokenType::OTHER => {String::from("other")}
 
             TokenType::COMMENT => {String::from("//")}
-            
+
             TokenType::COLON => {String::from(":")}
             TokenType::COMMA => {String::from(",")}
+            TokenType::DOT => {String::from(".")}
             TokenType::LCURLY => {String::from("{")}
             TokenType::RCURLY => {String::from("}")}
             TokenType::LPARENT => {String::from("(")}

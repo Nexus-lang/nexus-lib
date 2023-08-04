@@ -13,7 +13,6 @@ pub struct Lexer {
     ch: char,
 }
 
-//TODO: the issue with characters in front of other characters in identifiers not being read needs to be fixed again
 impl Lexer {
     pub fn new(input: String) -> Self {
         let input_chars: Vec<char> = input.chars().collect();
@@ -63,8 +62,13 @@ impl Lexer {
                     identifier.push(self.ch);
 
                     let mut next_pos = self.current_pos + 1;
-                    while next_pos < input_chars.len() && (input_chars[next_pos].is_alphanumeric()
-                        || input_chars[next_pos] == '_')
+
+                    if input_chars[self.current_pos] == 'c' && input_chars[next_pos] == ':' {
+                        identifier.push(input_chars[next_pos])
+                    }
+
+                    while next_pos < input_chars.len()
+                        && (input_chars[next_pos].is_alphanumeric() || input_chars[next_pos] == '_')
                     {
                         identifier.push(input_chars[next_pos]);
                         next_pos += 1;
@@ -72,7 +76,7 @@ impl Lexer {
 
                     self.current_pos = next_pos;
 
-                    match identifier {
+                    match identifier.clone() {
                         i if i == TokenType::VAR.literal() => {
                             push_token!(tokens, TokenType::VAR);
                         }
@@ -130,83 +134,8 @@ impl Lexer {
                         i if i == TokenType::ENUM.literal() => {
                             push_token!(tokens, TokenType::ENUM);
                         }
-                        i if i == TokenType::LCURLY.literal() => {
-                            push_token!(tokens, TokenType::LCURLY);
-                        }
-                        i if i == TokenType::RCURLY.literal() => {
-                            push_token!(tokens, TokenType::RCURLY);
-                        }
-                        i if i == TokenType::LPARENT.literal() => {
-                            push_token!(tokens, TokenType::LPARENT);
-                        }
-                        i if i == TokenType::RPARENT.literal() => {
-                            push_token!(tokens, TokenType::RPARENT);
-                        }
-                        i if i == TokenType::LSQUAREBRAC.literal() => {
-                            push_token!(tokens, TokenType::LSQUAREBRAC);
-                        }
-                        i if i == TokenType::RSQUAREBRAC.literal() => {
-                            push_token!(tokens, TokenType::RSQUAREBRAC);
-                        }
-
-                        // Arithmetic operations
-                        i if i == TokenType::PLUS.literal() => {
-                            push_token!(tokens, TokenType::PLUS);
-                        }
-                        i if i == TokenType::MINUS.literal() => {
-                            push_token!(tokens, TokenType::MINUS);
-                        }
-                        i if i == TokenType::MULTIPLY.literal() => {
-                            push_token!(tokens, TokenType::MULTIPLY);
-                        }
-                        i if i == TokenType::DIVIDE.literal() => {
-                            push_token!(tokens, TokenType::DIVIDE);
-                        }
-                        i if i == TokenType::ASSIGN.literal() => {
-                            push_token!(tokens, TokenType::ASSIGN);
-                        }
-
-                        // Comparison
-                        i if i == TokenType::EQUAL.literal() => {
-                            push_token!(tokens, TokenType::EQUAL);
-                        }
-                        i if i == TokenType::NOTEQUAL.literal() => {
-                            push_token!(tokens, TokenType::NOTEQUAL);
-                        }
-                        i if i == TokenType::GREATERTHAN.literal() => {
-                            push_token!(tokens, TokenType::GREATERTHAN);
-                        }
-                        i if i == TokenType::GREATEROREQUALTHAN.literal() => {
-                            push_token!(tokens, TokenType::GREATEROREQUALTHAN);
-                        }
-                        i if i == TokenType::LESSERTHAN.literal() => {
-                            push_token!(tokens, TokenType::LESSERTHAN);
-                        }
-                        i if i == TokenType::LESSEROREQUALTHAN.literal() => {
-                            push_token!(tokens, TokenType::LESSEROREQUALTHAN);
-                        }
-
-                        // Misc types
-                        i if i == TokenType::QUOTMARK.literal() => {
-                            push_token!(tokens, TokenType::QUOTMARK);
-                        }
-                        i if i == TokenType::APOSTROPHE.literal() => {
-                            push_token!(tokens, TokenType::APOSTROPHE);
-                        }
-                        i if i == TokenType::COMMENT.literal() => {
-                            push_token!(tokens, TokenType::COMMENT);
-                        }
-                        i if i == TokenType::COMMA.literal() => {
-                            push_token!(tokens, TokenType::COMMA);
-                        }
-                        i if i == TokenType::COLON.literal() => {
-                            push_token!(tokens, TokenType::COLON);
-                        }
-                        i if i == TokenType::ARROW.literal() => {
-                            push_token!(tokens, TokenType::ARROW);
-                        }
-                        i if i == TokenType::EXCLAMMARK.literal() => {
-                            push_token!(tokens, TokenType::EXCLAMMARK)
+                        i if i == TokenType::CONSTASSIGN.literal() => {
+                            tokens.push(Token(TokenType::CONSTASSIGN, identifier));
                         }
                         _ => {
                             tokens.push(Token(TokenType::IDENT, identifier));
@@ -215,26 +144,131 @@ impl Lexer {
                 }
                 c if c == '"' || c == '\"' => {
                     let mut identifier = String::new();
-                    identifier.push(self.ch);
+                    if c == '"' { 
+                        push_token!(tokens, TokenType::QUOTMARK)
+                    } else {
+                        push_token!(tokens, TokenType::APOSTROPHE)
+                    }
 
                     let mut next_pos = self.current_pos + 1;
                     while next_pos < input_chars.len() {
-                        if c == '"' && input_chars[next_pos] != '"' || c == '\'' && input_chars[next_pos] != '\'' {
+                        if c == '"' && input_chars[next_pos] != '"'
+                            || c == '\'' && input_chars[next_pos] != '\''
+                        {
                             identifier.push(input_chars[next_pos]);
                             next_pos += 1;
                         } else {
-                            identifier.push(input_chars[next_pos]);
                             next_pos += 1;
                             break;
                         }
                     }
 
                     tokens.push(Token(TokenType::STRING, identifier));
+                    
+                    if c == '"' { 
+                        push_token!(tokens, TokenType::QUOTMARK)
+                    } else {
+                        push_token!(tokens, TokenType::APOSTROPHE)
+                    }
 
                     self.current_pos = next_pos;
                     println!("{}", c);
                 }
                 c if c.is_ascii() && !c.is_alphanumeric() => {
+                    match c.to_string() {
+                        c if c == TokenType::ASSIGN.literal() => {
+                            let equal_chars: Vec<char> = TokenType::EQUAL.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == equal_chars[1] {
+                                push_token!(tokens, TokenType::EQUAL);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::ASSIGN);
+                            }
+                        }
+                        c if c == TokenType::MINUS.literal() => {
+                            let arrow_chars: Vec<char> = TokenType::ARROW.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == arrow_chars[1] {
+                                push_token!(tokens, TokenType::ARROW);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::MINUS);
+                            }
+                        }
+                        c if c == TokenType::GREATERTHAN.literal() => {
+                            let greaterthan_chars: Vec<char> = TokenType::GREATEROREQUALTHAN.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == greaterthan_chars[1] {
+                                push_token!(tokens, TokenType::GREATEROREQUALTHAN);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::GREATERTHAN);
+                            }
+                        }
+                        c if c == TokenType::LESSTHAN.literal() => {
+                            let lessthan_chars: Vec<char> = TokenType::LESSOREQUALTHAN.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == lessthan_chars[1] {
+                                push_token!(tokens, TokenType::LESSOREQUALTHAN);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::LESSTHAN);
+                            }
+                        }
+                        c if c == TokenType::EXCLAMMARK.literal() => {
+                            let notequal_chars: Vec<char> = TokenType::NOTEQUAL.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == notequal_chars[1] {
+                                push_token!(tokens, TokenType::NOTEQUAL);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::EXCLAMMARK);
+                            }
+                        }
+                        c if c == TokenType::DIVIDE.literal() => {
+                            let comment_chars: Vec<char> = TokenType::COMMENT.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == comment_chars[1] {
+                                push_token!(tokens, TokenType::COMMENT);
+                                self.current_pos += 1;
+                            } else {
+                                push_token!(tokens, TokenType::DIVIDE);
+                            }
+                        }
+                        c if c == TokenType::COLON.literal() => {
+                            if input_chars[self.current_pos - 1] != 'c' {
+                                push_token!(tokens, TokenType::COLON);
+                            }
+                        }
+                        c if c == TokenType::COMMA.literal() => {
+                            push_token!(tokens, TokenType::COMMA)
+                        }
+                        c if c == TokenType::DOT.literal() => {
+                            push_token!(tokens, TokenType::DOT)
+                        }
+                        c if c == TokenType::PLUS.literal() => {
+                            push_token!(tokens, TokenType::PLUS)
+                        }
+                        c if c == TokenType::MULTIPLY.literal() => {
+                            push_token!(tokens, TokenType::MULTIPLY)
+                        }
+                        c if c == TokenType::LCURLY.literal() => {
+                            push_token!(tokens, TokenType::LCURLY)
+                        }
+                        c if c == TokenType::RCURLY.literal() => {
+                            push_token!(tokens, TokenType::RCURLY)
+                        }
+                        c if c == TokenType::LPARENT.literal() => {
+                            push_token!(tokens, TokenType::LPARENT)
+                        }
+                        c if c == TokenType::RPARENT.literal() => {
+                            push_token!(tokens, TokenType::RPARENT)
+                        }
+                        c if c == TokenType::LSQUAREBRAC.literal() => {
+                            push_token!(tokens, TokenType::LSQUAREBRAC)
+                        }
+                        c if c == TokenType::RSQUAREBRAC.literal() => {
+                            push_token!(tokens, TokenType::RSQUAREBRAC)
+                        }
+                        _ => {
+                            tokens.push(Token(TokenType::ILLEGAL, c.to_string()));
+                        }
+                    }
                     self.current_pos += 1;
                 }
                 _ => {
