@@ -63,8 +63,8 @@ impl Lexer {
                     identifier.push(self.ch);
 
                     let mut next_pos = self.current_pos + 1;
-                    while next_pos < input_chars.len() && input_chars[next_pos].is_alphanumeric()
-                        || input_chars[next_pos] == '_'
+                    while next_pos < input_chars.len() && (input_chars[next_pos].is_alphanumeric()
+                        || input_chars[next_pos] == '_')
                     {
                         identifier.push(input_chars[next_pos]);
                         next_pos += 1;
@@ -233,9 +233,6 @@ impl Lexer {
 
                     self.current_pos = next_pos;
                     println!("{}", c);
-                }
-                c if c.is_ascii() && !c.is_alphanumeric() => {
-                    
                 }
                 _ => {
                     println!("{}", self.ch);

@@ -1,5 +1,1 @@
-var myVar = "hello!!!😯"
-
-if !myVar.is_letter() {
-    print("test")
-}
+hello = p
