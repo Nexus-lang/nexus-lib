@@ -24,6 +24,7 @@ pub enum TokenType {
     RSQUAREBRAC, // ]
     COMMENT,     // //
     QUOTMARK,   // "
+    APOSTROPHE, // '
     EXCLAMMARK,
     COMMA,       // ,
     COLON,       // :
@@ -31,6 +32,7 @@ pub enum TokenType {
     // Identifier, literals
     IDENT,
     NUMBER,
+    STRING,
     FALSE,
     TRUE,
 
@@ -78,6 +80,7 @@ impl TokenType {
 
             TokenType::IDENT => {String::from("IDENT")}
             TokenType::NUMBER => {String::from("NUMBER")}
+            TokenType::STRING => {String::from("STRING")}
             TokenType::TRUE => {String::from("true")}
             TokenType::FALSE => {String::from("false")}
 
@@ -114,6 +117,7 @@ impl TokenType {
             TokenType::LSQUAREBRAC => {String::from("[")}
             TokenType::RSQUAREBRAC => {String::from("]")}
             TokenType::QUOTMARK => {String::from("\"")}
+            TokenType::APOSTROPHE => {String::from("'")}
             TokenType::EXCLAMMARK => {String::from("!")}
 
             TokenType::STRUCT => {String::from("struct")}

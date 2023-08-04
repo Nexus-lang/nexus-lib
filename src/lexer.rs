@@ -17,7 +17,11 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(input: String) -> Self {
         let input_chars: Vec<char> = input.chars().collect();
-        return Lexer { input: input, current_pos: 0, ch: input_chars[0] };
+        return Lexer {
+            input: input,
+            current_pos: 0,
+            ch: input_chars[0],
+        };
     }
 
     pub fn lex(&mut self) -> Vec<Token> {
@@ -38,12 +42,30 @@ impl Lexer {
                 c if c.is_whitespace() && c != '\n' => {
                     self.current_pos += 1;
                 }
-                c if !c.is_whitespace() => {
+                c if c.is_numeric() => {
+                    let mut identifier = String::new();
+
+                    while self.current_pos < input_chars.len()
+                        && (input_chars[self.current_pos].is_numeric()
+                            || input_chars[self.current_pos] == 'x'
+                            || input_chars[self.current_pos] == 'b'
+                            || input_chars[self.current_pos] == 'o')
+                    {
+                        identifier.push(input_chars[self.current_pos]);
+                        self.current_pos += 1;
+                    }
+
+                    tokens.push(Token(TokenType::NUMBER, identifier));
+                }
+
+                c if c.is_alphabetic() || c == '_' => {
                     let mut identifier = String::new();
                     identifier.push(self.ch);
 
                     let mut next_pos = self.current_pos + 1;
-                    while next_pos < input_chars.len() && !input_chars[next_pos].is_whitespace() {
+                    while next_pos < input_chars.len() && input_chars[next_pos].is_alphanumeric()
+                        || input_chars[next_pos] == '_'
+                    {
                         identifier.push(input_chars[next_pos]);
                         next_pos += 1;
                     }
@@ -168,6 +190,9 @@ impl Lexer {
                         i if i == TokenType::QUOTMARK.literal() => {
                             push_token!(tokens, TokenType::QUOTMARK);
                         }
+                        i if i == TokenType::APOSTROPHE.literal() => {
+                            push_token!(tokens, TokenType::APOSTROPHE);
+                        }
                         i if i == TokenType::COMMENT.literal() => {
                             push_token!(tokens, TokenType::COMMENT);
                         }
@@ -188,8 +213,32 @@ impl Lexer {
                         }
                     }
                 }
+                c if c == '"' || c == '\"' => {
+                    let mut identifier = String::new();
+                    identifier.push(self.ch);
+
+                    let mut next_pos = self.current_pos + 1;
+                    while next_pos < input_chars.len() {
+                        if c == '"' && input_chars[next_pos] != '"' || c == '\'' && input_chars[next_pos] != '\'' {
+                            identifier.push(input_chars[next_pos]);
+                            next_pos += 1;
+                        } else {
+                            identifier.push(input_chars[next_pos]);
+                            next_pos += 1;
+                            break;
+                        }
+                    }
+
+                    tokens.push(Token(TokenType::STRING, identifier));
+
+                    self.current_pos = next_pos;
+                    println!("{}", c);
+                }
+                c if c.is_ascii() && !c.is_alphanumeric() => {
+                    
+                }
                 _ => {
-                    println!("uwu");
+                    println!("{}", self.ch);
                     self.current_pos += 1;
                 }
             }
