@@ -1,3 +1,5 @@
+use crate::tokens::Token;
+
 #[derive(PartialEq)]
 pub enum Statement {
     VAR(VarStatement),
@@ -5,19 +7,20 @@ pub enum Statement {
 }
 
 #[derive(PartialEq, PartialOrd)]
-enum Expression {
-
+pub enum Expression {
+    EMPTY,
 }
 
 #[derive(PartialEq, PartialOrd)]
-struct Identifier {
-    value: String
+pub struct Identifier {
+    pub value: String
 }
 
 #[derive(PartialEq, PartialOrd)]
-struct VarStatement {
-    name: Identifier,
-    value: Expression,
+pub struct VarStatement {
+    pub token: Token,
+    pub name: Identifier,
+    pub value: Expression,
 }
 
 pub struct Program {

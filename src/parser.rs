@@ -1,4 +1,8 @@
-use crate::{lexer::Lexer, tokens::{Token, TokenType}, ast::{Program, Statement}};
+use crate::{
+    ast::{Program, Statement, VarStatement, Identifier, Expression},
+    lexer::Lexer,
+    tokens::{Token, TokenType},
+};
 
 pub struct Parser {
     token_stream: Vec<Token>,
@@ -19,7 +23,7 @@ impl Parser {
         };
     }
 
-    pub fn next_token(&mut self) {
+    fn next_token(&mut self) {
         self.current_pos += 1;
         self.cur_token = self.peek_token.clone();
         if self.current_pos + 1 < self.token_stream.len() {
@@ -27,7 +31,7 @@ impl Parser {
         }
     }
 
-    pub fn parse_program(&self) -> Program {
+    pub fn parse_program(&mut self) -> Program {
         let mut program = Program::new(vec![]);
 
         while self.cur_token.0 != TokenType::EOF {
@@ -35,11 +39,24 @@ impl Parser {
             if statement != Statement::EMPTY {
                 program.statements.push(statement);
             }
+            self.next_token();
         }
-        return program;
+        program
     }
 
-    pub fn parse_statement(&self) -> Statement {
-        todo!()
+    fn parse_statement(&self) -> Statement {
+        match self.cur_token.0 {
+            TokenType::VAR => {
+                self.parse_var_statement()
+            }
+            _ => {
+                Statement::EMPTY
+            }
+        }
+    }
+
+    fn parse_var_statement(&self) -> VarStatement {
+        let statement = VarStatement { token: self.cur_token, name: Identifier { value: "".to_string() }, value: Expression::EMPTY };
+        statement
     }
 }
