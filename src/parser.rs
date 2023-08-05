@@ -1,4 +1,4 @@
-use crate::{lexer::Lexer, tokens::Token};
+use crate::{lexer::Lexer, tokens::Token, ast::{Program, Statement}};
 
 pub struct Parser {
     token_stream: Vec<Token>,
@@ -27,6 +27,9 @@ impl Parser {
         if self.current_pos + 1 < self.token_stream.len() {
             self.peek_token = self.token_stream[self.current_pos + 1].clone();
         }
-        println!("{:?}", self.peek_token);
+    }
+
+    pub fn parse_program(&self) -> Program {
+        todo!()
     }
 }

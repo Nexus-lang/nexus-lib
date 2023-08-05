@@ -172,7 +172,6 @@ impl Lexer {
                     }
 
                     self.current_pos = next_pos;
-                    println!("{}", c);
                 }
                 c if c.is_ascii() && !c.is_alphanumeric() => {
                     match c.to_string() {
@@ -272,7 +271,7 @@ impl Lexer {
                     self.current_pos += 1;
                 }
                 _ => {
-                    println!("{}", self.ch);
+                    push_token!(tokens, TokenType::ILLEGAL);
                     self.current_pos += 1;
                 }
             }

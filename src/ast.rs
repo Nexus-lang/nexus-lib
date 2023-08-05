@@ -4,7 +4,7 @@ pub trait Node {
     fn token_literal(&self) -> String;
 }
 
-trait Statement: Node {
+pub trait Statement: Node {
     fn statement_node(&self);
 }
 
@@ -29,8 +29,9 @@ impl Expression for Identifier {
     }
 }
 
+#[derive(Default)]
 pub struct Program {
-    statements: Vec<Box<dyn Statement>>,
+    pub statements: Vec<Box<dyn Statement>>,
 }
 
 /*

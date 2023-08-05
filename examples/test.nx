@@ -1,5 +1,5 @@
-test : "Amogus popiiu ßihknzbvd, z bdk"
+var x = 0
 
-if !test.is_alphabetic() {
-    print("not a letter")
-}
+var y = 100
+
+var z = 123456789
