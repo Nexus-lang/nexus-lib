@@ -20,7 +20,7 @@ fn main() {
 
     let token_stream = lexer.lex();
 
-    let mut parser = Parser::new(lexer);
+    let mut parser = Parser::new(&mut lexer);
 
     parser.next_token();
     

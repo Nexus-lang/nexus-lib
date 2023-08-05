@@ -1,16 +1,16 @@
 use crate::{lexer::Lexer, tokens::Token, ast::{Program, Statement}};
 
-pub struct Parser {
+pub struct Parser<'a> {
     token_stream: Vec<Token>,
-    lexer: Lexer,
+    lexer: &'a mut Lexer,
 
     cur_token: Token,
     peek_token: Token,
     current_pos: usize,
 }
 
-impl Parser {
-    pub fn new(mut lexer: Lexer) -> Self {
+impl<'a> Parser<'a> {
+    pub fn new(lexer: &'a mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
         return Parser {
             lexer: lexer,
