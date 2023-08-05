@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenType {
     // Keywords
     VAR,
@@ -40,6 +40,7 @@ pub enum TokenType {
     // Other
     ILLEGAL, // illeagl expression
     EOL,     // End of line
+    EOF,     // End of file
 
     // Arithmetic operators and alike
     PLUS,        // +
@@ -88,6 +89,7 @@ impl TokenType {
             TokenType::FALSE => {String::from("false")}
 
             TokenType::EOL => {String::from("EOL")}
+            TokenType::EOF => {String::from("EOF")}
             TokenType::ILLEGAL => {String::from("ILLEGAL")}
 
             TokenType::ASSIGN => {String::from("=")}
@@ -136,7 +138,7 @@ impl TokenType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token(pub TokenType, pub String);
 
 impl ToString for Token {

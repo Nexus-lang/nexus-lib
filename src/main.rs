@@ -29,11 +29,11 @@ fn main() {
     println!("");
     println!("----------------------------------");
 
-    let mut reconstructed: Vec<String> = vec![];
+    let mut reconstructed: Vec<String> = vec!["".to_string()];
     for token in &token_stream {
-        if token.1 != TokenType::EOL.literal() {
+        if token.0 != TokenType::EOL && token.0 != TokenType::EOF {
             reconstructed.push(token.1.to_string());
-        } else {
+        } else if token.1 == TokenType::EOL.literal() {
             reconstructed.push("\n".to_string())
         }
     }

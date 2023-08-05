@@ -1,19 +1,17 @@
-use crate::{lexer::Lexer, tokens::Token, ast::{Program, Statement}};
+use crate::{lexer::Lexer, tokens::{Token, TokenType}, ast::{Program, Statement}};
 
-pub struct Parser<'a> {
+pub struct Parser {
     token_stream: Vec<Token>,
-    lexer: &'a mut Lexer,
 
     cur_token: Token,
     peek_token: Token,
     current_pos: usize,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(lexer: &'a mut Lexer) -> Self {
+impl Parser {
+    pub fn new(lexer: &mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
         return Parser {
-            lexer: lexer,
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[0].clone(),
             current_pos: 0,
@@ -30,6 +28,18 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_program(&self) -> Program {
+        let mut program = Program::new(vec![]);
+
+        while self.cur_token.0 != TokenType::EOF {
+            let statement = self.parse_statement();
+            if statement != Statement::EMPTY {
+                program.statements.push(statement);
+            }
+        }
+        return program;
+    }
+
+    pub fn parse_statement(&self) -> Statement {
         todo!()
     }
 }

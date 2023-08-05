@@ -276,6 +276,7 @@ impl Lexer {
                 }
             }
         }
+        push_token!(tokens, TokenType::EOF);
 
         tokens
     }
