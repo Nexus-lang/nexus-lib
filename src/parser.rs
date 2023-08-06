@@ -44,7 +44,7 @@ impl Parser {
         program
     }
 
-    fn parse_statement(&self) -> Option<Statement> {
+    fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => {
                 self.parse_var_statement()
@@ -55,13 +55,13 @@ impl Parser {
         }
     }
 
-    fn parse_var_statement(&self) -> Option<Statement> {
-        let mut statement = VarStatement { token: self.cur_token.clone(), name: Identifier { token: TokenType::ILLEGAL, value: "".to_string() }, value: Expression::EMPTY };
+    fn parse_var_statement(&mut self) -> Option<Statement> {
+        let mut statement = VarStatement { token: self.cur_token.clone(), name: Identifier { token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()), value: "".to_string() }, value: Expression::EMPTY };
         if self.expect_peek(TokenType::IDENT) {
             return None;
         }
 
-        statement.name = Identifier { token: self.cur_token, value: self.cur_token.literal };
+        statement.name = Identifier { token: self.cur_token.clone(), value: self.cur_token.clone().literal };
 
         if !self.expect_peek(TokenType::ASSIGN) {
             return None;
@@ -74,11 +74,20 @@ impl Parser {
         Some(Statement::VAR(statement))
     }
 
-    fn expect_peek() {
-
+    fn cur_token_is(&self, token_type: TokenType) -> bool {
+        self.cur_token.token_type == token_type
     }
 
-    fn cur_token_is() {
-        
+    fn peek_token_is(&self, token_type: TokenType) -> bool {
+        self.peek_token.token_type == token_type
+    }
+
+    fn expect_peek(&mut self, token_type: TokenType) -> bool {
+        if self.peek_token_is(token_type) {
+            self.next_token();
+            true
+        } else {
+            false
+        }
     }
 }
