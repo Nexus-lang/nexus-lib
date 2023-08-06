@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Program, Statement, VarStatement, Identifier, Expression},
+    ast::{Program, Statement, VarStatement, Identifier, Expression, self},
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -34,29 +34,51 @@ impl Parser {
     pub fn parse_program(&mut self) -> Program {
         let mut program = Program::new(vec![]);
 
-        while self.cur_token.0 != TokenType::EOF {
+        while self.cur_token.token_type != TokenType::EOF {
             let statement = self.parse_statement();
-            if statement != Statement::EMPTY {
-                program.statements.push(statement);
+            if statement != None {
+                program.statements.push(statement.unwrap());
             }
             self.next_token();
         }
         program
     }
 
-    fn parse_statement(&self) -> Statement {
-        match self.cur_token.0 {
+    fn parse_statement(&self) -> Option<Statement> {
+        match self.cur_token.token_type {
             TokenType::VAR => {
                 self.parse_var_statement()
             }
             _ => {
-                Statement::EMPTY
+                None
             }
         }
     }
 
-    fn parse_var_statement(&self) -> VarStatement {
-        let statement = VarStatement { token: self.cur_token, name: Identifier { value: "".to_string() }, value: Expression::EMPTY };
-        statement
+    fn parse_var_statement(&self) -> Option<Statement> {
+        let mut statement = VarStatement { token: self.cur_token.clone(), name: Identifier { token: TokenType::ILLEGAL, value: "".to_string() }, value: Expression::EMPTY };
+        if self.expect_peek(TokenType::IDENT) {
+            return None;
+        }
+
+        statement.name = Identifier { token: self.cur_token, value: self.cur_token.literal };
+
+        if !self.expect_peek(TokenType::ASSIGN) {
+            return None;
+        }
+
+        while !self.cur_token_is(TokenType::EOL) {
+            self.next_token();
+        }
+
+        Some(Statement::VAR(statement))
+    }
+
+    fn expect_peek() {
+
+    }
+
+    fn cur_token_is() {
+        
     }
 }

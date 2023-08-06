@@ -2,7 +2,7 @@ use crate::tokens::{Token, TokenType};
 
 macro_rules! push_token {
     ($tokens:expr, $variant:path) => {
-        $tokens.push(Token($variant, $variant.literal()))
+        $tokens.push(Token::new($variant, $variant.literal()))
     };
 }
 
@@ -54,7 +54,7 @@ impl Lexer {
                         self.current_pos += 1;
                     }
 
-                    tokens.push(Token(TokenType::NUMBER, identifier));
+                    tokens.push(Token::new(TokenType::NUMBER, identifier));
                 }
 
                 c if c.is_alphabetic() || c == '_' => {
@@ -135,10 +135,10 @@ impl Lexer {
                             push_token!(tokens, TokenType::ENUM);
                         }
                         i if i == TokenType::CONSTASSIGN.literal() => {
-                            tokens.push(Token(TokenType::CONSTASSIGN, identifier));
+                            tokens.push(Token::new(TokenType::CONSTASSIGN, identifier));
                         }
                         _ => {
-                            tokens.push(Token(TokenType::IDENT, identifier));
+                            tokens.push(Token::new(TokenType::IDENT, identifier));
                         }
                     }
                 }
@@ -163,7 +163,7 @@ impl Lexer {
                         }
                     }
 
-                    tokens.push(Token(TokenType::STRING, identifier));
+                    tokens.push(Token::new(TokenType::STRING, identifier));
                     
                     if c == '"' { 
                         push_token!(tokens, TokenType::QUOTMARK)
@@ -265,7 +265,7 @@ impl Lexer {
                             push_token!(tokens, TokenType::RSQUAREBRAC)
                         }
                         _ => {
-                            tokens.push(Token(TokenType::ILLEGAL, c.to_string()));
+                            tokens.push(Token::new(TokenType::ILLEGAL, c.to_string()));
                         }
                     }
                     self.current_pos += 1;

@@ -13,6 +13,7 @@ pub enum Expression {
 
 #[derive(PartialEq, PartialOrd)]
 pub struct Identifier {
+    pub token: Token,
     pub value: String
 }
 

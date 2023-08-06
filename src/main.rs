@@ -29,9 +29,9 @@ fn main() {
 
     let mut reconstructed: Vec<String> = vec!["".to_string()];
     for token in &token_stream {
-        if token.0 != TokenType::EOL && token.0 != TokenType::EOF {
-            reconstructed.push(token.1.to_string());
-        } else if token.1 == TokenType::EOL.literal() {
+        if token.token_type != TokenType::EOL && token.token_type != TokenType::EOF {
+            reconstructed.push(token.literal.to_string());
+        } else if token.literal == TokenType::EOL.literal() {
             reconstructed.push("\n".to_string())
         }
     }

@@ -139,7 +139,16 @@ impl TokenType {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct Token(pub TokenType, pub String);
+pub struct Token {
+    pub token_type: TokenType,
+    pub literal: String
+}
+
+impl Token {
+    pub fn new(token_type: TokenType, literal: String) -> Self {
+        Token { token_type: token_type, literal }
+    }
+}
 
 impl ToString for Token {
     fn to_string(&self) -> String {
