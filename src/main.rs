@@ -20,27 +20,27 @@ fn main() {
 
     let token_stream = lexer.lex();
 
-    let mut parser = Parser::new(lexer);
-
-    parser.next_token();
+    let mut parser = Parser::new(&mut lexer);
     
     println!("{:?}", token_stream);
 
     println!("");
     println!("----------------------------------");
 
-    let mut reconstructed: Vec<String> = vec![];
+    let mut reconstructed: Vec<String> = vec!["".to_string()];
     for token in &token_stream {
-        if token.1 != TokenType::EOL.literal() {
-            reconstructed.push(token.1.to_string());
-        } else {
+        if token.token_type != TokenType::EOL && token.token_type != TokenType::EOF {
+            reconstructed.push(token.literal.to_string());
+        } else if token.literal == TokenType::EOL.literal() {
             reconstructed.push("\n".to_string())
         }
     }
 
     println!("{}", reconstructed.join(" "));
 
-    println!("")
+    println!("");
+
+    println!("{:?}", parser.parse_program())
 }
 
 fn read_file(path: &str) -> String {

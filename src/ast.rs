@@ -1,74 +1,35 @@
-use crate::tokens::TokenType;
+use crate::tokens::Token;
 
-pub trait Node {
-    fn token_literal(&self) -> String;
+#[derive(PartialEq, Debug)]
+pub enum Statement {
+    VAR(VarStatement)
 }
 
-pub trait Statement: Node {
-    fn statement_node(&self);
+#[derive(PartialEq, PartialOrd, Debug)]
+pub enum Expression {
+    EMPTY,
 }
 
-trait Expression: Node {
-    fn expression_node(&self);
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct Identifier {
+    pub token: Token,
+    pub value: String
 }
 
-struct Identifier {
-    token: TokenType,
-    value: String
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct VarStatement {
+    pub token: Token,
+    pub name: Identifier,
+    pub value: Expression,
 }
 
-impl Node for Identifier {
-    fn token_literal(&self) -> String {
-        self.token.literal()
-    }
-}
-
-impl Expression for Identifier {
-    fn expression_node(&self) {
-        todo!()
-    }
-}
-
-#[derive(Default)]
+#[derive(Debug)]
 pub struct Program {
-    pub statements: Vec<Box<dyn Statement>>,
+    pub statements: Vec<Statement>,
 }
 
-/*
-// Not needed atm
-// Uncomment when used
 impl Program {
-    fn new(statements: Vec<Box<dyn Statement>>) -> Self {
+    pub fn new(statements: Vec<Statement>) -> Self {
         Program { statements: statements }
-    }
-}
-*/
-
-impl Node for Program {
-    fn token_literal(&self) -> String {
-        if !self.statements.is_empty() {
-            self.statements[0].token_literal()
-        } else {
-            "".to_string()
-        }
-    }
-}
-
-
-struct VarStatement {
-    token: TokenType, // var
-    name: Identifier, // name
-    value: Box<dyn Expression>,
-}
-
-impl Node for VarStatement {
-    fn token_literal(&self) -> String {
-        self.token.literal()
-    }
-}
-
-impl Statement for VarStatement {
-    fn statement_node(&self) {
-        todo!()    
     }
 }

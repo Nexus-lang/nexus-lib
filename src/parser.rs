@@ -1,8 +1,11 @@
-use crate::{lexer::Lexer, tokens::Token, ast::{Program, Statement}};
+use crate::{
+    ast::{Program, Statement, VarStatement, Identifier, Expression},
+    lexer::Lexer,
+    tokens::{Token, TokenType},
+};
 
 pub struct Parser {
     token_stream: Vec<Token>,
-    lexer: Lexer,
 
     cur_token: Token,
     peek_token: Token,
@@ -10,10 +13,9 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new(mut lexer: Lexer) -> Self {
+    pub fn new(lexer: &mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
         return Parser {
-            lexer: lexer,
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[0].clone(),
             current_pos: 0,
@@ -21,7 +23,7 @@ impl Parser {
         };
     }
 
-    pub fn next_token(&mut self) {
+    fn next_token(&mut self) {
         self.current_pos += 1;
         self.cur_token = self.peek_token.clone();
         if self.current_pos + 1 < self.token_stream.len() {
@@ -29,7 +31,63 @@ impl Parser {
         }
     }
 
-    pub fn parse_program(&self) -> Program {
-        todo!()
+    pub fn parse_program(&mut self) -> Program {
+        let mut program = Program::new(vec![]);
+
+        while self.cur_token.token_type != TokenType::EOF {
+            let statement = self.parse_statement();
+            if statement != None {
+                program.statements.push(statement.unwrap());
+            }
+            self.next_token();
+        }
+        program
+    }
+
+    fn parse_statement(&mut self) -> Option<Statement> {
+        match self.cur_token.token_type {
+            TokenType::VAR => {
+                self.parse_var_statement()
+            }
+            _ => {
+                None
+            }
+        }
+    }
+
+    fn parse_var_statement(&mut self) -> Option<Statement> {
+        let mut statement = VarStatement { token: self.cur_token.clone(), name: Identifier { token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()), value: "".to_string() }, value: Expression::EMPTY };
+        if self.expect_peek(TokenType::IDENT) {
+            return None;
+        }
+
+        statement.name = Identifier { token: self.cur_token.clone(), value: self.cur_token.clone().literal };
+
+        if !self.expect_peek(TokenType::ASSIGN) {
+            return None;
+        }
+
+        while !self.cur_token_is(TokenType::EOL) {
+            self.next_token();
+        }
+
+        Some(Statement::VAR(statement))
+    }
+
+    fn cur_token_is(&self, token_type: TokenType) -> bool {
+        self.cur_token.token_type == token_type
+    }
+
+    fn peek_token_is(&self, token_type: TokenType) -> bool {
+        self.peek_token.token_type == token_type
+    }
+
+    fn expect_peek(&mut self, token_type: TokenType) -> bool {
+        if self.peek_token_is(token_type) {
+            self.next_token();
+            true
+        } else {
+            false
+        }
     }
 }
