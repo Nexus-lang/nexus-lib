@@ -18,7 +18,6 @@ pub struct Identifier {
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct VarStatement {
-    pub token: Token,
     pub name: Identifier,
     pub value: Expression,
 }

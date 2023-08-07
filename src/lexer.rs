@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::tokens::{Token, TokenType};
 
 macro_rules! push_token {
@@ -16,11 +18,15 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(input: String) -> Self {
         let input_chars: Vec<char> = input.chars().collect();
-        return Lexer {
-            input: input,
-            current_pos: 0,
-            ch: input_chars[0],
-        };
+        if input_chars.len() > 0 {
+            return Lexer {
+                input: input,
+                current_pos: 0,
+                ch: input_chars[0],
+            };
+        } else {
+            todo!("Handle empty files")
+        }
     }
 
     pub fn lex(&mut self) -> Vec<Token> {
@@ -144,7 +150,7 @@ impl Lexer {
                 }
                 c if c == '"' || c == '\"' => {
                     let mut identifier = String::new();
-                    if c == '"' { 
+                    if c == '"' {
                         push_token!(tokens, TokenType::QUOTMARK)
                     } else {
                         push_token!(tokens, TokenType::APOSTROPHE)
@@ -164,8 +170,8 @@ impl Lexer {
                     }
 
                     tokens.push(Token::new(TokenType::STRING, identifier));
-                    
-                    if c == '"' { 
+
+                    if c == '"' {
                         push_token!(tokens, TokenType::QUOTMARK)
                     } else {
                         push_token!(tokens, TokenType::APOSTROPHE)
@@ -176,8 +182,11 @@ impl Lexer {
                 c if c.is_ascii() && !c.is_alphanumeric() => {
                     match c.to_string() {
                         c if c == TokenType::ASSIGN.literal() => {
-                            let equal_chars: Vec<char> = TokenType::EQUAL.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == equal_chars[1] {
+                            let equal_chars: Vec<char> =
+                                TokenType::EQUAL.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == equal_chars[1]
+                            {
                                 push_token!(tokens, TokenType::EQUAL);
                                 self.current_pos += 1;
                             } else {
@@ -185,8 +194,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::MINUS.literal() => {
-                            let arrow_chars: Vec<char> = TokenType::ARROW.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == arrow_chars[1] {
+                            let arrow_chars: Vec<char> =
+                                TokenType::ARROW.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == arrow_chars[1]
+                            {
                                 push_token!(tokens, TokenType::ARROW);
                                 self.current_pos += 1;
                             } else {
@@ -194,8 +206,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::GREATERTHAN.literal() => {
-                            let greaterthan_chars: Vec<char> = TokenType::GREATEROREQUALTHAN.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == greaterthan_chars[1] {
+                            let greaterthan_chars: Vec<char> =
+                                TokenType::GREATEROREQUALTHAN.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == greaterthan_chars[1]
+                            {
                                 push_token!(tokens, TokenType::GREATEROREQUALTHAN);
                                 self.current_pos += 1;
                             } else {
@@ -203,8 +218,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::LESSTHAN.literal() => {
-                            let lessthan_chars: Vec<char> = TokenType::LESSOREQUALTHAN.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == lessthan_chars[1] {
+                            let lessthan_chars: Vec<char> =
+                                TokenType::LESSOREQUALTHAN.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == lessthan_chars[1]
+                            {
                                 push_token!(tokens, TokenType::LESSOREQUALTHAN);
                                 self.current_pos += 1;
                             } else {
@@ -212,8 +230,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::EXCLAMMARK.literal() => {
-                            let notequal_chars: Vec<char> = TokenType::NOTEQUAL.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == notequal_chars[1] {
+                            let notequal_chars: Vec<char> =
+                                TokenType::NOTEQUAL.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == notequal_chars[1]
+                            {
                                 push_token!(tokens, TokenType::NOTEQUAL);
                                 self.current_pos += 1;
                             } else {
@@ -221,8 +242,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::DIVIDE.literal() => {
-                            let comment_chars: Vec<char> = TokenType::COMMENT.literal().chars().collect();
-                            if self.current_pos + 1 < input_chars.len() && input_chars[self.current_pos + 1] == comment_chars[1] {
+                            let comment_chars: Vec<char> =
+                                TokenType::COMMENT.literal().chars().collect();
+                            if self.current_pos + 1 < input_chars.len()
+                                && input_chars[self.current_pos + 1] == comment_chars[1]
+                            {
                                 push_token!(tokens, TokenType::COMMENT);
                                 self.current_pos += 1;
                             } else {
