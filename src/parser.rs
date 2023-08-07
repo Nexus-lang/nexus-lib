@@ -47,11 +47,9 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => {
-                println!("var statement: {:?}, peek: {:?}", self.cur_token.token_type, self.peek_token.literal);
                 self.parse_var_statement()
             }
             _ => {
-                println!("not a var statement: {:?}", self.cur_token.token_type);
                 None
             }
         }

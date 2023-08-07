@@ -21,9 +21,11 @@ fn main() {
     let token_stream = lexer.lex();
 
     let mut parser = Parser::new(&mut lexer);
-    
-    println!("{:?}", token_stream);
 
+    
+    println!("{:?} \n", token_stream);
+
+    /*
     println!("");
     println!("----------------------------------");
 
@@ -39,6 +41,9 @@ fn main() {
     println!("{}", reconstructed.join(" "));
 
     println!("");
+     */
+
+    println!("AST: \n");
 
     println!("{:?}", parser.parse_program())
 }
