@@ -17,7 +17,7 @@ impl Parser {
         let token_stream: Vec<Token> = lexer.lex();
         return Parser {
             cur_token: token_stream[0].clone(),
-            peek_token: token_stream[0].clone(),
+            peek_token: token_stream[1].clone(),
             current_pos: 0,
             token_stream: token_stream,
         };
@@ -47,17 +47,19 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => {
+                println!("var statement: {:?}, peek: {:?}", self.cur_token.token_type, self.peek_token.literal);
                 self.parse_var_statement()
             }
             _ => {
+                println!("not a var statement: {:?}", self.cur_token.token_type);
                 None
             }
         }
     }
 
     fn parse_var_statement(&mut self) -> Option<Statement> {
-        let mut statement = VarStatement { token: self.cur_token.clone(), name: Identifier { token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()), value: "".to_string() }, value: Expression::EMPTY };
-        if self.expect_peek(TokenType::IDENT) {
+        let mut statement = VarStatement { name: Identifier { token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()), value: "".to_string() }, value: Expression::EMPTY };
+        if !self.expect_peek(TokenType::IDENT) {
             return None;
         }
 
@@ -66,10 +68,7 @@ impl Parser {
         if !self.expect_peek(TokenType::ASSIGN) {
             return None;
         }
-
-        while !self.cur_token_is(TokenType::EOL) {
-            self.next_token();
-        }
+        self.next_token();
 
         Some(Statement::VAR(statement))
     }
