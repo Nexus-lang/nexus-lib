@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Program, Statement, VarStatement, Identifier, Expression, self},
+    ast::{Program, Statement, VarStatement, Identifier, Expression},
     lexer::Lexer,
     tokens::{Token, TokenType},
 };

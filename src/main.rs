@@ -38,7 +38,9 @@ fn main() {
 
     println!("{}", reconstructed.join(" "));
 
-    println!("")
+    println!("");
+
+    println!("{:?}", parser.parse_program())
 }
 
 fn read_file(path: &str) -> String {
