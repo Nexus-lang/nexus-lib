@@ -11,7 +11,6 @@ use std::io::Read;
 
 use crate::lexer::Lexer;
 use crate::parser::Parser;
-use crate::tokens::TokenType;
 
 fn main() {
     let example_code = read_file("examples/test.nx");

@@ -1,5 +1,3 @@
-use core::panic;
-
 use crate::tokens::{Token, TokenType};
 
 macro_rules! push_token {
