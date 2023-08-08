@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Program, Statement, VarStatement, Identifier, Expression},
+    ast::{Identifier, Program, Statement, VarStatement},
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -10,6 +10,7 @@ pub struct Parser {
     cur_token: Token,
     peek_token: Token,
     current_pos: usize,
+    errors: Vec<String>,
 }
 
 impl Parser {
@@ -19,6 +20,7 @@ impl Parser {
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[1].clone(),
             current_pos: 0,
+            errors: vec![],
             token_stream: token_stream,
         };
     }
@@ -41,31 +43,39 @@ impl Parser {
             }
             self.next_token();
         }
+        println!("{:?}", self.errors());
+
         program
     }
 
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
-            TokenType::VAR => {
-                self.parse_var_statement()
-            }
-            _ => {
-                None
-            }
+            TokenType::VAR => self.parse_var_statement(),
+            _ => None,
         }
     }
 
     fn parse_var_statement(&mut self) -> Option<Statement> {
-        let mut statement = VarStatement { name: Identifier { token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()), value: "".to_string() }, value: Expression::EMPTY };
+        let mut statement = VarStatement {
+            name: Identifier {
+                token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()),
+                value: "".to_string(),
+            },
+            value: None,
+        };
         if !self.expect_peek(TokenType::IDENT) {
             return None;
         }
 
-        statement.name = Identifier { token: self.cur_token.clone(), value: self.cur_token.clone().literal };
+        statement.name = Identifier {
+            token: self.cur_token.clone(),
+            value: self.cur_token.clone().literal,
+        };
 
         if !self.expect_peek(TokenType::ASSIGN) {
             return None;
         }
+
         self.next_token();
 
         Some(Statement::VAR(statement))
@@ -84,7 +94,20 @@ impl Parser {
             self.next_token();
             true
         } else {
+            self.peek_error(token_type);
             false
         }
+    }
+
+    fn peek_error(&mut self, token_type: TokenType) {
+        let msg = format!(
+            "expected next tokento be {:?}, found {:?} instead",
+            token_type, self.peek_token.token_type
+        );
+        self.errors.push(msg);
+    }
+
+    fn errors(&self) -> Vec<String> {
+        self.errors.clone()
     }
 }

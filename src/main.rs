@@ -21,7 +21,6 @@ fn main() {
 
     let mut parser = Parser::new(&mut lexer);
 
-    
     println!("{:?} \n", token_stream);
 
     /*
@@ -44,7 +43,7 @@ fn main() {
 
     println!("AST: \n");
 
-    println!("{:?}", parser.parse_program())
+    println!("{:?}", parser.parse_program());
 }
 
 fn read_file(path: &str) -> String {

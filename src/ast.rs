@@ -7,7 +7,6 @@ pub enum Statement {
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub enum Expression {
-    EMPTY,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -19,7 +18,7 @@ pub struct Identifier {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct VarStatement {
     pub name: Identifier,
-    pub value: Expression,
+    pub value: Option<Expression>,
 }
 
 #[derive(Debug)]
