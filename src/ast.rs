@@ -9,13 +9,13 @@ pub enum Statement {
 pub enum Expression {
 }
 
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct Identifier {
     pub token: Token,
     pub value: String
 }
 
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct VarStatement {
     pub name: Identifier,
     pub value: Option<Expression>,

@@ -9,8 +9,10 @@ macro_rules! push_token {
 #[derive(Clone)]
 pub struct Lexer {
     pub input: FileHandler,
-
     pub current_pos: usize,
+    // returns the current pos
+    // but resets the current pos
+    // when encountering a new line
     pub current_pos_line: usize,
     ch: char,
 }
@@ -35,7 +37,7 @@ impl Lexer {
         let mut tokens: Vec<Token> = Vec::new();
 
         self.current_pos = 0;
-        self.current_pos_line = 0;
+        self.current_pos_line = 1;
         while self.current_pos < input_chars.len() {
             self.ch = input_chars[self.current_pos];
 

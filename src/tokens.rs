@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     // Keywords
     VAR,
@@ -138,7 +138,7 @@ impl TokenType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Token {
     pub token_type: TokenType,
     pub literal: String,

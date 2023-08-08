@@ -1,3 +1,5 @@
+use std::process;
+
 use crate::{
     ast::{Identifier, Program, Statement, VarStatement},
     lexer::Lexer,
@@ -59,6 +61,11 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
+            TokenType::ILLEGAL => {
+                let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,);
+                self.throw_error(msg);
+                None
+            }
             _ => None,
         }
     }
@@ -109,7 +116,7 @@ impl Parser {
 
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
-            "expected next token to be {:?}, found {:?} instead error here: {}:{}:{:?}",
+            "expected next token to be {:?}, found {:?} instead error here: {}:{}:{}",
             token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,
         );
         self.errors.push(msg);
@@ -118,4 +125,10 @@ impl Parser {
     fn errors(&self) -> Vec<String> {
         self.errors.clone()
     }
+
+    fn throw_error(&mut self, message: String) {
+        self.errors.push(message);
+        println!("{:?}", self.errors());
+        process::exit(1);
+    } 
 }
