@@ -11,6 +11,7 @@ pub struct Parser {
     peek_token: Token,
     current_pos: usize,
     errors: Vec<String>,
+    line_count: i32,
 }
 
 impl Parser {
@@ -22,12 +23,16 @@ impl Parser {
             current_pos: 0,
             errors: vec![],
             token_stream: token_stream,
+            line_count: 1,
         };
     }
 
     fn next_token(&mut self) {
         self.current_pos += 1;
         self.cur_token = self.peek_token.clone();
+        if self.cur_token_is(TokenType::EOL) {
+            self.line_count += 1;
+        }
         if self.current_pos + 1 < self.token_stream.len() {
             self.peek_token = self.token_stream[self.current_pos + 1].clone();
         }
@@ -101,8 +106,8 @@ impl Parser {
 
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
-            "expected next tokento be {:?}, found {:?} instead",
-            token_type, self.peek_token.token_type
+            "expected next tokento be {:?}, found {:?} instead error in line: {}",
+            token_type, self.peek_token.token_type, self.line_count,
         );
         self.errors.push(msg);
     }
