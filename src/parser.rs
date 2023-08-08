@@ -6,6 +6,7 @@ use crate::{
 
 pub struct Parser {
     token_stream: Vec<Token>,
+    lexer: Lexer,
 
     cur_token: Token,
     peek_token: Token,
@@ -17,12 +18,14 @@ pub struct Parser {
 impl Parser {
     pub fn new(lexer: &mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
+        let lexer = lexer.clone();
         return Parser {
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[1].clone(),
             current_pos: 0,
             errors: vec![],
             token_stream: token_stream,
+            lexer,
             line_count: 1,
         };
     }
@@ -63,7 +66,7 @@ impl Parser {
     fn parse_var_statement(&mut self) -> Option<Statement> {
         let mut statement = VarStatement {
             name: Identifier {
-                token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal()),
+                token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal(), 0),
                 value: "".to_string(),
             },
             value: None,
@@ -106,8 +109,8 @@ impl Parser {
 
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
-            "expected next tokento be {:?}, found {:?} instead error in line: {}",
-            token_type, self.peek_token.token_type, self.line_count,
+            "expected next token to be {:?}, found {:?} instead error here: {}:{}:{:?}",
+            token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,
         );
         self.errors.push(msg);
     }

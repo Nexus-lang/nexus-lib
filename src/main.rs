@@ -1,19 +1,15 @@
 #[macro_use]
 mod tokens;
 mod ast;
-mod errors;
 mod lexer;
 mod parser;
-
-use errors::throw_error;
-use std::fs::File;
-use std::io::Read;
+mod util;
 
 use crate::lexer::Lexer;
 use crate::parser::Parser;
 
 fn main() {
-    let example_code = read_file("examples/test.nx");
+    let example_code = util::FileHandler::read_file("examples/test.nx");
 
     let mut lexer = Lexer::new(example_code);
 
@@ -46,22 +42,3 @@ fn main() {
     println!("{:?}", parser.parse_program());
 }
 
-fn read_file(path: &str) -> String {
-    let mut file = File::open(path).expect("Failed to find file");
-    let mut buffer = String::new();
-    let file_ending = match path.split('.').last() {
-        Some(ending) => ending,
-        None => "unknown",
-    };
-
-    let error_message = format!("Wrong file format. Current: {}, expected: nex", file_ending);
-
-    if file_ending != "nex" && file_ending != "nx" {
-        throw_error(&error_message);
-    }
-
-    file.read_to_string(&mut buffer)
-        .expect("Failed to read file");
-
-    buffer
-}

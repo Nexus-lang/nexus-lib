@@ -141,12 +141,13 @@ impl TokenType {
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Token {
     pub token_type: TokenType,
-    pub literal: String
+    pub literal: String,
+    pub cur_pos: i32,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, literal: String) -> Self {
-        Token { token_type: token_type, literal }
+    pub fn new(token_type: TokenType, literal: String, cur_pos: usize) -> Self {
+        Token { token_type: token_type, literal: literal, cur_pos: cur_pos as i32 }
     }
 }
 
