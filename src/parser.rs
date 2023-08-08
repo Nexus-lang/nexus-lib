@@ -61,6 +61,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
+            // might have to be improved in the future
             TokenType::ILLEGAL => {
                 let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,);
                 self.throw_error(msg);

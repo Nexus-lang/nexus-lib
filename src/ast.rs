@@ -21,6 +21,10 @@ pub struct VarStatement {
     pub value: Option<Expression>,
 }
 
+pub struct ReturnStatement {
+    pub return_value: Option<Expression>,
+}
+
 #[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,

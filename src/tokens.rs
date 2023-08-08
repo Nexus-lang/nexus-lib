@@ -11,10 +11,6 @@ pub enum TokenType {
     WHEN,
     USE,
 
-
-    // Other keywords
-    
-
     // Special character
     LCURLY,       // {
     RCURLY,       // }
