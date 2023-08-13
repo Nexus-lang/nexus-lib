@@ -1,7 +1,7 @@
 use std::process;
 
 use crate::{
-    ast::{Identifier, Program, Statement, VarStatement},
+    ast::{Identifier, Program, Statement, VarStatement, ReturnStatement},
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -61,6 +61,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
+            TokenType::RETURN => self.parse_return_statement(),
             // might have to be improved in the future
             TokenType::ILLEGAL => {
                 let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,);
@@ -95,6 +96,16 @@ impl Parser {
         self.next_token();
 
         Some(Statement::VAR(statement))
+    }
+
+    fn parse_return_statement(&mut self) -> Option<Statement> {
+        let statement = ReturnStatement { return_value: None };
+
+        self.next_token();
+
+        // TODO: Expression parsing
+
+        Some(Statement::RETURN(statement))
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {

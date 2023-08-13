@@ -2,7 +2,8 @@ use crate::tokens::Token;
 
 #[derive(PartialEq, Debug)]
 pub enum Statement {
-    VAR(VarStatement)
+    VAR(VarStatement),
+    RETURN(ReturnStatement),
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -21,10 +22,12 @@ pub struct VarStatement {
     pub value: Option<Expression>,
 }
 
+#[derive(PartialEq, Debug)]
 pub struct ReturnStatement {
     pub return_value: Option<Expression>,
 }
 
+// The node
 #[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,

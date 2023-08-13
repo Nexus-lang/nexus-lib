@@ -10,6 +10,7 @@ pub enum TokenType {
     ELSE,
     WHEN,
     USE,
+    RETURN,
 
     // Special character
     LCURLY,       // {
@@ -77,6 +78,7 @@ impl TokenType {
             TokenType::ELSE => {String::from("else")}
             TokenType::WHEN => {String::from("when")}
             TokenType::USE => {String::from("use")}
+            TokenType::RETURN => {String::from("return")}
 
             TokenType::IDENT => {String::from("IDENT")}
             TokenType::NUMBER => {String::from("NUMBER")}

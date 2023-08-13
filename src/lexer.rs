@@ -121,6 +121,9 @@ impl Lexer {
                         i if i == TokenType::OTHER.literal() => {
                             push_token!(tokens, TokenType::OTHER, self.current_pos_line);
                         }
+                        i if i == TokenType::RETURN.literal() => {
+                            push_token!(tokens, TokenType::RETURN, self.current_pos_line);
+                        }
                         i if i == TokenType::IN.literal() => {
                             push_token!(tokens, TokenType::IN, self.current_pos_line);
                         }
