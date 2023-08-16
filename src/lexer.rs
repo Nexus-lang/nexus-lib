@@ -32,7 +32,7 @@ impl Lexer {
         }
     }
 
-    pub fn lex(&mut self) -> Vec<Token> {
+    pub fn lex<'a>(&mut self) -> Vec<Token> {
         let input_chars: Vec<char> = self.input.file_content.chars().collect();
         let mut tokens: Vec<Token> = Vec::new();
 
@@ -90,72 +90,72 @@ impl Lexer {
 
                     self.current_pos = next_pos;
 
-                    match identifier.clone() {
-                        i if i == TokenType::VAR.literal() => {
+                    match &identifier {
+                        i if *i == TokenType::VAR.literal() => {
                             push_token!(tokens, TokenType::VAR, self.current_pos_line);
                         }
-                        i if i == TokenType::CONST.literal() => {
+                        i if *i == TokenType::CONST.literal() => {
                             push_token!(tokens, TokenType::CONST, self.current_pos_line)
                         }
-                        i if i == TokenType::IF.literal() => {
+                        i if *i == TokenType::IF.literal() => {
                             push_token!(tokens, TokenType::IF, self.current_pos_line);
                         }
-                        i if i == TokenType::ELSE.literal() => {
+                        i if *i == TokenType::ELSE.literal() => {
                             push_token!(tokens, TokenType::ELSE, self.current_pos_line);
                         }
-                        i if i == TokenType::FOR.literal() => {
+                        i if *i == TokenType::FOR.literal() => {
                             push_token!(tokens, TokenType::FOR, self.current_pos_line);
                         }
-                        i if i == TokenType::WHILE.literal() => {
+                        i if *i == TokenType::WHILE.literal() => {
                             push_token!(tokens, TokenType::WHILE, self.current_pos_line);
                         }
-                        i if i == TokenType::FUNC.literal() => {
+                        i if *i == TokenType::FUNC.literal() => {
                             push_token!(tokens, TokenType::FUNC, self.current_pos_line);
                         }
-                        i if i == TokenType::WHEN.literal() => {
+                        i if *i == TokenType::WHEN.literal() => {
                             push_token!(tokens, TokenType::WHEN, self.current_pos_line);
                         }
-                        i if i == TokenType::USE.literal() => {
+                        i if *i == TokenType::USE.literal() => {
                             push_token!(tokens, TokenType::USE, self.current_pos_line);
                         }
-                        i if i == TokenType::OTHER.literal() => {
+                        i if *i == TokenType::OTHER.literal() => {
                             push_token!(tokens, TokenType::OTHER, self.current_pos_line);
                         }
-                        i if i == TokenType::RETURN.literal() => {
+                        i if *i == TokenType::RETURN.literal() => {
                             push_token!(tokens, TokenType::RETURN, self.current_pos_line);
                         }
-                        i if i == TokenType::IN.literal() => {
+                        i if *i == TokenType::IN.literal() => {
                             push_token!(tokens, TokenType::IN, self.current_pos_line);
                         }
 
                         // Literals
-                        i if i == TokenType::TRUE.literal() => {
+                        i if *i == TokenType::TRUE.literal() => {
                             push_token!(tokens, TokenType::TRUE, self.current_pos_line);
                         }
-                        i if i == TokenType::FALSE.literal() => {
+                        i if *i == TokenType::FALSE.literal() => {
                             push_token!(tokens, TokenType::FALSE, self.current_pos_line);
                         }
 
                         // Comparison
-                        i if i == TokenType::AND.literal() => {
+                        i if *i == TokenType::AND.literal() => {
                             push_token!(tokens, TokenType::AND, self.current_pos_line);
                         }
-                        i if i == TokenType::OR.literal() => {
+                        i if *i == TokenType::OR.literal() => {
                             push_token!(tokens, TokenType::OR, self.current_pos_line);
                         }
 
                         // Data Structures
-                        i if i == TokenType::STRUCT.literal() => {
+                        i if *i == TokenType::STRUCT.literal() => {
                             push_token!(tokens, TokenType::STRUCT, self.current_pos_line);
                         }
-                        i if i == TokenType::ENUM.literal() => {
+                        i if *i == TokenType::ENUM.literal() => {
                             push_token!(tokens, TokenType::ENUM, self.current_pos_line);
                         }
-                        i if i == TokenType::CONSTASSIGN.literal() => {
-                            tokens.push(Token::new(TokenType::CONSTASSIGN, identifier, self.current_pos_line));
+                        i if *i == TokenType::CONSTASSIGN.literal() => {
+                            tokens.push(Token::new(TokenType::CONSTASSIGN, identifier.to_owned(), self.current_pos_line));
                         }
                         _ => {
-                            tokens.push(Token::new(TokenType::IDENT, identifier, self.current_pos_line));
+                            tokens.push(Token::new(TokenType::IDENT, identifier.to_owned(), self.current_pos_line));
                         }
                     }
                 }

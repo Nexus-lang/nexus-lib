@@ -75,7 +75,6 @@ impl Parser {
     fn parse_var_statement(&mut self) -> Option<Statement> {
         let mut statement = VarStatement {
             name: Identifier {
-                token: Token::new(TokenType::ILLEGAL, TokenType::ILLEGAL.literal(), 0),
                 value: "".to_string(),
             },
             value: None,
@@ -85,7 +84,6 @@ impl Parser {
         }
 
         statement.name = Identifier {
-            token: self.cur_token.clone(),
             value: self.cur_token.clone().literal,
         };
 

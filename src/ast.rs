@@ -12,7 +12,6 @@ pub enum Expression {
 
 #[derive(PartialEq, Debug)]
 pub struct Identifier {
-    pub token: Token,
     pub value: String
 }
 
@@ -25,6 +24,11 @@ pub struct VarStatement {
 #[derive(PartialEq, Debug)]
 pub struct ReturnStatement {
     pub return_value: Option<Expression>,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct ExpressionStatement {
+    pub expression: Expression,
 }
 
 // The node
