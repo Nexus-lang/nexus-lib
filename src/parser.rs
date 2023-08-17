@@ -1,7 +1,7 @@
-use std::process;
+use std::{process, collections::HashMap};
 
 use crate::{
-    ast::{Identifier, Program, Statement, VarStatement, ReturnStatement},
+    ast::{Identifier, Program, Statement, VarStatement, ReturnStatement, ExpressionStatement, Expression},
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -68,7 +68,9 @@ impl Parser {
                 self.throw_error(msg);
                 None
             }
-            _ => None,
+            _ => {
+                self.parse_expression_statement()
+            },
         }
     }
 
@@ -104,6 +106,16 @@ impl Parser {
         // TODO: Expression parsing
 
         Some(Statement::RETURN(statement))
+    }
+
+    fn parse_expression_statement(&mut self) -> ExpressionStatement {
+        let statement = ExpressionStatement{expression: self.parse_expression(LOWEST)};
+        self.next_token();
+        statement
+    }
+
+    fn parse_expression(&self) -> Expression {
+        
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {

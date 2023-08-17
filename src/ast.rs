@@ -28,7 +28,7 @@ pub struct ReturnStatement {
 
 #[derive(PartialEq, Debug)]
 pub struct ExpressionStatement {
-    pub expression: Expression,
+    pub expression: Option<Expression>,
 }
 
 // The node
