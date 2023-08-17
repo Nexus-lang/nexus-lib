@@ -1,4 +1,4 @@
-use std::{process, collections::HashMap};
+use std::process;
 
 use crate::{
     ast::{Identifier, Program, Statement, VarStatement, ReturnStatement, ExpressionStatement, Expression},
@@ -14,20 +14,31 @@ pub struct Parser {
     peek_token: Token,
     current_pos: usize,
     errors: Vec<String>,
+    // required for better error messages
     line_count: i32,
+}
+
+enum Presedences {
+    LOWEST,
+    EQUALS, // ==
+    LESSGREATER, // > or <
+    LESSGREATEREQUAL, // >= or <=
+    SUM, // +
+    PRODUCT, // *
+    PREFIX, // -x, +x or !x
+    CALL, // amogus(x)
 }
 
 impl Parser {
     pub fn new(lexer: &mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
-        let lexer = lexer.clone();
         return Parser {
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[1].clone(),
             current_pos: 0,
             errors: vec![],
             token_stream: token_stream,
-            lexer,
+            lexer: lexer.clone(),
             line_count: 1,
         };
     }
@@ -109,12 +120,12 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let statement = ExpressionStatement{expression: self.parse_expression(LOWEST)};
+        let statement = ExpressionStatement{expression: Some(self.parse_expression(Presedences::LOWEST))};
         self.next_token();
         Statement::EXPRESSION(statement)
     }
 
-    fn parse_expression(&self) -> Expression {
+    fn parse_expression(&self, presedence: Presedences) -> Expression {
         
     }
 
