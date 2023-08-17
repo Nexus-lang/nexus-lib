@@ -4,6 +4,7 @@ use crate::tokens::Token;
 pub enum Statement {
     VAR(VarStatement),
     RETURN(ReturnStatement),
+    EXPRESSION(ExpressionStatement),
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]

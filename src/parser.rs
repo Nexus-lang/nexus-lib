@@ -69,7 +69,7 @@ impl Parser {
                 None
             }
             _ => {
-                self.parse_expression_statement()
+                Some(self.parse_expression_statement())
             },
         }
     }
@@ -108,10 +108,10 @@ impl Parser {
         Some(Statement::RETURN(statement))
     }
 
-    fn parse_expression_statement(&mut self) -> ExpressionStatement {
+    fn parse_expression_statement(&mut self) -> Statement {
         let statement = ExpressionStatement{expression: self.parse_expression(LOWEST)};
         self.next_token();
-        statement
+        Statement::EXPRESSION(statement)
     }
 
     fn parse_expression(&self) -> Expression {
