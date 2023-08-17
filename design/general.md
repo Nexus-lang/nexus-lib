@@ -1,12 +1,16 @@
 # General-design-chart
 
-- Package managing
+- Packages
+
+  - External packages
+
+  - Package system
 
 - Standard library
 
 - Special features (dynamic field system)
 
-- File structure for nexus projects ([Project structure](design\project-structure.md))
+- File structure for nexus projects ([Project structure](project-structure.md))
 
 - Api for interacting with rust
 

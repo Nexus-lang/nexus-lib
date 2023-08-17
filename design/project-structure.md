@@ -26,7 +26,7 @@ my-rust-project/
 ```text
 my-nexus-project/
 ├── script.nx
-└── proj.toml
+└── my-nexus-project.proj
 ```
 
 ### Configuration
