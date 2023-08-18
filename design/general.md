@@ -6,7 +6,7 @@
 
   - Package system
 
-- Standard library
+- Core library
 
 - Special features (dynamic field system)
 

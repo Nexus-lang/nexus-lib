@@ -1,5 +1,3 @@
-use crate::tokens::Token;
-
 #[derive(PartialEq, Debug)]
 pub enum Statement {
     VAR(VarStatement),
@@ -9,6 +7,10 @@ pub enum Statement {
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub enum Expression {
+    FUNC,
+    IF,
+    FOR,
+    WHILE,
 }
 
 #[derive(PartialEq, Debug)]
