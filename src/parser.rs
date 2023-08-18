@@ -122,11 +122,12 @@ impl Parser {
     fn parse_expression_statement(&mut self) -> Statement {
         let statement = ExpressionStatement{expression: Some(self.parse_expression(Precedences::LOWEST))};
         self.next_token();
-        Statement::EXPRESSION(statement)
+        Statement::EXPRESSION(statement) 
     }
 
-    fn parse_expression(&self, precedence: Precedences) -> Expression {
-        let prefix = self.
+    fn parse_expression(&mut self, precedence: Precedences) -> Expression {
+        let prefix = self.prefix_parse();
+        todo!()
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {
@@ -149,7 +150,7 @@ impl Parser {
 
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
-            "expected next token to be {:?}, found {:?} instead error here: {}:{}:{}",
+            "expected next token to be {:?}, found {:?} instead. error at: {}:{}:{}",
             token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,
         );
         self.errors.push(msg);
@@ -167,16 +168,18 @@ impl Parser {
 
     fn prefix_parse(&mut self) -> Option<Expression> {
         match self.cur_token.token_type {
+            /*
             TokenType::IDENT => self.parse_identifier(),
-            TokenType::NUMBER => self.parse_integer_literal(),
+            TokenType::NUMBER => self.parse_number_literal(),
             TokenType::STRING => self.parse_string_literal(),
             TokenType::FUNC => self.parse_function_literal(),
-            TokenKind::Lparen => self.parse_grouped_expression(),
-            TokenKind::Lbracket => self.parse_array_literal(),
-            TokenKind::Lbrace => self.parse_hash_literal(),
-            TokenKind::If => self.parse_if_expression(),
-            TokenKind::True | TokenKind::False => self.parse_boolean(),
-            TokenKind::Bang | TokenKind::Minus => self.parse_prefix_expression(),
+            TokenType::LPARENT => self.parse_grouped_expression(),
+            TokenType::LSQUAREBRAC => self.parse_list_literal(),
+            TokenType::LCURLY => self.parse_hash_literal(),
+            TokenType::IF => self.parse_if_expression(),
+            TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
+            TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
+            */
             _ => None,
         }
     }

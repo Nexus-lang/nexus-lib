@@ -76,10 +76,6 @@ impl Lexer {
 
                     let mut next_pos = self.current_pos + 1;
 
-                    if input_chars[self.current_pos] == 'c' && input_chars[next_pos] == ':' {
-                        identifier.push(input_chars[next_pos])
-                    }
-
                     while next_pos < input_chars.len()
                         && (input_chars[next_pos].is_alphanumeric() || input_chars[next_pos] == '_')
                     {
@@ -150,9 +146,6 @@ impl Lexer {
                         }
                         i if *i == TokenType::ENUM.literal() => {
                             push_token!(tokens, TokenType::ENUM, self.current_pos_line);
-                        }
-                        i if *i == TokenType::CONSTASSIGN.literal() => {
-                            tokens.push(Token::new(TokenType::CONSTASSIGN, identifier.to_owned(), self.current_pos_line));
                         }
                         _ => {
                             tokens.push(Token::new(TokenType::IDENT, identifier.to_owned(), self.current_pos_line));
@@ -245,7 +238,7 @@ impl Lexer {
                                 push_token!(tokens, TokenType::LESSTHAN, self.current_pos_line);
                             }
                         }
-                        c if c == TokenType::EXCLAMMARK.literal() => {
+                        c if c == TokenType::BANG.literal() => {
                             let notequal_chars: Vec<char> =
                                 TokenType::NOTEQUAL.literal().chars().collect();
                             if self.current_pos + 1 < input_chars.len()
@@ -255,7 +248,7 @@ impl Lexer {
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
                             } else {
-                                push_token!(tokens, TokenType::EXCLAMMARK, self.current_pos_line);
+                                push_token!(tokens, TokenType::BANG, self.current_pos_line);
                             }
                         }
                         c if c == TokenType::DIVIDE.literal() => {
@@ -272,8 +265,12 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::COLON.literal() => {
-                            if input_chars[self.current_pos - 1] != 'c' {
-                                push_token!(tokens, TokenType::COLON, self.current_pos_line);
+                            if input_chars[self.current_pos + 1] == ':' {
+                                push_token!(tokens, TokenType::CONSTASSIGN, self.current_pos_line);
+                            } else if input_chars[self.current_pos + 1] == '=' {
+                                push_token!(tokens, TokenType::VARASSIGN, self.current_pos_line);
+                            } else {
+                                push_token!(tokens, TokenType::COLON, self.current_pos_line)
                             }
                         }
                         c if c == TokenType::COMMA.literal() => {
