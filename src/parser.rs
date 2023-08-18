@@ -1,7 +1,10 @@
 use std::process;
 
 use crate::{
-    ast::{Identifier, Program, Statement, VarStatement, ReturnStatement, ExpressionStatement, Expression},
+    ast::{
+        Expression, ExpressionStatement, Identifier, Program, ReturnStatement, Statement,
+        VarStatement,
+    },
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -21,13 +24,13 @@ pub struct Parser {
 #[allow(dead_code)] // remove this once all types are used
 enum Precedences {
     LOWEST,
-    EQUALS, // ==
-    LESSGREATER, // > or <
+    EQUALS,           // ==
+    LESSGREATER,      // > or <
     LESSGREATEREQUAL, // >= or <=
-    SUM, // +
-    PRODUCT, // *
-    PREFIX, // -x, +x or !x
-    CALL, // amogus(x)
+    SUM,              // +
+    PRODUCT,          // *
+    PREFIX,           // -x, +x or !x
+    CALL,             // amogus(x)
 }
 
 impl Parser {
@@ -63,7 +66,6 @@ impl Parser {
             if statement != None {
                 program.statements.push(statement.unwrap());
             }
-            self.next_token();
         }
         println!("{:?}", self.errors());
 
@@ -76,8 +78,7 @@ impl Parser {
             TokenType::RETURN => self.parse_return_statement(),
             // might have to be improved in the future
             TokenType::ILLEGAL => {
-                let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.peek_token.cur_pos + 1,);
-                self.throw_error(msg);
+                self.next_token();
                 None
             }
             TokenType::EOL => {
@@ -85,9 +86,9 @@ impl Parser {
                 None
             }
             _ => {
-                println!("different token: {:?}", self.cur_token);
+                println!("Expression, type: {:?}, literal: {:?}", self.cur_token.token_type, self.cur_token.literal);
                 Some(self.parse_expression_statement())
-            },
+            }
         }
     }
 
@@ -131,13 +132,15 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let statement = ExpressionStatement{expression: self.parse_expression(Precedences::LOWEST)};
+        let statement = ExpressionStatement {
+            expression: self.parse_expression(Precedences::LOWEST),
+        };
         // unreachable because todo, remove comment, when self.next_token() is reachable
         self.next_token();
         Statement::EXPRESSION(statement)
     }
 
-    fn parse_expression(&mut self, precedence: Precedences) -> Option<Expression> {
+    fn parse_expression(&mut self, _precedence: Precedences) -> Option<Expression> {
         let prefix = self.prefix_parse();
         if prefix == None {
             return None;
@@ -147,7 +150,9 @@ impl Parser {
     }
 
     fn parse_identifier(&self) -> Expression {
-        Expression::IDENTIFIER(Identifier { value: self.cur_token.literal.clone() })
+        Expression::IDENTIFIER(Identifier {
+            value: self.cur_token.literal.clone(),
+        })
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {
@@ -171,19 +176,25 @@ impl Parser {
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
             "expected next token to be {:?}, found {:?} instead. error at: {}:{}:{}",
-            token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.peek_token.cur_pos + 1,
+            token_type,
+            self.peek_token.token_type,
+            self.lexer.input.file_path,
+            self.line_count,
+            self.peek_token.cur_pos + 1,
         );
-        self.errors.push(msg);
+        self.throw_error(msg, false);
     }
 
     fn errors(&self) -> Vec<String> {
         self.errors.clone()
     }
 
-    fn throw_error(&mut self, message: String) {
+    fn throw_error(&mut self, message: String, exit: bool) {
         self.errors.push(message);
-        println!("{:?}", self.errors());
-        process::exit(1);
+        if exit {
+            println!("{:?}", self.errors());
+            process::exit(1);
+        }
     }
 
     fn prefix_parse(&mut self) -> Option<Expression> {

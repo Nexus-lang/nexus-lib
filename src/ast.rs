@@ -8,10 +8,6 @@ pub enum Statement {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub enum Expression {
     IDENTIFIER(Identifier),
-    FUNC,
-    IF,
-    FOR,
-    WHILE,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
