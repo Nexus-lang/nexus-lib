@@ -80,7 +80,12 @@ impl Parser {
                 self.throw_error(msg);
                 None
             }
+            TokenType::EOL => {
+                self.next_token();
+                None
+            }
             _ => {
+                println!("different token: {:?}", self.cur_token);
                 Some(self.parse_expression_statement())
             },
         }
@@ -105,7 +110,9 @@ impl Parser {
             return None;
         }
 
-        self.next_token();
+        while !self.cur_token_is(TokenType::EOL) {
+            self.next_token();
+        }
 
         Some(Statement::VAR(statement))
     }
@@ -113,7 +120,10 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Option<Statement> {
         let statement = ReturnStatement { return_value: None };
 
-        self.next_token();
+        // Skip expression and EOL
+        while !self.cur_token_is(TokenType::EOL) {
+            self.next_token();
+        }
 
         // TODO: Expression parsing
 
