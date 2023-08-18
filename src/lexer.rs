@@ -176,9 +176,9 @@ impl Lexer {
 
                     tokens.push(Token::new(TokenType::STRING, identifier, self.current_pos_line));
 
-                    if c == '"' {
+                    if c == '"' && input_chars[self.current_pos] == '=' {
                         push_token!(tokens, TokenType::QUOTMARK, self.current_pos_line)
-                    } else {
+                    } else if c == '\'' && input_chars[self.current_pos] == '\'' {
                         push_token!(tokens, TokenType::APOSTROPHE, self.current_pos_line)
                     }
 

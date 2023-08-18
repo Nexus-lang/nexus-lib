@@ -66,6 +66,7 @@ impl Parser {
             if statement != None {
                 program.statements.push(statement.unwrap());
             }
+            println!("amogus")
         }
         println!("{:?}", self.errors());
 
@@ -111,7 +112,7 @@ impl Parser {
             return None;
         }
 
-        while !self.cur_token_is(TokenType::EOL) {
+        while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
             self.next_token();
         }
 
@@ -122,7 +123,7 @@ impl Parser {
         let statement = ReturnStatement { return_value: None };
 
         // Skip expression and EOL
-        while !self.cur_token_is(TokenType::EOL) {
+        while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
             self.next_token();
         }
 
