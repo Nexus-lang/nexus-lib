@@ -121,10 +121,10 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let statement = ExpressionStatement{expression: Some(self.parse_expression(Precedences::LOWEST).unwrap())};
+        let statement = ExpressionStatement{expression: self.parse_expression(Precedences::LOWEST)};
         // unreachable because todo, remove comment, when self.next_token() is reachable
         self.next_token();
-        Statement::EXPRESSION(statement) 
+        Statement::EXPRESSION(statement)
     }
 
     fn parse_expression(&mut self, precedence: Precedences) -> Option<Expression> {
