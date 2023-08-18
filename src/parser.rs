@@ -18,6 +18,7 @@ pub struct Parser {
     line_count: i32,
 }
 
+#[allow(dead_code)] // remove this once all types are used
 enum Precedences {
     LOWEST,
     EQUALS, // ==
@@ -75,7 +76,7 @@ impl Parser {
             TokenType::RETURN => self.parse_return_statement(),
             // might have to be improved in the future
             TokenType::ILLEGAL => {
-                let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,);
+                let msg = format!("Illegal token: '{}' at: {}:{}:{} is not a valid token", self.cur_token.literal, self.lexer.input.file_path, self.line_count, self.peek_token.cur_pos + 1,);
                 self.throw_error(msg);
                 None
             }
@@ -120,15 +121,23 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let statement = ExpressionStatement{expression: Some(self.parse_expression(Precedences::LOWEST))};
+        let statement = ExpressionStatement{expression: Some(self.parse_expression(Precedences::LOWEST).unwrap())};
         // unreachable because todo, remove comment, when self.next_token() is reachable
         self.next_token();
         Statement::EXPRESSION(statement) 
     }
 
-    fn parse_expression(&mut self, precedence: Precedences) -> Expression {
+    fn parse_expression(&mut self, precedence: Precedences) -> Option<Expression> {
         let prefix = self.prefix_parse();
-        todo!()
+        if prefix == None {
+            return None;
+        }
+        let left_expression = prefix;
+        left_expression
+    }
+
+    fn parse_identifier(&self) -> Expression {
+        Expression::IDENTIFIER(Identifier { value: self.cur_token.literal.clone() })
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {
@@ -152,7 +161,7 @@ impl Parser {
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
             "expected next token to be {:?}, found {:?} instead. error at: {}:{}:{}",
-            token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.token_stream[self.current_pos + 1].cur_pos + 1,
+            token_type, self.peek_token.token_type, self.lexer.input.file_path, self.line_count, self.peek_token.cur_pos + 1,
         );
         self.errors.push(msg);
     }
@@ -169,8 +178,8 @@ impl Parser {
 
     fn prefix_parse(&mut self) -> Option<Expression> {
         match self.cur_token.token_type {
+            TokenType::IDENT => Some(self.parse_identifier()),
             /*
-            TokenType::IDENT => self.parse_identifier(),
             TokenType::NUMBER => self.parse_number_literal(),
             TokenType::STRING => self.parse_string_literal(),
             TokenType::FUNC => self.parse_function_literal(),
