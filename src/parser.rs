@@ -18,7 +18,7 @@ pub struct Parser {
     line_count: i32,
 }
 
-enum Presedences {
+enum Precedences {
     LOWEST,
     EQUALS, // ==
     LESSGREATER, // > or <
@@ -120,13 +120,13 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let statement = ExpressionStatement{expression: Some(self.parse_expression(Presedences::LOWEST))};
+        let statement = ExpressionStatement{expression: Some(self.parse_expression(Precedences::LOWEST))};
         self.next_token();
         Statement::EXPRESSION(statement)
     }
 
-    fn parse_expression(&self, presedence: Presedences) -> Expression {
-        
+    fn parse_expression(&self, precedence: Precedences) -> Expression {
+        let prefix = self.
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {
@@ -163,5 +163,21 @@ impl Parser {
         self.errors.push(message);
         println!("{:?}", self.errors());
         process::exit(1);
-    } 
+    }
+
+    fn prefix_parse(&mut self) -> Option<Expression> {
+        match self.cur_token.token_type {
+            TokenType::IDENT => self.parse_identifier(),
+            TokenType::NUMBER => self.parse_integer_literal(),
+            TokenType::STRING => self.parse_string_literal(),
+            TokenType::FUNC => self.parse_function_literal(),
+            TokenKind::Lparen => self.parse_grouped_expression(),
+            TokenKind::Lbracket => self.parse_array_literal(),
+            TokenKind::Lbrace => self.parse_hash_literal(),
+            TokenKind::If => self.parse_if_expression(),
+            TokenKind::True | TokenKind::False => self.parse_boolean(),
+            TokenKind::Bang | TokenKind::Minus => self.parse_prefix_expression(),
+            _ => None,
+        }
+    }
 }
