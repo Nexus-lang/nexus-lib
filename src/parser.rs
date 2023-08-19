@@ -63,10 +63,9 @@ impl Parser {
 
         while self.cur_token.token_type != TokenType::EOF {
             let statement = self.parse_statement();
-            if statement != None {
-                program.statements.push(statement.unwrap());
+            if let Some(statement) = statement {
+                program.statements.push(statement);
             }
-            println!("amogus")
         }
         println!("{:?}", self.errors());
 
@@ -87,7 +86,6 @@ impl Parser {
                 None
             }
             _ => {
-                println!("Expression, type: {:?}, literal: {:?}", self.cur_token.token_type, self.cur_token.literal);
                 Some(self.parse_expression_statement())
             }
         }
@@ -133,10 +131,10 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
+        let expression = self.parse_expression(Precedences::LOWEST);
         let statement = ExpressionStatement {
-            expression: self.parse_expression(Precedences::LOWEST),
+            expression: if let Some(expression) = expression {expression} else {panic!("Expression is none")},
         };
-        // unreachable because todo, remove comment, when self.next_token() is reachable
         self.next_token();
         Statement::EXPRESSION(statement)
     }
