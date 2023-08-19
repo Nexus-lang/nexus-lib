@@ -4,11 +4,11 @@
 
   - External packages
 
-  - Package system
+  - Local packages
 
 - Core library
 
-- Special features (dynamic field system)
+- Special features (dynamic field system) ([Fields](fields.md))
 
 - File structure for nexus projects ([Project structure](project-structure.md))
 

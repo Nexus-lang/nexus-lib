@@ -9,7 +9,7 @@ use crate::lexer::Lexer;
 use crate::parser::Parser;
 
 fn main() {
-    let example_code = util::FileHandler::read_file("examples/test.nx");
+    let example_code = util::FileHandler::read_file("examples/interpreter_testing.nx");
 
     let mut lexer = Lexer::new(example_code);
 

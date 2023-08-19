@@ -39,11 +39,11 @@ impl Parser {
         return Parser {
             cur_token: token_stream[0].clone(),
             peek_token: token_stream[1].clone(),
-            current_pos: 0,
             errors: vec![],
-            token_stream: token_stream,
+            current_pos: 0,
             lexer: lexer.clone(),
             line_count: 1,
+            token_stream,
         };
     }
 
