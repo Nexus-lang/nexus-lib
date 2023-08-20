@@ -1,10 +1,7 @@
 use std::process;
 
 use crate::{
-    ast::{
-        Expression, ExpressionStatement, Identifier, Program, ReturnStatement, Statement,
-        VarStatement, NumberLiteral, StringLiteral,
-    },
+    ast::*,
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
