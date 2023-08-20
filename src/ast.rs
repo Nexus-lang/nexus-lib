@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, PartialOrd, Debug)]
 pub enum Statement {
     VAR(VarStatement),
     RETURN(ReturnStatement),
@@ -8,6 +8,7 @@ pub enum Statement {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub enum Expression {
     IDENTIFIER(Identifier),
+    NUMBERLITERAL(NumberLiteral)
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -15,24 +16,29 @@ pub struct Identifier {
     pub value: String
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, PartialOrd, Debug)]
 pub struct VarStatement {
     pub name: Identifier,
     pub value: Option<Expression>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, PartialOrd, Debug)]
 pub struct ReturnStatement {
     pub return_value: Option<Expression>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, PartialOrd, Debug)]
 pub struct ExpressionStatement {
     pub expression: Expression,
 }
 
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct NumberLiteral {
+    pub value: i64
+}
+
 // The node
-#[derive(Debug)]
+#[derive(PartialEq, PartialOrd, Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
