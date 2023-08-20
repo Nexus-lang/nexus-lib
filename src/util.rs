@@ -7,6 +7,10 @@ pub struct FileHandler {
     pub file_content: String,
 }
 
+pub trait ToChar {
+    fn to_char(&self) -> char;
+}
+
 impl FileHandler {
     pub fn read_file(path: &str) -> FileHandler {
         let mut file = File::open(path).expect("Failed to find file");

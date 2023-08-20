@@ -1,3 +1,5 @@
+use crate::util::ToChar;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     // keywords
@@ -147,6 +149,17 @@ impl TokenType {
             _ => {
                 panic!("{:?} is missing a literal type", self)
             }
+        }
+    }
+}
+
+impl ToChar for TokenType {
+    fn to_char(&self) -> char {
+        let chars: Vec<char> = self.literal().chars().collect();
+        if chars.len() > 0 {
+            chars[0]
+        } else {
+            panic!("Cannot convert empty string to char")
         }
     }
 }

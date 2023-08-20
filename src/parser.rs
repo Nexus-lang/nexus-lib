@@ -3,7 +3,7 @@ use std::process;
 use crate::{
     ast::{
         Expression, ExpressionStatement, Identifier, Program, ReturnStatement, Statement,
-        VarStatement, NumberLiteral,
+        VarStatement, NumberLiteral, StringLiteral,
     },
     lexer::Lexer,
     tokens::{Token, TokenType},
@@ -160,6 +160,11 @@ impl Parser {
         Expression::NUMBERLITERAL(literal)
     }
 
+    fn parse_string_literal(&self) -> Expression {
+        let literal = StringLiteral { value: self.cur_token.literal.clone() };
+        Expression::STRINGLITERAL(literal)
+    }
+
     fn cur_token_is(&self, token_type: TokenType) -> bool {
         self.cur_token.token_type == token_type
     }
@@ -206,8 +211,8 @@ impl Parser {
         match self.cur_token.token_type {
             TokenType::IDENT => Some(self.parse_identifier()),
             TokenType::NUMBER => Some(self.parse_number_literal()),
+            TokenType::STRING => Some(self.parse_string_literal()),
             /*
-            TokenType::STRING => self.parse_string_literal(),
             TokenType::FUNC => self.parse_function_literal(),
             TokenType::LPARENT => self.parse_grouped_expression(),
             TokenType::LSQUAREBRAC => self.parse_list_literal(),

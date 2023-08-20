@@ -8,7 +8,8 @@ pub enum Statement {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub enum Expression {
     IDENTIFIER(Identifier),
-    NUMBERLITERAL(NumberLiteral)
+    NUMBERLITERAL(NumberLiteral),
+    STRINGLITERAL(StringLiteral),
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -34,7 +35,12 @@ pub struct ExpressionStatement {
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct NumberLiteral {
-    pub value: i64
+    pub value: i64,
+}
+
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct StringLiteral {
+    pub value: String,
 }
 
 // The node

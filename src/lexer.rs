@@ -1,4 +1,4 @@
-use crate::{tokens::{Token, TokenType}, util::FileHandler};
+use crate::{tokens::{Token, TokenType}, util::{FileHandler, ToChar}};
 
 macro_rules! push_token {
     ($tokens:expr, $variant:path, $cur_pos:expr) => {
@@ -167,13 +167,13 @@ impl Lexer {
                         }
                     }
                 }
-                c if c == '"' || c == '\"' => {
+                c if c == TokenType::QUOTMARK.to_char() || c == TokenType::APOSTROPHE.to_char() => {
                     let mut identifier = String::new();
 
                     let mut next_pos = self.current_pos + 1;
                     while next_pos < input_chars.len() {
-                        if c == '"' && input_chars[next_pos] != '"'
-                            || c == '\'' && input_chars[next_pos] != '\''
+                        if c == TokenType::QUOTMARK.to_char() && input_chars[next_pos] != TokenType::QUOTMARK.to_char()
+                            || c == TokenType::APOSTROPHE.to_char() && input_chars[next_pos] != TokenType::APOSTROPHE.to_char()
                         {
                             identifier.push(input_chars[next_pos]);
                             next_pos += 1;
