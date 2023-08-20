@@ -169,11 +169,6 @@ impl Lexer {
                 }
                 c if c == '"' || c == '\"' => {
                     let mut identifier = String::new();
-                    if c == '"' {
-                        push_token!(tokens, TokenType::QUOTMARK, self.current_pos_line)
-                    } else {
-                        push_token!(tokens, TokenType::APOSTROPHE, self.current_pos_line)
-                    }
 
                     let mut next_pos = self.current_pos + 1;
                     while next_pos < input_chars.len() {
@@ -190,12 +185,6 @@ impl Lexer {
                     }
 
                     tokens.push(Token::new(TokenType::STRING, identifier, self.current_pos_line));
-
-                    if c == '"' && input_chars[self.current_pos] == '=' {
-                        push_token!(tokens, TokenType::QUOTMARK, self.current_pos_line)
-                    } else if c == '\'' && input_chars[self.current_pos] == '\'' {
-                        push_token!(tokens, TokenType::APOSTROPHE, self.current_pos_line)
-                    }
 
                     self.current_pos = next_pos;
                 }
