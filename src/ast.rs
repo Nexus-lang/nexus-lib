@@ -3,6 +3,7 @@ pub enum Statement {
     VAR(VarStatement),
     RETURN(ReturnStatement),
     EXPRESSION(ExpressionStatement),
+    EMPTY,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -10,6 +11,8 @@ pub enum Expression {
     IDENTIFIER(Identifier),
     NUMBERLITERAL(NumberLiteral),
     STRINGLITERAL(StringLiteral),
+    PREFIX(PrefixExpression),
+    EMPTY,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -20,12 +23,12 @@ pub struct Identifier {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct VarStatement {
     pub name: Identifier,
-    pub value: Option<Expression>,
+    pub value: Expression,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct ReturnStatement {
-    pub return_value: Option<Expression>,
+    pub return_value: Expression,
 }
 
 #[derive(PartialEq, PartialOrd, Debug)]
@@ -41,6 +44,12 @@ pub struct NumberLiteral {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct StringLiteral {
     pub value: String,
+}
+
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct PrefixExpression {
+    pub operator: String, // might want to create an enum for this
+    pub right: Box<Expression>,
 }
 
 // The node

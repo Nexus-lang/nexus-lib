@@ -60,43 +60,40 @@ impl Parser {
 
         while self.cur_token.token_type != TokenType::EOF {
             let statement = self.parse_statement();
-            if let Some(statement) = statement {
-                program.statements.push(statement);
-            }
+            program.statements.push(statement);
+            
         }
         println!("{:?}", self.errors());
 
         program
     }
 
-    fn parse_statement(&mut self) -> Option<Statement> {
+    fn parse_statement(&mut self) -> Statement {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
             TokenType::RETURN => self.parse_return_statement(),
             // might have to be improved in the future
             TokenType::ILLEGAL => {
                 self.next_token();
-                None
+                Statement::EMPTY
             }
             TokenType::EOL => {
                 self.next_token();
-                None
+                Statement::EMPTY
             }
-            _ => {
-                Some(self.parse_expression_statement())
-            }
+            _ => self.parse_expression_statement(),
         }
     }
 
-    fn parse_var_statement(&mut self) -> Option<Statement> {
+    fn parse_var_statement(&mut self) -> Statement {
         let mut statement = VarStatement {
             name: Identifier {
                 value: "".to_string(),
             },
-            value: None,
+            value: Expression::EMPTY,
         };
         if !self.expect_peek(TokenType::IDENT) {
-            return None;
+            return Statement::EMPTY;
         }
 
         statement.name = Identifier {
@@ -104,18 +101,18 @@ impl Parser {
         };
 
         if !self.expect_peek(TokenType::ASSIGN) {
-            return None;
+            return Statement::EMPTY;
         }
 
         while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
             self.next_token();
         }
 
-        Some(Statement::VAR(statement))
+        Statement::VAR(statement)
     }
 
-    fn parse_return_statement(&mut self) -> Option<Statement> {
-        let statement = ReturnStatement { return_value: None };
+    fn parse_return_statement(&mut self) -> Statement {
+        let statement = ReturnStatement { return_value: Expression::EMPTY };
 
         // Skip expression and EOL
         while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
@@ -124,22 +121,21 @@ impl Parser {
 
         // TODO: Expression parsing
 
-        Some(Statement::RETURN(statement))
+        Statement::RETURN(statement)
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
         let expression = self.parse_expression(Precedences::LOWEST);
-        let statement = ExpressionStatement {
-            expression: if let Some(expression) = expression {expression} else {panic!("Expression is none")},
-        };
+        let statement = ExpressionStatement { expression };
         self.next_token();
         Statement::EXPRESSION(statement)
     }
 
-    fn parse_expression(&mut self, _precedence: Precedences) -> Option<Expression> {
+    fn parse_expression(&mut self, _precedence: Precedences) -> Expression {
         let prefix = self.prefix_parse();
-        if prefix == None {
-            return None;
+        if prefix == Expression::EMPTY {
+            self.no_prefix_parse_error();
+            return Expression::EMPTY;
         }
         let left_expression = prefix;
         left_expression
@@ -153,13 +149,37 @@ impl Parser {
 
     fn parse_number_literal(&self) -> Expression {
         let err = format!("Cannot convert literal: {} to int", self.cur_token.literal);
-        let literal = NumberLiteral { value: self.cur_token.literal.parse().expect(err.as_str()) };
+        let literal = NumberLiteral {
+            value: self.cur_token.literal.parse().expect(err.as_str()),
+        };
         Expression::NUMBERLITERAL(literal)
     }
 
     fn parse_string_literal(&self) -> Expression {
-        let literal = StringLiteral { value: self.cur_token.literal.clone() };
+        let literal = StringLiteral {
+            value: self.cur_token.literal.clone(),
+        };
         Expression::STRINGLITERAL(literal)
+    }
+
+    fn parse_prefix_expression(&mut self) -> Expression {
+        let operator = self.cur_token.literal.to_owned();
+
+        self.next_token();
+
+        let right = self.parse_expression(Precedences::PREFIX);
+
+        Expression::PREFIX(PrefixExpression {
+            right: Box::new(right),
+            operator,
+        })
+    }
+
+    fn no_prefix_parse_error(&mut self) {
+        self.errors.push(format!(
+            "no prefix parse function for {:?} found",
+            self.cur_token.token_type
+        ))
     }
 
     fn cur_token_is(&self, token_type: TokenType) -> bool {
@@ -204,11 +224,11 @@ impl Parser {
         }
     }
 
-    fn prefix_parse(&mut self) -> Option<Expression> {
+    fn prefix_parse(&mut self) -> Expression {
         match self.cur_token.token_type {
-            TokenType::IDENT => Some(self.parse_identifier()),
-            TokenType::NUMBER => Some(self.parse_number_literal()),
-            TokenType::STRING => Some(self.parse_string_literal()),
+            TokenType::IDENT => self.parse_identifier(),
+            TokenType::NUMBER => self.parse_number_literal(),
+            TokenType::STRING => self.parse_string_literal(),
             /*
             TokenType::FUNC => self.parse_function_literal(),
             TokenType::LPARENT => self.parse_grouped_expression(),
@@ -216,9 +236,9 @@ impl Parser {
             TokenType::LCURLY => self.parse_hash_literal(),
             TokenType::IF => self.parse_if_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
-            TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             */
-            _ => None,
+            TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
+            _ => Expression::EMPTY,
         }
     }
 }
