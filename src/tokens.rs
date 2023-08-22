@@ -21,10 +21,10 @@ pub enum TokenType {
     CATCH,  // catching when try fails
 
     // literals
-    LOCAL,
-    FALSE,
-    TRUE,
-    NONE,
+    LOCAL, // declare var, func... as private
+    FALSE, // boolean literal false
+    TRUE,  // boolean literal true
+    NONE,  // empty value none
 
     // other keywords
     IN,  // in
@@ -77,6 +77,8 @@ pub enum TokenType {
 }
 
 impl TokenType {
+    /// return literal values of tokens.
+    // these will be used to construct Token list in lexer
     pub fn literal(&self) -> String {
         // When changing token literals for symbols there might be some issue due to symbols with two characters like arrow or not-equal
         match self {
@@ -172,6 +174,8 @@ pub struct Token {
 }
 
 impl Token {
+    /// constructs new token
+    // this is then appended to the token list
     pub fn new(token_type: TokenType, literal: String, cur_pos: usize) -> Self {
         Token {
             token_type: token_type,

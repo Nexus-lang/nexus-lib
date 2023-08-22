@@ -44,13 +44,13 @@ Currently text.nx contains the sample source code
 
 Let's start off simple with a "Hello, World" program
 
-```js
+```kotlin
 print("Hello, World")
 ```
 
-Let's start defining some variables to make our code cleaner and life easier
+Let's start defining some variables to make our code cleaner and life bit easier
 
-```js
+```kotlin
 var message = "Hello, World!"
 
 print(message)
@@ -58,7 +58,7 @@ print(message)
 
 Let's improve the code a bit
 
-```js
+```kotlin
 const message = "Hello, World!"
 
 print("$message <- what a cool message")
@@ -74,7 +74,16 @@ Let's look at what we have done here.
 
 First we changed from `var` to `const` which means we can not modify the variable. This leads to better performance.
 
-Instead of printing the value we referenced it in the message string using `$`. This allows us to better manipulate the output text and makes it a lot cleaner overall.
+Instead of printing the value we reference the message string in the print function using `$`. This allows us to better manipulate the output text and makes it a lot cleaner overall.
+
+We can further simplify it
+
+```kotlin
+message :: "Hello World!"
+print("$message <- what a cool message")
+```
+
+Using `::` we can quick-assign a const to a value. This also works for vars using `:=`
 
 For more information look at the [docs](docs).
 
@@ -87,3 +96,5 @@ This project wouldn't have been possible without the help of these amazing peopl
 - [TheHackerChampion](https://github.com/TheHackerChampion) - **Developer** and **Design team**
 
 - [ReadyPlayerOne14](https://github.com/ReadyPlayerOne14) - **Contributor** and **Design team**
+
+If you want to contribute yourself, follow the [Installation Guide](#installation). Also make sure to read and follow the [Style Guide](STYLE.md)

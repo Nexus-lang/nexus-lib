@@ -5,20 +5,32 @@ use crate::{
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
-
+/// Parser struct containing
+/// necessary info to
+/// construct Evaluator
+/// and keep track of errors
 pub struct Parser {
-    token_stream: Vec<Token>,
+    /// Reference to the lexer
+    /// to access file and tokenstream
     lexer: Lexer,
+    /// Stream constructed from lexer tokens
+    token_stream: Vec<Token>,
 
     cur_token: Token,
     peek_token: Token,
     current_pos: usize,
+
+    // Error handling
     errors: Vec<String>,
-    // required for better error messages
+
+    /// Returns amount of lines in file
+    /// to construct error message
     line_count: i32,
+    // -------
 }
 
-#[allow(dead_code)] // remove this once all types are used
+/// TODO: add documentation once fully implemented
+#[allow(dead_code)] // TODO: remove this once all types are used
 enum Precedences {
     LOWEST,
     EQUALS,           // ==
@@ -31,6 +43,7 @@ enum Precedences {
 }
 
 impl Parser {
+    /// Construct Parser from lexer
     pub fn new(lexer: &mut Lexer) -> Self {
         let token_stream: Vec<Token> = lexer.lex();
         return Parser {
@@ -44,6 +57,8 @@ impl Parser {
         };
     }
 
+    /// Increment position in tokenstream
+    /// and update cur- and peek_token
     fn next_token(&mut self) {
         self.current_pos += 1;
         self.cur_token = self.peek_token.clone();
@@ -55,19 +70,26 @@ impl Parser {
         }
     }
 
+    /// "Main" function of the parser,
+    /// constructs the ast
     pub fn parse_program(&mut self) -> Program {
-        let mut program = Program::new(vec![]);
+        let mut program = Program {
+            statements: Vec::new(),
+        };
 
         while self.cur_token.token_type != TokenType::EOF {
             let statement = self.parse_statement();
-            program.statements.push(statement);
-            
+            if statement != Statement::EMPTY {
+                program.statements.push(statement);
+            }
         }
-        println!("{:?}", self.errors());
+        println!("{:?}", self.errors);
 
         program
     }
 
+    /// returns statement
+    /// depending on current token
     fn parse_statement(&mut self) -> Statement {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
@@ -77,10 +99,12 @@ impl Parser {
                 self.next_token();
                 Statement::EMPTY
             }
+
             TokenType::EOL => {
                 self.next_token();
                 Statement::EMPTY
             }
+
             _ => self.parse_expression_statement(),
         }
     }
@@ -108,11 +132,15 @@ impl Parser {
             self.next_token();
         }
 
+        // TODO: Expression parsing
+
         Statement::VAR(statement)
     }
 
     fn parse_return_statement(&mut self) -> Statement {
-        let statement = ReturnStatement { return_value: Expression::EMPTY };
+        let statement = ReturnStatement {
+            return_value: Expression::EMPTY,
+        };
 
         // Skip expression and EOL
         while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
@@ -131,6 +159,8 @@ impl Parser {
         Statement::EXPRESSION(statement)
     }
 
+    /// Returns expression
+    /// depending on current token
     fn parse_expression(&mut self, _precedence: Precedences) -> Expression {
         let prefix = self.prefix_parse();
         if prefix == Expression::EMPTY {
@@ -162,6 +192,9 @@ impl Parser {
         Expression::STRINGLITERAL(literal)
     }
 
+    /// constructs prefix expression
+    /// based on operator and
+    /// expression affected by prefix
     fn parse_prefix_expression(&mut self) -> Expression {
         let operator = self.cur_token.literal.to_owned();
 
@@ -175,6 +208,7 @@ impl Parser {
         })
     }
 
+    /// return error when prefix is missing
     fn no_prefix_parse_error(&mut self) {
         self.errors.push(format!(
             "no prefix parse function for {:?} found",
@@ -190,6 +224,7 @@ impl Parser {
         self.peek_token.token_type == token_type
     }
 
+    /// evaluates whether peek expectation is fulfilled
     fn expect_peek(&mut self, token_type: TokenType) -> bool {
         if self.peek_token_is(token_type) {
             self.next_token();
@@ -200,6 +235,7 @@ impl Parser {
         }
     }
 
+    /// returns error based on expected token type
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
             "expected next token to be {:?}, found {:?} instead. error at: {}:{}:{}",
@@ -212,14 +248,13 @@ impl Parser {
         self.throw_error(msg, false);
     }
 
-    fn errors(&self) -> Vec<String> {
-        self.errors.clone()
-    }
-
+    /// appends error to [`Parser::errors`]
+    /// if exit is set to `true`
+    /// it will stop the program
     fn throw_error(&mut self, message: String, exit: bool) {
         self.errors.push(message);
         if exit {
-            println!("{:?}", self.errors());
+            println!("{:?}", self.errors);
             process::exit(1);
         }
     }

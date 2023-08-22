@@ -1,23 +1,32 @@
-use crate::{tokens::{Token, TokenType}, util::{FileHandler, ToChar}};
+use crate::{
+    tokens::{Token, TokenType},
+    util::{FileHandler, ToChar},
+};
 
+/// Same as tokens.push() but reduces boilerplate
 macro_rules! push_token {
     ($tokens:expr, $variant:path, $cur_pos:expr) => {
         $tokens.push(Token::new($variant, $variant.literal(), $cur_pos))
     };
 }
 
+/// Lexer struct containing
+/// necessary info to
+/// construct the parser
 #[derive(Clone)]
 pub struct Lexer {
     pub input: FileHandler,
     pub current_pos: usize,
-    // returns the current pos
-    // but resets the current pos
-    // when encountering a new line
+    /// Returns the current pos.
+    ///
+    /// Resets the current pos
+    /// whenever it encounters a new line
     pub current_pos_line: usize,
     ch: char,
 }
 
 impl Lexer {
+    /// Constructs lexer from FileHandler
     pub fn new(input: FileHandler) -> Self {
         let input_chars: Vec<char> = input.file_content.chars().collect();
         if input_chars.len() > 0 {
@@ -32,7 +41,8 @@ impl Lexer {
         }
     }
 
-    pub fn lex<'a>(&mut self) -> Vec<Token> {
+    /// Tokenizes the [`Lexer::input`]
+    pub fn lex(&mut self) -> Vec<Token> {
         let input_chars: Vec<char> = self.input.file_content.chars().collect();
         let mut tokens: Vec<Token> = Vec::new();
 
@@ -42,22 +52,27 @@ impl Lexer {
             self.ch = input_chars[self.current_pos];
 
             match self.ch {
-                // new lines
+                // handle new lines
                 c if c == '\n' => {
                     push_token!(tokens, TokenType::EOL, self.current_pos_line);
                     self.current_pos += 1;
                     self.current_pos_line = 0;
                 }
-                // skipping white spaces
+
+                // skip white spaces
                 c if c.is_whitespace() && c != '\n' => {
                     self.current_pos += 1;
                     self.current_pos_line += 1;
                 }
+
+                // construct number from chained digits.
+                // also has support for hexadecimal, octal and binary numbers
                 c if c.is_numeric() => {
                     let mut identifier = String::new();
 
                     while self.current_pos < input_chars.len()
                         && (input_chars[self.current_pos].is_numeric()
+                        // hexadec, octal, bin
                             || input_chars[self.current_pos] == 'x'
                             || input_chars[self.current_pos] == 'b'
                             || input_chars[self.current_pos] == 'o')
@@ -67,9 +82,14 @@ impl Lexer {
                         self.current_pos_line += 1;
                     }
 
-                    tokens.push(Token::new(TokenType::NUMBER, identifier, self.current_pos_line));
+                    tokens.push(Token::new(
+                        TokenType::NUMBER,
+                        identifier,
+                        self.current_pos_line,
+                    ));
                 }
 
+                // handle
                 c if c.is_alphabetic() || c == '_' => {
                     let mut identifier = String::new();
                     identifier.push(self.ch);
@@ -163,7 +183,11 @@ impl Lexer {
                         }
 
                         _ => {
-                            tokens.push(Token::new(TokenType::IDENT, identifier.to_owned(), self.current_pos_line));
+                            tokens.push(Token::new(
+                                TokenType::IDENT,
+                                identifier.to_owned(),
+                                self.current_pos_line,
+                            ));
                         }
                     }
                 }
@@ -172,8 +196,10 @@ impl Lexer {
 
                     let mut next_pos = self.current_pos + 1;
                     while next_pos < input_chars.len() {
-                        if c == TokenType::QUOTMARK.to_char() && input_chars[next_pos] != TokenType::QUOTMARK.to_char()
-                            || c == TokenType::APOSTROPHE.to_char() && input_chars[next_pos] != TokenType::APOSTROPHE.to_char()
+                        if c == TokenType::QUOTMARK.to_char()
+                            && input_chars[next_pos] != TokenType::QUOTMARK.to_char()
+                            || c == TokenType::APOSTROPHE.to_char()
+                                && input_chars[next_pos] != TokenType::APOSTROPHE.to_char()
                         {
                             identifier.push(input_chars[next_pos]);
                             next_pos += 1;
@@ -184,7 +210,11 @@ impl Lexer {
                         }
                     }
 
-                    tokens.push(Token::new(TokenType::STRING, identifier, self.current_pos_line));
+                    tokens.push(Token::new(
+                        TokenType::STRING,
+                        identifier,
+                        self.current_pos_line,
+                    ));
 
                     self.current_pos = next_pos;
                 }
@@ -222,7 +252,11 @@ impl Lexer {
                             if self.current_pos + 1 < input_chars.len()
                                 && input_chars[self.current_pos + 1] == greaterthan_chars[1]
                             {
-                                push_token!(tokens, TokenType::GREATEROREQUALTHAN, self.current_pos_line);
+                                push_token!(
+                                    tokens,
+                                    TokenType::GREATEROREQUALTHAN,
+                                    self.current_pos_line
+                                );
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
                             } else {
@@ -235,7 +269,11 @@ impl Lexer {
                             if self.current_pos + 1 < input_chars.len()
                                 && input_chars[self.current_pos + 1] == lessthan_chars[1]
                             {
-                                push_token!(tokens, TokenType::LESSOREQUALTHAN, self.current_pos_line);
+                                push_token!(
+                                    tokens,
+                                    TokenType::LESSOREQUALTHAN,
+                                    self.current_pos_line
+                                );
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
                             } else {
@@ -308,7 +346,11 @@ impl Lexer {
                             push_token!(tokens, TokenType::RSQUAREBRAC, self.current_pos_line)
                         }
                         _ => {
-                            tokens.push(Token::new(TokenType::ILLEGAL, c.to_string(), self.current_pos_line));
+                            tokens.push(Token::new(
+                                TokenType::ILLEGAL,
+                                c.to_string(),
+                                self.current_pos_line,
+                            ));
                         }
                     }
                     self.current_pos += 1;
@@ -322,7 +364,7 @@ impl Lexer {
             }
         }
         push_token!(tokens, TokenType::EOF, self.current_pos_line);
-        let test = &tokens[tokens.len()-2];
+        let test = &tokens[tokens.len() - 2];
         println!("{:?}", test);
 
         tokens
