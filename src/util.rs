@@ -28,7 +28,7 @@ impl FileHandler {
             None => "unknown",
         };
 
-        if file_ending != "nex" && file_ending != "nx" {
+        if file_ending != "nx" {
             panic!("Wrong file format. Current: {}, expected: nex", file_ending);
         }
 
