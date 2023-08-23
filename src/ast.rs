@@ -17,7 +17,14 @@ pub enum Expression {
     NUMBERLITERAL(NumberLiteral),
     STRINGLITERAL(StringLiteral),
     PREFIX(PrefixExpression),
+    BOOLEAN(Boolean),
     EMPTY,
+}
+
+#[derive(PartialEq, PartialOrd, Debug)]
+pub enum Booleans {
+    TRUE,
+    FALSE,
 }
 
 // ident
@@ -62,6 +69,12 @@ pub struct StringLiteral {
 pub struct PrefixExpression {
     pub operator: String, // might want to create an enum for this
     pub right: Box<Expression>,
+}
+
+// booleans (true, false)
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct Boolean {
+    pub bool_type: Booleans,
 }
 
 // the ast layout

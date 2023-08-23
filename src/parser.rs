@@ -208,6 +208,14 @@ impl Parser {
         })
     }
 
+    fn parse_boolean(&mut self) -> Expression {
+        match self.cur_token.token_type {
+            TokenType::TRUE => Expression::BOOLEAN(Boolean { bool_type: Booleans::TRUE }),
+            TokenType::FALSE => Expression::BOOLEAN(Boolean { bool_type: Booleans::FALSE }),
+            _ => Expression::EMPTY,
+        }
+    }
+
     /// return error when prefix is missing
     fn no_prefix_parse_error(&mut self) {
         self.errors.push(format!(
@@ -270,8 +278,8 @@ impl Parser {
             TokenType::LSQUAREBRAC => self.parse_list_literal(),
             TokenType::LCURLY => self.parse_hash_literal(),
             TokenType::IF => self.parse_if_expression(),
-            TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             */
+            TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             _ => Expression::EMPTY,
         }
