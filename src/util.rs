@@ -29,7 +29,7 @@ impl FileHandler {
         };
 
         if file_ending != "nx" {
-            panic!("Wrong file format. Current: {}, expected: nex", file_ending);
+            panic!("Wrong file format. Current: {}, expected: nx", file_ending);
         }
 
         file.read_to_string(&mut buffer)
