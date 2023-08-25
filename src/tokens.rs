@@ -1,6 +1,6 @@
 use crate::util::ToChar;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TokenType {
     // keywords
     DEP,    // project Dependency

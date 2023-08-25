@@ -1,4 +1,6 @@
-use std::process;
+use std::{process, collections::HashMap};
+
+use maplit::hashmap;
 
 use crate::{
     ast::*,
@@ -29,18 +31,17 @@ pub struct Parser {
     // -------
 }
 
-/// TODO: add documentation once fully implemented
-#[allow(dead_code)] // TODO: remove this once all types are used
-enum Precedences {
-    LOWEST,
-    EQUALS,           // ==
-    LESSGREATER,      // > or <
-    LESSGREATEREQUAL, // >= or <=
-    SUM,              // +
-    PRODUCT,          // *
-    PREFIX,           // -x, +x or !x
-    CALL,             // amogus(x)
-}
+// determines which operations has priority.
+// E.g. 5 + 5 * 3, 5 + 15 = 20;
+// We see that the product is higher than the sum.
+const LOWEST: i8 = 0;
+const EQUALS: i8 = 1;           // ==
+const LESSGREATER: i8 = 2;      // > or <
+const LESSGREATEREQUAL: i8 = 3; // >= or <=
+const SUM: i8 = 4;              // +
+const PRODUCT: i8 = 5;          // *
+const PREFIX: i8 = 6;           // -x, +x or !x
+const CALL: i8 = 7;             // amogus(x)
 
 impl Parser {
     /// Construct Parser from lexer
@@ -153,7 +154,7 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> Statement {
-        let expression = self.parse_expression(Precedences::LOWEST);
+        let expression = self.parse_expression(LOWEST);
         let statement = ExpressionStatement { expression };
         self.next_token();
         Statement::EXPRESSION(statement)
@@ -161,13 +162,19 @@ impl Parser {
 
     /// Returns expression
     /// depending on current token
-    fn parse_expression(&mut self, _precedence: Precedences) -> Expression {
+    fn parse_expression(&mut self, precedence: i8) -> Expression {
         let prefix = self.prefix_parse();
         if prefix == Expression::EMPTY {
             self.no_prefix_parse_error();
             return Expression::EMPTY;
         }
-        let left_expression = prefix;
+        let mut left_expression = prefix;
+
+        while !self.peek_token_is_end() && precedence < self.peek_precedence() {
+            self.next_token();
+            left_expression = self.parse_infix_expression(left_expression.clone());
+        }
+
         left_expression
     }
 
@@ -196,16 +203,33 @@ impl Parser {
     /// based on operator and
     /// expression affected by prefix
     fn parse_prefix_expression(&mut self) -> Expression {
-        let operator = self.cur_token.literal.to_owned();
+        let operator = match self.cur_token.token_type {
+            TokenType::PLUS => Operators::PLUS,
+            TokenType::MINUS => Operators::MINUS,
+            TokenType::BANG => Operators::BANG,
+            _ => panic!("Invalid prefix ERROR. Please report")
+        };
 
         self.next_token();
 
-        let right = self.parse_expression(Precedences::PREFIX);
+        let right = self.parse_expression(PREFIX);
 
         Expression::PREFIX(PrefixExpression {
             right: Box::new(right),
             operator,
         })
+    }
+
+    fn parse_infix_expression(&mut self, left: Expression) -> Expression {
+        let mut expression = InfixExpression {
+            operator: self.get_operator(&self.cur_token),
+            left: Box::from(left),
+            right: Box::from(Expression::EMPTY),
+        };
+        let precedence = self.cur_precedence();
+        self.next_token();
+        expression.right = Box::from(self.parse_expression(precedence));
+        Expression::INFIX(expression)
     }
 
     fn parse_boolean(&mut self) -> Expression {
@@ -214,6 +238,45 @@ impl Parser {
             TokenType::FALSE => Expression::BOOLEAN(Boolean { bool_type: Booleans::FALSE }),
             _ => Expression::EMPTY,
         }
+    }
+
+    fn get_operator(&self, token: &Token) -> Operators {
+        match token.token_type {
+            TokenType::PLUS => Operators::PLUS,
+            TokenType::MINUS => Operators::MINUS,
+            TokenType::BANG => Operators::BANG,
+            TokenType::MULTIPLY => Operators::MULTIPLY,
+            TokenType::DIVIDE => Operators::DIVIDE,
+            TokenType::EQUAL => Operators::EQUAL,
+            TokenType::NOTEQUAL => Operators::NOTEQUAL,
+            TokenType::GREATERTHAN => Operators::GREATTHAN,
+            TokenType::LESSTHAN => Operators::LESSTHAN,
+            TokenType::GREATEROREQUALTHAN => Operators::GREATOREQUAL,
+            TokenType::LESSOREQUALTHAN => Operators::LESSOREQUAL,
+            _ => Operators::ILLEGAL,
+        }
+    }
+
+    fn get_precedence(&self, token: &Token) -> i8 {
+        match token.token_type {
+            TokenType::EQUAL => EQUALS,
+            TokenType::NOTEQUAL => EQUALS,
+            TokenType::LESSTHAN => LESSGREATER,
+            TokenType::GREATERTHAN => LESSGREATER,
+            TokenType::PLUS => SUM,
+            TokenType::MINUS => SUM,
+            TokenType::DIVIDE => PRODUCT,
+            TokenType::MULTIPLY => PRODUCT,
+            _ => LOWEST,
+        }
+    }
+
+    fn cur_precedence(&self) -> i8 {
+        self.get_precedence(&self.cur_token)
+    }
+
+    fn peek_precedence(&self) -> i8 {
+        self.get_precedence(&self.peek_token)
     }
 
     /// return error when prefix is missing
@@ -230,6 +293,14 @@ impl Parser {
 
     fn peek_token_is(&self, token_type: TokenType) -> bool {
         self.peek_token.token_type == token_type
+    }
+
+    /// returns true if peek token is eol or eof
+    fn peek_token_is_end(&self) -> bool {
+        match self.peek_token.token_type {
+            TokenType::EOL | TokenType::EOF => true,
+            _ => false
+        }
     }
 
     /// evaluates whether peek expectation is fulfilled
