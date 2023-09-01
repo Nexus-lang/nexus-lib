@@ -345,6 +345,9 @@ impl Lexer {
                         c if c == TokenType::RSQUAREBRAC.literal() => {
                             push_token!(tokens, TokenType::RSQUAREBRAC, self.current_pos_line)
                         }
+                        c if c == TokenType::SEMICOLON.literal() => {
+                            push_token!(tokens, TokenType::SEMICOLON, self.current_pos_line)
+                        }
                         _ => {
                             tokens.push(Token::new(
                                 TokenType::ILLEGAL,

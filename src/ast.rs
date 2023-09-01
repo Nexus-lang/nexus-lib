@@ -1,8 +1,10 @@
 /// Statements, Code parts that don't give back a value
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub enum Statement {
     VAR(VarStatement),
+    CONST(ConstStatement),
     RETURN(ReturnStatement),
+    LOCAL(LocalStatement),
     /// Statement wrapper for expressions
     ///
     /// Required because The ast only
@@ -54,9 +56,21 @@ pub struct Identifier {
     pub value: String,
 }
 
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct LocalStatement {
+    pub left: Box<Statement>,
+}
+
 // var
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct VarStatement {
+    pub name: Identifier,
+    pub value: Expression,
+}
+
+// const
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct ConstStatement {
     pub name: Identifier,
     pub value: Expression,
 }

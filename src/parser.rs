@@ -1,6 +1,4 @@
-use std::{process, collections::HashMap};
-
-use maplit::hashmap;
+use std::process;
 
 use crate::{
     ast::*,
@@ -35,13 +33,13 @@ pub struct Parser {
 // E.g. 5 + 5 * 3, 5 + 15 = 20;
 // We see that the product is higher than the sum.
 const LOWEST: i8 = 0;
-const EQUALS: i8 = 1;           // ==
-const LESSGREATER: i8 = 2;      // > or <
+const EQUALS: i8 = 1; // ==
+const LESSGREATER: i8 = 2; // > or <
 const LESSGREATEREQUAL: i8 = 3; // >= or <=
-const SUM: i8 = 4;              // +
-const PRODUCT: i8 = 5;          // *
-const PREFIX: i8 = 6;           // -x, +x or !x
-const CALL: i8 = 7;             // amogus(x)
+const SUM: i8 = 4; // +
+const PRODUCT: i8 = 5; // *
+const PREFIX: i8 = 6; // -x, +x or !x
+const CALL: i8 = 7; // amogus(x)
 
 impl Parser {
     /// Construct Parser from lexer
@@ -95,7 +93,8 @@ impl Parser {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_var_statement(),
             TokenType::RETURN => self.parse_return_statement(),
-            // might have to be improved in the future
+            TokenType::CONST => self.parse_const_statement(),
+            TokenType::LOCAL => self.parse_local_decl(),
             TokenType::ILLEGAL => {
                 self.next_token();
                 Statement::EMPTY
@@ -106,8 +105,25 @@ impl Parser {
                 Statement::EMPTY
             }
 
-            _ => self.parse_expression_statement(),
+            _ => {
+                if self.cur_token_is(TokenType::IDENT)
+                    && (self.peek_token_is(TokenType::VARASSIGN)
+                        || self.peek_token_is(TokenType::CONSTASSIGN))
+                {
+                    return self.parse_quick_assign();
+                }
+                self.parse_expression_statement()
+            }
         }
+    }
+
+    fn parse_local_decl(&mut self) -> Statement {
+        self.next_token();
+        let left = self.parse_statement();
+        let statement = LocalStatement {
+            left: Box::new(left),
+        };
+        Statement::LOCAL(statement)
     }
 
     fn parse_var_statement(&mut self) -> Statement {
@@ -129,13 +145,62 @@ impl Parser {
             return Statement::EMPTY;
         }
 
-        while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
-            self.next_token();
-        }
+        self.continue_till_end();
 
         // TODO: Expression parsing
 
         Statement::VAR(statement)
+    }
+
+    fn parse_const_statement(&mut self) -> Statement {
+        let mut statement = ConstStatement {
+            name: Identifier {
+                value: "".to_string(),
+            },
+            value: Expression::EMPTY,
+        };
+        if !self.expect_peek(TokenType::IDENT) {
+            return Statement::EMPTY;
+        }
+
+        statement.name = Identifier {
+            value: self.cur_token.clone().literal,
+        };
+
+        if !self.expect_peek(TokenType::ASSIGN) {
+            return Statement::EMPTY;
+        }
+
+        self.continue_till_end();
+
+        // TODO: Expression parsing
+
+        Statement::CONST(statement)
+    }
+
+    /// parse varianles that are initialized with := or ::
+    fn parse_quick_assign(&mut self) -> Statement {
+        let statement = match self.peek_token.token_type {
+            TokenType::VARASSIGN => Statement::VAR(VarStatement {
+                name: Identifier {
+                    value: self.cur_token.literal.clone(),
+                },
+                value: Expression::EMPTY,
+            }),
+            TokenType::CONSTASSIGN => Statement::CONST(ConstStatement {
+                name: Identifier {
+                    value: self.cur_token.literal.clone(),
+                },
+                value: Expression::EMPTY,
+            }),
+            _ => panic!(),
+        };
+
+        // Skip expression and EOL
+        self.continue_till_end();
+
+        // TODO: parse expression
+        statement
     }
 
     fn parse_return_statement(&mut self) -> Statement {
@@ -144,9 +209,7 @@ impl Parser {
         };
 
         // Skip expression and EOL
-        while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
-            self.next_token();
-        }
+        self.continue_till_end();
 
         // TODO: Expression parsing
 
@@ -207,7 +270,7 @@ impl Parser {
             TokenType::PLUS => Operators::PLUS,
             TokenType::MINUS => Operators::MINUS,
             TokenType::BANG => Operators::BANG,
-            _ => panic!("Invalid prefix ERROR. Please report")
+            _ => panic!("Invalid prefix ERROR. Please report"),
         };
 
         self.next_token();
@@ -223,19 +286,23 @@ impl Parser {
     fn parse_infix_expression(&mut self, left: Expression) -> Expression {
         let mut expression = InfixExpression {
             operator: self.get_operator(&self.cur_token),
-            left: Box::from(left),
-            right: Box::from(Expression::EMPTY),
+            left: Box::new(left),
+            right: Box::new(Expression::EMPTY),
         };
         let precedence = self.cur_precedence();
         self.next_token();
-        expression.right = Box::from(self.parse_expression(precedence));
+        expression.right = Box::new(self.parse_expression(precedence));
         Expression::INFIX(expression)
     }
 
     fn parse_boolean(&mut self) -> Expression {
         match self.cur_token.token_type {
-            TokenType::TRUE => Expression::BOOLEAN(Boolean { bool_type: Booleans::TRUE }),
-            TokenType::FALSE => Expression::BOOLEAN(Boolean { bool_type: Booleans::FALSE }),
+            TokenType::TRUE => Expression::BOOLEAN(Boolean {
+                bool_type: Booleans::TRUE,
+            }),
+            TokenType::FALSE => Expression::BOOLEAN(Boolean {
+                bool_type: Booleans::FALSE,
+            }),
             _ => Expression::EMPTY,
         }
     }
@@ -298,8 +365,8 @@ impl Parser {
     /// returns true if peek token is eol or eof
     fn peek_token_is_end(&self) -> bool {
         match self.peek_token.token_type {
-            TokenType::EOL | TokenType::EOF => true,
-            _ => false
+            TokenType::EOL | TokenType::EOF | TokenType::SEMICOLON => true,
+            _ => false,
         }
     }
 
@@ -353,6 +420,12 @@ impl Parser {
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             _ => Expression::EMPTY,
+        }
+    }
+
+    fn continue_till_end(&mut self) {
+        while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
+            self.next_token();
         }
     }
 }

@@ -69,6 +69,7 @@ pub enum TokenType {
     DOT,         // .
     COLON,       // :
     ARROW,       // ->
+    SEMICOLON,   // ;
 
     // other
     ILLEGAL, // illeagl expression
@@ -142,6 +143,7 @@ impl TokenType {
             TokenType::DOT => String::from("."),
             TokenType::COLON => String::from(":"),
             TokenType::ARROW => String::from("->"),
+            TokenType::SEMICOLON => String::from(";"),
 
             TokenType::ILLEGAL => String::from("ILLEGAL"),
             TokenType::EOL => String::from("EOL"),
