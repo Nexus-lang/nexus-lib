@@ -22,6 +22,8 @@ pub enum Expression {
     PREFIX(PrefixExpression),
     INFIX(InfixExpression),
     BOOLEAN(Boolean),
+    IF(IfExpression),
+    AS(AsExpression),
     EMPTY,
 }
 
@@ -87,6 +89,18 @@ pub struct ExpressionStatement {
     pub expression: Expression,
 }
 
+/// Code block enclosed by curly brackets
+///  ```
+/// if true {
+///     print("Hello, World!")
+/// }
+///  ```
+/// 
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct BlockStatement {
+    pub statements: Vec<Statement>,
+}
+
 // number literal
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct NumberLiteral {
@@ -111,6 +125,20 @@ pub struct InfixExpression {
     pub left: Box<Expression>,
     pub right: Box<Expression>,
     pub operator: Operators,
+}
+
+// TODO: Implement this
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct AsExpression {
+    pub from: Box<Expression>,
+    pub to: Box<Expression>,
+}
+
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct IfExpression {
+    pub condition: Box<Expression>,
+    pub consequence: BlockStatement,
+    pub alternative: BlockStatement,
 }
 
 // booleans (true, false)

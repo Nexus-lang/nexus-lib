@@ -1,6 +1,5 @@
-var amogus = "hello"
-return amogus
-
-amogus
-+10
-10 != 101 + 9
+if (true) {
+    return true
+} else {
+    return false
+}

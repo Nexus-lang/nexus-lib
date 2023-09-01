@@ -1,4 +1,4 @@
-use std::process;
+use std::{process, sync::Arc};
 
 use crate::{
     ast::*,
@@ -216,6 +216,28 @@ impl Parser {
         Statement::RETURN(statement)
     }
 
+    fn parse_block_statement(&mut self) -> BlockStatement {
+        let mut statements = Vec::new();
+
+        self.next_token();
+
+        while !self.cur_token_is(TokenType::RCURLY) && !self.cur_token_is(TokenType::EOF) {
+            let statement = self.parse_statement();
+
+            if statement != Statement::EMPTY
+                && statement
+                    != Statement::EXPRESSION(ExpressionStatement {
+                        expression: Expression::EMPTY,
+                    })
+            {
+                statements.push(statement);
+            }
+            self.next_token();
+        }
+
+        BlockStatement { statements }
+    }
+
     fn parse_expression_statement(&mut self) -> Statement {
         let expression = self.parse_expression(LOWEST);
         let statement = ExpressionStatement { expression };
@@ -260,6 +282,57 @@ impl Parser {
             value: self.cur_token.literal.clone(),
         };
         Expression::STRINGLITERAL(literal)
+    }
+
+    fn parse_if_expression(&mut self) -> Expression {
+        if !self.expect_peek(TokenType::LPARENT) {
+            return Expression::EMPTY;
+        }
+
+        self.next_token();
+        let condition = Box::new(self.parse_expression(LOWEST));
+
+        if !self.expect_peek(TokenType::RPARENT) {
+            return Expression::EMPTY;
+        }
+
+        if !self.expect_peek(TokenType::LCURLY) {
+            return Expression::EMPTY;
+        }
+
+        let consequence = self.parse_block_statement();
+
+        let mut alternative: BlockStatement = BlockStatement { statements: vec![Statement::EMPTY] };
+
+        if self.peek_token_is(TokenType::ELSE) {
+            self.next_token();
+
+            if !self.expect_peek(TokenType::LCURLY) {
+                return Expression::EMPTY;
+            }
+
+            alternative = self.parse_block_statement();
+        }
+
+        let expression = IfExpression {
+            condition,
+            consequence,
+            alternative,
+        };
+
+        Expression::IF(expression)
+    }
+
+    fn parse_grouped_expression(&mut self) -> Expression {
+        self.next_token();
+
+        let expression = self.parse_expression(LOWEST);
+
+        if !self.expect_peek(TokenType::RPARENT) {
+            return Expression::EMPTY;
+        }
+
+        expression
     }
 
     /// constructs prefix expression
@@ -410,13 +483,13 @@ impl Parser {
             TokenType::IDENT => self.parse_identifier(),
             TokenType::NUMBER => self.parse_number_literal(),
             TokenType::STRING => self.parse_string_literal(),
+            TokenType::LPARENT => self.parse_grouped_expression(),
             /*
             TokenType::FUNC => self.parse_function_literal(),
-            TokenType::LPARENT => self.parse_grouped_expression(),
             TokenType::LSQUAREBRAC => self.parse_list_literal(),
             TokenType::LCURLY => self.parse_hash_literal(),
-            TokenType::IF => self.parse_if_expression(),
             */
+            TokenType::IF => self.parse_if_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             _ => Expression::EMPTY,
