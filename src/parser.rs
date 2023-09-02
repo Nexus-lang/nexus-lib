@@ -1,4 +1,4 @@
-use std::{process, sync::Arc};
+use std::process;
 
 use crate::{
     ast::*,
@@ -40,6 +40,7 @@ const SUM: i8 = 4; // +
 const PRODUCT: i8 = 5; // *
 const PREFIX: i8 = 6; // -x, +x or !x
 const CALL: i8 = 7; // amogus(x)
+const CONVERSION: i8 = 8;
 
 impl Parser {
     /// Construct Parser from lexer
@@ -294,7 +295,9 @@ impl Parser {
 
         let consequence = self.parse_block_statement();
 
-        let mut alternative: BlockStatement = BlockStatement { statements: vec![Statement::EMPTY] };
+        let mut alternative: BlockStatement = BlockStatement {
+            statements: vec![Statement::EMPTY],
+        };
 
         if self.peek_token_is(TokenType::ELSE) {
             self.next_token();
@@ -385,6 +388,7 @@ impl Parser {
             TokenType::LESSTHAN => Operators::LESSTHAN,
             TokenType::GREATEROREQUALTHAN => Operators::GREATOREQUAL,
             TokenType::LESSOREQUALTHAN => Operators::LESSOREQUAL,
+            TokenType::AS => Operators::AS,
             _ => Operators::ILLEGAL,
         }
     }
@@ -399,6 +403,7 @@ impl Parser {
             TokenType::MINUS => SUM,
             TokenType::DIVIDE => PRODUCT,
             TokenType::MULTIPLY => PRODUCT,
+            TokenType::AS => CONVERSION,
             _ => LOWEST,
         }
     }

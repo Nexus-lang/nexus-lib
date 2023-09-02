@@ -48,6 +48,7 @@ pub enum Operators {
     LESSTHAN,     // in
     GREATOREQUAL, // in
     LESSOREQUAL,  // in
+    AS,           // in
     ILLEGAL,
 }
 
