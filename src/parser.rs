@@ -285,16 +285,8 @@ impl Parser {
     }
 
     fn parse_if_expression(&mut self) -> Expression {
-        if !self.expect_peek(TokenType::LPARENT) {
-            return Expression::EMPTY;
-        }
-
         self.next_token();
         let condition = Box::new(self.parse_expression(LOWEST));
-
-        if !self.expect_peek(TokenType::RPARENT) {
-            return Expression::EMPTY;
-        }
 
         if !self.expect_peek(TokenType::LCURLY) {
             return Expression::EMPTY;
