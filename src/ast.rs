@@ -23,7 +23,8 @@ pub enum Expression {
     INFIX(InfixExpression),
     BOOLEAN(Boolean),
     IF(IfExpression),
-    AS(AsExpression),
+    WHILE(WhileExpression),
+    FOR(ForExpression),
     EMPTY,
 }
 
@@ -128,18 +129,24 @@ pub struct InfixExpression {
     pub operator: Operators,
 }
 
-// TODO: Implement this
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
-pub struct AsExpression {
-    pub from: Box<Expression>,
-    pub to: Box<Expression>,
-}
-
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct IfExpression {
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
     pub alternative: BlockStatement,
+}
+
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct ForExpression {
+    pub ident: Identifier,
+    pub loop_list: Box<Expression>,
+    pub consequence: BlockStatement,
+}
+
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct WhileExpression {
+    pub condition: Box<Expression>,
+    pub consequence: BlockStatement,
 }
 
 // booleans (true, false)

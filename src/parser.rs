@@ -92,9 +92,9 @@ impl Parser {
     /// depending on current token
     fn parse_statement(&mut self) -> Statement {
         match self.cur_token.token_type {
-            TokenType::VAR => self.parse_var_statement(),
+            TokenType::VAR => self.parse_vars(),
             TokenType::RETURN => self.parse_return_statement(),
-            TokenType::CONST => self.parse_const_statement(),
+            TokenType::CONST => self.parse_vars(),
             TokenType::LOCAL => self.parse_local_decl(),
             TokenType::ILLEGAL => {
                 self.next_token();
@@ -127,56 +127,44 @@ impl Parser {
         Statement::LOCAL(statement)
     }
 
-    fn parse_var_statement(&mut self) -> Statement {
-        let mut statement = VarStatement {
-            name: Identifier {
-                value: "".to_string(),
-            },
-            value: Expression::EMPTY,
+    /// parser var and const
+    fn parse_vars(&mut self) -> Statement {
+        let statement = match self.cur_token.token_type {
+            TokenType::VAR => Statement::VAR(VarStatement {
+                name: Identifier {
+                    value: self.peek_token.literal.clone(),
+                },
+                value: {
+                    // Identifier
+                    self.next_token();
+                    // assign
+                    self.next_token();
+                    // value
+                    self.next_token();
+                    self.parse_expression(LOWEST)
+                },
+            }),
+            TokenType::CONST => Statement::CONST(ConstStatement {
+                name: Identifier {
+                    value: self.peek_token.literal.clone(),
+                },
+                value: {
+                    // Identifier
+                    self.next_token();
+                    // assign
+                    self.next_token();
+                    // value
+                    self.next_token();
+                    self.parse_expression(LOWEST)
+                },
+            }),
+            _ => panic!(),
         };
-        if !self.expect_peek(TokenType::IDENT) {
-            return Statement::EMPTY;
-        }
 
-        statement.name = Identifier {
-            value: self.cur_token.clone().literal,
-        };
-
-        if !self.expect_peek(TokenType::ASSIGN) {
-            return Statement::EMPTY;
-        }
-
+        // Go to EOL or semicolon
         self.continue_till_end();
 
-        // TODO: Expression parsing
-
-        Statement::VAR(statement)
-    }
-
-    fn parse_const_statement(&mut self) -> Statement {
-        let mut statement = ConstStatement {
-            name: Identifier {
-                value: "".to_string(),
-            },
-            value: Expression::EMPTY,
-        };
-        if !self.expect_peek(TokenType::IDENT) {
-            return Statement::EMPTY;
-        }
-
-        statement.name = Identifier {
-            value: self.cur_token.clone().literal,
-        };
-
-        if !self.expect_peek(TokenType::ASSIGN) {
-            return Statement::EMPTY;
-        }
-
-        self.continue_till_end();
-
-        // TODO: Expression parsing
-
-        Statement::CONST(statement)
+        statement
     }
 
     /// parse varianles that are initialized with := or ::
@@ -186,27 +174,39 @@ impl Parser {
                 name: Identifier {
                     value: self.cur_token.literal.clone(),
                 },
-                value: Expression::EMPTY,
+                value: {
+                    // Assign
+                    self.next_token();
+                    // value
+                    self.next_token();
+                    self.parse_expression(LOWEST)
+                },
             }),
             TokenType::CONSTASSIGN => Statement::CONST(ConstStatement {
                 name: Identifier {
                     value: self.cur_token.literal.clone(),
                 },
-                value: Expression::EMPTY,
+                value: {
+                    // Assign
+                    self.next_token();
+                    // value
+                    self.next_token();
+                    self.parse_expression(LOWEST)
+                },
             }),
             _ => panic!(),
         };
 
-        // Skip expression and EOL
+        // Go to EOL or semicolon
         self.continue_till_end();
 
-        // TODO: parse expression
         statement
     }
 
     fn parse_return_statement(&mut self) -> Statement {
+        self.next_token();
         let statement = ReturnStatement {
-            return_value: Expression::EMPTY,
+            return_value: self.parse_expression(LOWEST),
         };
 
         // Skip expression and EOL
@@ -293,6 +293,8 @@ impl Parser {
             return Expression::EMPTY;
         }
 
+        self.next_token();
+
         let consequence = self.parse_block_statement();
 
         let mut alternative: BlockStatement = BlockStatement {
@@ -316,6 +318,56 @@ impl Parser {
         };
 
         Expression::IF(expression)
+    }
+
+    fn parse_while_expression(&mut self) -> Expression {
+        self.next_token();
+        let condition = Box::new(self.parse_expression(LOWEST));
+
+        if !self.expect_peek(TokenType::LCURLY) {
+            return Expression::EMPTY;
+        }
+        self.next_token();
+
+        let consequence = self.parse_block_statement();
+
+        let expression = WhileExpression {
+            condition,
+            consequence,
+        };
+        Expression::WHILE(expression)
+    }
+
+    fn parse_for_expression(&mut self) -> Expression {
+        self.next_token();
+
+        let ident = Identifier {
+            value: self.cur_token.literal.clone(),
+        };
+
+        if !self.expect_peek(TokenType::IN) {
+            return Expression::EMPTY;
+        }
+
+        self.next_token();
+
+        let loop_list = self.parse_expression(LOWEST);
+
+        if !self.expect_peek(TokenType::LCURLY) {
+            return Expression::EMPTY;
+        }
+
+        self.next_token();
+
+        let consequence = self.parse_block_statement();
+
+        let expression = ForExpression {
+            ident,
+            loop_list: Box::new(loop_list),
+            consequence,
+        };
+
+        Expression::FOR(expression)
     }
 
     fn parse_grouped_expression(&mut self) -> Expression {
@@ -487,6 +539,8 @@ impl Parser {
             TokenType::LCURLY => self.parse_hash_literal(),
             */
             TokenType::IF => self.parse_if_expression(),
+            TokenType::WHILE => self.parse_while_expression(),
+            TokenType::FOR => self.parse_for_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             _ => Expression::EMPTY,

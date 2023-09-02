@@ -229,7 +229,7 @@ impl Lexer {
                                 push_token!(tokens, TokenType::EQUAL, self.current_pos_line);
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
-                            } else {
+                            } else if input_chars[self.current_pos - 1] != TokenType::COLON.to_char() {
                                 push_token!(tokens, TokenType::ASSIGN, self.current_pos_line);
                             }
                         }
@@ -307,11 +307,11 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::COLON.literal() => {
-                            if input_chars[self.current_pos + 1] == ':' {
+                            if input_chars[self.current_pos + 1] == TokenType::COLON.to_char() {
                                 push_token!(tokens, TokenType::CONSTASSIGN, self.current_pos_line);
-                            } else if input_chars[self.current_pos + 1] == '=' {
+                            } else if input_chars[self.current_pos + 1] == TokenType::ASSIGN.to_char() {
                                 push_token!(tokens, TokenType::VARASSIGN, self.current_pos_line);
-                            } else {
+                            } else if input_chars[self.current_pos - 1] != TokenType::COLON.to_char() {
                                 push_token!(tokens, TokenType::COLON, self.current_pos_line)
                             }
                         }
