@@ -2,6 +2,7 @@ use std::process;
 
 use crate::{
     ast::*,
+    errors::*,
     lexer::Lexer,
     tokens::{Token, TokenType},
 };
@@ -124,15 +125,12 @@ impl Parser {
 
     fn parse_local_decl(&mut self) -> Statement {
         if self.peek_token_is(TokenType::LOCAL) {
-            self.throw_error(
-                format!("Cannot declare `{}` as local", self.peek_token.literal),
-                false,
-            );
+            self.throw_error(invalid_local_decl(&self.peek_token), false);
         }
         self.next_token();
         let left = self.parse_statement();
         if left == EMPTY_EXPRESSION_STATEMENT {
-            self.throw_error(format!("Expected statement on the left of local declaration. Got illegal statement {:?} instead", left), false);
+            self.throw_error(empty_local_decl(&left), false);
         }
         let statement = LocalStatement {
             left: Box::new(left),
@@ -154,7 +152,14 @@ impl Parser {
                     self.next_token();
                     // value
                     self.next_token();
-                    self.parse_expression(LOWEST)
+                    let expression = self.parse_expression(LOWEST);
+
+                    if expression == Expression::EMPTY {
+                        self.throw_error(empty_variable_val(&expression), false);
+                        Expression::EMPTY
+                    } else {
+                        expression
+                    }
                 },
             }),
             TokenType::CONST => Statement::CONST(ConstStatement {
@@ -168,7 +173,14 @@ impl Parser {
                     self.next_token();
                     // value
                     self.next_token();
-                    self.parse_expression(LOWEST)
+                    let expression = self.parse_expression(LOWEST);
+
+                    if expression == Expression::EMPTY {
+                        self.throw_error(empty_variable_val(&expression), false);
+                        Expression::EMPTY
+                    } else {
+                        expression
+                    }
                 },
             }),
             _ => panic!(),
@@ -192,7 +204,13 @@ impl Parser {
                     self.next_token();
                     // value
                     self.next_token();
-                    self.parse_expression(LOWEST)
+                    let expression = self.parse_expression(LOWEST);
+                    if expression == Expression::EMPTY {
+                        self.throw_error(empty_variable_val(&expression), false);
+                        Expression::EMPTY
+                    } else {
+                        expression
+                    }
                 },
             }),
             TokenType::CONSTASSIGN => Statement::CONST(ConstStatement {
@@ -204,7 +222,13 @@ impl Parser {
                     self.next_token();
                     // value
                     self.next_token();
-                    self.parse_expression(LOWEST)
+                    let expression = self.parse_expression(LOWEST);
+                    if expression == Expression::EMPTY {
+                        self.throw_error(empty_variable_val(&expression), false);
+                        Expression::EMPTY
+                    } else {
+                        expression
+                    }
                 },
             }),
             _ => panic!(),
@@ -219,13 +243,19 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Statement {
         self.next_token();
         let statement = ReturnStatement {
-            return_value: self.parse_expression(LOWEST),
+            return_value: {
+                let expression = self.parse_expression(LOWEST);
+                if expression == Expression::EMPTY {
+                    self.throw_error(empty_return_val(&expression), false);
+                    Expression::EMPTY
+                } else {
+                    expression
+                }
+            },
         };
 
         // Skip expression and EOL
         self.continue_till_end();
-
-        // TODO: Expression parsing
 
         Statement::RETURN(statement)
     }
@@ -302,7 +332,13 @@ impl Parser {
         self.next_token();
         let condition = Box::new(self.parse_expression(LOWEST));
 
+        if condition == Box::from(Expression::EMPTY) {
+            self.throw_error(empty_condition(&TokenType::IF, &condition), false);
+            return Expression::EMPTY;
+        }
+
         if !self.expect_peek(TokenType::LCURLY) {
+            self.peek_error(TokenType::LCURLY);
             return Expression::EMPTY;
         }
 
@@ -310,7 +346,7 @@ impl Parser {
 
         let consequence = self.parse_block_statement();
 
-        let mut alternative: BlockStatement = BlockStatement {
+        let mut alternative = BlockStatement {
             statements: vec![Statement::EMPTY],
         };
 
@@ -337,9 +373,16 @@ impl Parser {
         self.next_token();
         let condition = Box::new(self.parse_expression(LOWEST));
 
-        if !self.expect_peek(TokenType::LCURLY) {
+        if condition == Box::from(Expression::EMPTY) {
+            self.throw_error(empty_condition(&TokenType::WHILE, &condition), false);
             return Expression::EMPTY;
         }
+
+        if !self.expect_peek(TokenType::LCURLY) {
+            self.peek_error(TokenType::LCURLY);
+            return Expression::EMPTY;
+        }
+
         self.next_token();
 
         let consequence = self.parse_block_statement();
@@ -355,10 +398,16 @@ impl Parser {
         self.next_token();
 
         let ident = Identifier {
-            value: self.cur_token.literal.clone(),
+            value: if &self.cur_token.token_type == &TokenType::IDENT {
+                self.cur_token.literal.clone()
+            } else {
+                self.throw_error(invalid_identifier(&self.cur_token.token_type.literal().trim().to_string()), false);
+                String::new()
+            },
         };
 
         if !self.expect_peek(TokenType::IN) {
+            self.peek_error(TokenType::IN);
             return Expression::EMPTY;
         }
 
