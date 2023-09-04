@@ -1,9 +1,9 @@
-#[macro_use]
 mod tokens;
 mod ast;
 mod lexer;
 mod parser;
 mod util;
+mod errors;
 
 use lexer::Lexer;
 use parser::Parser;

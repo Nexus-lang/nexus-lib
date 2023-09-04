@@ -42,6 +42,10 @@ const PREFIX: i8 = 6; // -x, +x or !x
 const CALL: i8 = 7; // amogus(x)
 const CONVERSION: i8 = 8;
 
+const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionStatement {
+    expression: Expression::EMPTY,
+});
+
 impl Parser {
     /// Construct Parser from lexer
     pub fn new(lexer: &mut Lexer) -> Self {
@@ -83,7 +87,7 @@ impl Parser {
                 program.statements.push(statement);
             }
         }
-        println!("{:?}", self.errors);
+        println!("Errors: {:?}", self.errors);
 
         program
     }
@@ -119,8 +123,17 @@ impl Parser {
     }
 
     fn parse_local_decl(&mut self) -> Statement {
+        if self.peek_token_is(TokenType::LOCAL) {
+            self.throw_error(
+                format!("Cannot declare `{}` as local", self.peek_token.literal),
+                false,
+            );
+        }
         self.next_token();
         let left = self.parse_statement();
+        if left == EMPTY_EXPRESSION_STATEMENT {
+            self.throw_error(format!("Expected statement on the left of local declaration. Got illegal statement {:?} instead", left), false);
+        }
         let statement = LocalStatement {
             left: Box::new(left),
         };
@@ -520,7 +533,14 @@ impl Parser {
     /// if exit is set to `true`
     /// it will stop the program
     fn throw_error(&mut self, message: String, exit: bool) {
-        self.errors.push(message);
+        let msg = format!(
+            "{} error at: {}:{}:{}",
+            message,
+            self.lexer.input.file_path,
+            self.line_count,
+            self.peek_token.cur_pos + 1,
+        );
+        self.errors.push(msg);
         if exit {
             println!("{:?}", self.errors);
             process::exit(1);

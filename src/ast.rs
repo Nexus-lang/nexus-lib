@@ -1,7 +1,7 @@
-use std::{collections::{HashMap, HashSet}, hash::Hash, cmp::Ordering};
+use std::{collections::HashMap, hash::Hash};
 
 /// Statements, Code parts that don't give back a value
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub enum Statement {
     VAR(VarStatement),
     CONST(ConstStatement),
@@ -16,7 +16,7 @@ pub enum Statement {
 }
 
 /// Expressions, Code parts that don't give back a value
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Expression {
     IDENTIFIER(Identifier),
     NUMBERLITERAL(NumberLiteral),
@@ -27,7 +27,6 @@ pub enum Expression {
     IF(IfExpression),
     WHILE(WhileExpression),
     FOR(ForExpression),
-    FUNC(FuncExpression),
     EMPTY,
 }
 
@@ -59,37 +58,37 @@ pub enum Operators {
 // All ast types
 // ident
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Hash)]
-pub struct Identifier {
+pub struct  Identifier {
     pub value: String,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct LocalStatement {
     pub left: Box<Statement>,
 }
 
 // var
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct VarStatement {
     pub name: Identifier,
     pub value: Expression,
 }
 
 // const
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct ConstStatement {
     pub name: Identifier,
     pub value: Expression,
 }
 
 // return
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct ReturnStatement {
     pub return_value: Expression,
 }
 
 // expression (literals, arithmetic operations, functions, if, while...)
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct ExpressionStatement {
     pub expression: Expression,
 }
@@ -101,7 +100,7 @@ pub struct ExpressionStatement {
 /// }
 ///  ```
 /// 
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct BlockStatement {
     pub statements: Vec<Statement>,
 }
@@ -171,55 +170,4 @@ pub struct Boolean {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
-}
-
-impl PartialEq for Expression {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Expression::FUNC(a), Expression::FUNC(b)) => {
-                // Custom comparison logic for FUNC variant with HashMap args
-                let keys1: HashSet<&Identifier> = a.args.keys().collect();
-                let keys2: HashSet<&Identifier> = b.args.keys().collect();
-
-                if keys1 != keys2 {
-                    return false;
-                }
-
-                for key in keys1 {
-                    if a.args[key] != b.args[key] {
-                        return false;
-                    }
-                }
-
-                true
-            }
-            (Expression::IDENTIFIER(a), Expression::IDENTIFIER(b)) => a == b,
-            (Expression::NUMBERLITERAL(a), Expression::NUMBERLITERAL(b)) => a == b,
-            (Expression::STRINGLITERAL(a), Expression::STRINGLITERAL(b)) => a == b,
-            (Expression::PREFIX(a), Expression::PREFIX(b)) => a == b,
-            (Expression::INFIX(a), Expression::INFIX(b)) => a == b,
-            (Expression::BOOLEAN(a), Expression::BOOLEAN(b)) => a == b,
-            (Expression::IF(a), Expression::IF(b)) => a == b,
-            (Expression::WHILE(a), Expression::WHILE(b)) => a == b,
-            (Expression::FOR(a), Expression::FOR(b)) => a == b,
-            // Handle other variants here as needed
-            _ => false,
-        }
-    }
-}
-
-impl Eq for BlockStatement {
-
-}
-
-impl Ord for Expression {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Ordering::Equal)
-    }
-}
-
-impl PartialOrd for Expression {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
 }
