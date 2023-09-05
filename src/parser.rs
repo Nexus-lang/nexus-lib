@@ -4,7 +4,7 @@ use crate::{
     ast::*,
     errors::*,
     lexer::Lexer,
-    tokens::{Token, TokenType},
+    tokens::{Token, TokenType}, util,
 };
 /// Parser struct containing
 /// necessary info to
@@ -588,6 +588,8 @@ impl Parser {
         self.errors.push(msg);
         if exit {
             println!("{:?}", self.errors);
+            println!("PRESS ANY KEY TO EXIT");
+            util::input();
             process::exit(1);
         }
     }

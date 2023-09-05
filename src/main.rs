@@ -13,12 +13,10 @@ fn main() {
     // select the file to interpret
     println!("Enter file to interpret or type ENTER to use default file:");
     print!(">>");
-    let input = input();
-
-    let custom_path = format!("examples/{}", input);
+    let input = input(); 
 
     let example_code = FileHandler::read_file(if input != "" {
-        custom_path.as_str()
+        input.as_str()
     } else {
         "examples/test.nx"
     });
@@ -41,4 +39,7 @@ fn main() {
     println!("AST: \n");
 
     println!("{:?}", program);
+
+    println!("PRESS ANY KEY TO EXIT");
+    util::input();
 }
