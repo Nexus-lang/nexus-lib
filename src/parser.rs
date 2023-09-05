@@ -125,12 +125,12 @@ impl Parser {
 
     fn parse_local_decl(&mut self) -> Statement {
         if self.peek_token_is(TokenType::LOCAL) {
-            self.throw_error(invalid_local_decl(&self.peek_token), false);
+            self.throw_error(invalid_local_decl(&self.peek_token), true);
         }
         self.next_token();
         let left = self.parse_statement();
         if left == EMPTY_EXPRESSION_STATEMENT {
-            self.throw_error(empty_local_decl(&left), false);
+            self.throw_error(empty_local_decl(&left), true);
         }
         let statement = LocalStatement {
             left: Box::new(left),
@@ -155,7 +155,7 @@ impl Parser {
                     let expression = self.parse_expression(LOWEST);
 
                     if expression == Expression::EMPTY {
-                        self.throw_error(empty_variable_val(&expression), false);
+                        self.throw_error(empty_variable_val(&expression), true);
                         Expression::EMPTY
                     } else {
                         expression
@@ -176,7 +176,7 @@ impl Parser {
                     let expression = self.parse_expression(LOWEST);
 
                     if expression == Expression::EMPTY {
-                        self.throw_error(empty_variable_val(&expression), false);
+                        self.throw_error(empty_variable_val(&expression), true);
                         Expression::EMPTY
                     } else {
                         expression
@@ -206,7 +206,7 @@ impl Parser {
                     self.next_token();
                     let expression = self.parse_expression(LOWEST);
                     if expression == Expression::EMPTY {
-                        self.throw_error(empty_variable_val(&expression), false);
+                        self.throw_error(empty_variable_val(&expression), true);
                         Expression::EMPTY
                     } else {
                         expression
@@ -224,7 +224,7 @@ impl Parser {
                     self.next_token();
                     let expression = self.parse_expression(LOWEST);
                     if expression == Expression::EMPTY {
-                        self.throw_error(empty_variable_val(&expression), false);
+                        self.throw_error(empty_variable_val(&expression), true);
                         Expression::EMPTY
                     } else {
                         expression
@@ -246,7 +246,7 @@ impl Parser {
             return_value: {
                 let expression = self.parse_expression(LOWEST);
                 if expression == Expression::EMPTY {
-                    self.throw_error(empty_return_val(&expression), false);
+                    self.throw_error(empty_return_val(&expression), true);
                     Expression::EMPTY
                 } else {
                     expression
@@ -333,7 +333,7 @@ impl Parser {
         let condition = Box::new(self.parse_expression(LOWEST));
 
         if condition == Box::from(Expression::EMPTY) {
-            self.throw_error(empty_condition(&TokenType::IF, &condition), false);
+            self.throw_error(empty_condition(&TokenType::IF, &condition), true);
             return Expression::EMPTY;
         }
 
@@ -374,7 +374,7 @@ impl Parser {
         let condition = Box::new(self.parse_expression(LOWEST));
 
         if condition == Box::from(Expression::EMPTY) {
-            self.throw_error(empty_condition(&TokenType::WHILE, &condition), false);
+            self.throw_error(empty_condition(&TokenType::WHILE, &condition), true);
             return Expression::EMPTY;
         }
 
@@ -395,27 +395,26 @@ impl Parser {
     }
 
     fn parse_for_expression(&mut self) -> Expression {
-        self.next_token();
+        if !self.expect_peek(TokenType::IDENT) {
+            self.peek_error(TokenType::IDENT);
+            return Expression::EMPTY;
+        }
 
         let ident = Identifier {
-            value: if &self.cur_token.token_type == &TokenType::IDENT {
-                self.cur_token.literal.clone()
-            } else {
-                self.throw_error(invalid_identifier(&self.cur_token.token_type.literal().trim().to_string()), false);
-                String::new()
-            },
+            value: self.cur_token.literal.clone(),
         };
+        println!("{}", &self.cur_token.literal);
 
         if !self.expect_peek(TokenType::IN) {
             self.peek_error(TokenType::IN);
             return Expression::EMPTY;
         }
-
         self.next_token();
 
-        let loop_list = self.parse_expression(LOWEST);
+        let loop_list = Box::from(self.parse_expression(LOWEST));
 
         if !self.expect_peek(TokenType::LCURLY) {
+            self.peek_error(TokenType::LCURLY);
             return Expression::EMPTY;
         }
 
@@ -425,10 +424,9 @@ impl Parser {
 
         let expression = ForExpression {
             ident,
-            loop_list: Box::new(loop_list),
+            loop_list,
             consequence,
         };
-
         Expression::FOR(expression)
     }
 
@@ -438,6 +436,7 @@ impl Parser {
         let expression = self.parse_expression(LOWEST);
 
         if !self.expect_peek(TokenType::RPARENT) {
+            self.peek_error(TokenType::RPARENT);
             return Expression::EMPTY;
         }
 
@@ -568,14 +567,11 @@ impl Parser {
     /// returns error based on expected token type
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
-            "expected next token to be {:?}, found {:?} instead. error at: {}:{}:{}",
+            "expected next token to be {:?}, found {:?} instead.",
             token_type,
             self.peek_token.token_type,
-            self.lexer.input.file_path,
-            self.line_count,
-            self.peek_token.cur_pos + 1,
         );
-        self.throw_error(msg, false);
+        self.throw_error(msg, true);
     }
 
     /// appends error to [`Parser::errors`]

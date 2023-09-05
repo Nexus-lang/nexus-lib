@@ -27,7 +27,7 @@ pub fn empty_condition(expression_type: &TokenType, value: &Expression) -> Strin
     format!("Expected condition left side of the {}. Got {:?} instead", expression_type.literal(), value)
 }
 
-/// Expected identifier like `x` found {} instead
+/// Expected identifier like `x` found `{}` instead
 pub fn invalid_identifier(ident: &String) -> String {
-    format!("Expected identifier like `x` found {} instead", ident)
+    format!("Expected identifier like `x` found `{}` instead", ident)
 }
