@@ -640,6 +640,8 @@ impl Parser {
             TokenType::NOTEQUAL => EQUALS,
             TokenType::LESSTHAN => LESSGREATER,
             TokenType::GREATERTHAN => LESSGREATER,
+            TokenType::LESSOREQUALTHAN => LESSGREATEREQUAL,
+            TokenType::GREATEROREQUALTHAN => LESSGREATEREQUAL,
             TokenType::PLUS => SUM,
             TokenType::MINUS => SUM,
             TokenType::DIVIDE => PRODUCT,

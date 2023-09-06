@@ -1,6 +1,1 @@
-func sus(amogus_name, sus_factor) {
-    var amogus = "$amogus_name$ $sus_factor$"
-    return amogus
-}
-
-sus("Red", 69)
+c >= 0
