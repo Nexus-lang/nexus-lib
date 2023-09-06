@@ -28,6 +28,7 @@ pub enum Expression {
     WHILE(WhileExpression),
     FOR(ForExpression),
     FUNC(FuncExpression),
+    CALL(CallExpression),
     EMPTY,
 }
 
@@ -169,6 +170,12 @@ pub struct FuncExpression {
     pub arg_types: Vec<Identifier>,
     pub return_type: Identifier,
     pub consequence: BlockStatement,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct CallExpression {
+    pub function: Box<Expression>,
+    pub args: Vec<Expression>,
 }
 
 // booleans (true, false)

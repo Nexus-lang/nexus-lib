@@ -297,7 +297,7 @@ impl Parser {
 
         while !self.peek_token_is_end() && precedence < self.peek_precedence() {
             self.next_token();
-            left_expression = self.parse_infix_expression(left_expression.clone());
+            left_expression = self.infix_parse(left_expression.clone());
         }
 
         left_expression
@@ -310,6 +310,7 @@ impl Parser {
     }
 
     fn parse_number_literal(&self) -> Expression {
+        // make this not panic
         let err = format!("Cannot convert literal: {} to int", self.cur_token.literal);
         let literal = NumberLiteral {
             value: self.cur_token.literal.parse().expect(err.as_str()),
@@ -499,15 +500,11 @@ impl Parser {
 
         let mut args = Vec::new();
 
-        println!("Current token: {:?}", &self.cur_token);
-
         while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
             self.next_token();
 
             let arg = Identifier::new(self.cur_token.literal.clone());
             args.push(arg);
-
-            println!("Current token: {:?}", &self.cur_token);
 
             if !self.peek_token_is(TokenType::COMMA) {
                 break;
@@ -515,8 +512,6 @@ impl Parser {
 
             self.next_token();
         }
-
-        println!("Args: {:?}", &args);
 
         self.next_token();
 
@@ -536,6 +531,31 @@ impl Parser {
             return_type: Identifier::new("NYI".to_string()),
             consequence,
         });
+    }
+
+    fn parse_call_expression(&mut self, function: Expression) -> Expression {
+        let mut args = Vec::new();
+
+        if !self.cur_token_is(TokenType::LPARENT) {
+            self.peek_error(TokenType::LPARENT);
+        }
+
+        while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
+            self.next_token();
+
+            let arg = self.parse_expression(LOWEST);
+            args.push(arg);
+
+            if !self.peek_token_is(TokenType::COMMA) {
+                break;
+            }
+
+            self.next_token();
+        }
+
+        let expression = CallExpression { function: Box::new(function), args };
+
+        Expression::CALL(expression)
     }
 
     fn parse_grouped_expression(&mut self) -> Expression {
@@ -625,6 +645,7 @@ impl Parser {
             TokenType::DIVIDE => PRODUCT,
             TokenType::MULTIPLY => PRODUCT,
             TokenType::AS => CONVERSION,
+            TokenType::LPARENT => CALL,
             _ => LOWEST,
         }
     }
@@ -701,6 +722,23 @@ impl Parser {
         }
     }
 
+    fn infix_parse(&mut self, left: Expression) -> Expression {
+        match self.cur_token.token_type {
+            TokenType::PLUS
+            | TokenType::MINUS
+            | TokenType::DIVIDE
+            | TokenType::MULTIPLY
+            | TokenType::EQUAL
+            | TokenType::NOTEQUAL
+            | TokenType::LESSTHAN
+            | TokenType::GREATERTHAN
+            | TokenType::LESSOREQUALTHAN
+            | TokenType::GREATEROREQUALTHAN => self.parse_infix_expression(left),
+            TokenType::LPARENT => self.parse_call_expression(left),
+            _ => Expression::EMPTY,
+        }
+    }
+
     fn prefix_parse(&mut self) -> Expression {
         match self.cur_token.token_type {
             TokenType::IDENT => self.parse_identifier(),
@@ -708,6 +746,7 @@ impl Parser {
             TokenType::STRING => self.parse_string_literal(),
             TokenType::LPARENT => self.parse_grouped_expression(),
             TokenType::FUNC => self.parse_func_expression(),
+            // TODO: add lists
             /*
             TokenType::LSQUAREBRAC => self.parse_list_literal(),
             TokenType::LCURLY => self.parse_hash_literal(),
