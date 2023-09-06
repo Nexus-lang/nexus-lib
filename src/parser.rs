@@ -499,18 +499,21 @@ impl Parser {
 
         let mut args = Vec::new();
 
-        self.next_token();
+        println!("Current token: {:?}", &self.cur_token);
 
         while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
+            self.next_token();
+
             let arg = Identifier::new(self.cur_token.literal.clone());
             args.push(arg);
 
             println!("Current token: {:?}", &self.cur_token);
 
-            if !self.expect_peek(TokenType::COMMA) {
-                self.peek_error(TokenType::COMMA);
-                return Expression::EMPTY;
+            if !self.peek_token_is(TokenType::COMMA) {
+                break;
             }
+
+            self.next_token();
         }
 
         println!("Args: {:?}", &args);
