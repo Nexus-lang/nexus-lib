@@ -4,7 +4,8 @@ use crate::{
     ast::*,
     errors::*,
     lexer::Lexer,
-    tokens::{Token, TokenType}, util,
+    tokens::{Token, TokenType},
+    util,
 };
 /// Parser struct containing
 /// necessary info to
@@ -346,27 +347,84 @@ impl Parser {
 
         let consequence = self.parse_block_statement();
 
-        let mut alternative = BlockStatement {
-            statements: vec![Statement::EMPTY],
-        };
+        let mut alternative = None;
 
         if self.peek_token_is(TokenType::ELSE) {
             self.next_token();
 
-            if !self.expect_peek(TokenType::LCURLY) {
-                return Expression::EMPTY;
-            }
-
-            alternative = self.parse_block_statement();
+            alternative = self.parse_else_expression();
         }
 
         let expression = IfExpression {
+            if_type: IfType::IF,
             condition,
             consequence,
             alternative,
         };
 
         Expression::IF(expression)
+    }
+
+    /// Responsible for parsing `else` and `else if`
+    fn parse_else_expression(&mut self) -> Option<Box<IfExpression>> {
+        match self.peek_token.token_type {
+            TokenType::IF => {
+                let if_type = IfType::ELSEIF;
+                self.next_token();
+
+                self.next_token();
+
+                let condition = Box::new(self.parse_expression(LOWEST));
+
+                if !self.expect_peek(TokenType::LCURLY) {
+                    self.peek_error(TokenType::LCURLY);
+                    return None;
+                }
+
+                self.next_token();
+
+                let consequence = self.parse_block_statement();
+
+                let mut alternative: Option<Box<IfExpression>> = None;
+
+                if self.expect_peek(TokenType::ELSE) {
+                    alternative = self.parse_else_expression();
+                }
+
+                let expression = Some(Box::new(IfExpression {
+                    if_type,
+                    condition,
+                    consequence,
+                    alternative,
+                }));
+                expression
+            }
+            TokenType::LCURLY => {
+                let if_type = IfType::ELSE;
+
+                let condition = Box::new(Expression::EMPTY);
+
+                self.next_token();
+
+                self.next_token();
+
+                let consequence = self.parse_block_statement();
+
+                let alternative: Option<Box<IfExpression>> = None;
+
+                let expression = Some(Box::new(IfExpression {
+                    if_type,
+                    condition,
+                    consequence,
+                    alternative,
+                }));
+                expression
+            }
+            _ => {
+                self.throw_error("Invalid token after else expression".to_string(), true);
+                None
+            }
+        }
     }
 
     fn parse_while_expression(&mut self) -> Expression {
@@ -568,8 +626,7 @@ impl Parser {
     fn peek_error(&mut self, token_type: TokenType) {
         let msg = format!(
             "expected next token to be {:?}, found {:?} instead.",
-            token_type,
-            self.peek_token.token_type,
+            token_type, self.peek_token.token_type,
         );
         self.throw_error(msg, true);
     }

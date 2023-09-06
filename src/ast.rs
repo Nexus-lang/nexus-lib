@@ -27,6 +27,7 @@ pub enum Expression {
     IF(IfExpression),
     WHILE(WhileExpression),
     FOR(ForExpression),
+    FUNC(FuncExpression),
     EMPTY,
 }
 
@@ -35,6 +36,14 @@ pub enum Expression {
 pub enum Booleans {
     TRUE,
     FALSE,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+pub enum IfType {
+    IF,
+    ELSEIF,
+    ELSE,
+    ILLEGAL,
 }
 
 /// Operators for prefix and infix expressions
@@ -58,7 +67,7 @@ pub enum Operators {
 // All ast types
 // ident
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Hash)]
-pub struct  Identifier {
+pub struct Identifier {
     pub value: String,
 }
 
@@ -99,7 +108,7 @@ pub struct ExpressionStatement {
 ///     print("Hello, World!")
 /// }
 ///  ```
-/// 
+///
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct BlockStatement {
     pub statements: Vec<Statement>,
@@ -123,6 +132,7 @@ pub struct PrefixExpression {
     pub operator: Operators, // might want to create an enum for this
     pub right: Box<Expression>,
 }
+
 // Binary operations (4 + 5, 1 != 2...)
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct InfixExpression {
@@ -133,9 +143,11 @@ pub struct InfixExpression {
 
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct IfExpression {
+    pub if_type: IfType,
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
-    pub alternative: BlockStatement,
+    // 0: condition; 1: consequence
+    pub alternative: Option<Box<IfExpression>>,
 }
 
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
@@ -151,10 +163,11 @@ pub struct WhileExpression {
     pub consequence: BlockStatement,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct FuncExpression {
     pub ident: Identifier,
-    pub args: HashMap<Identifier, Identifier>,
+    pub args: Vec<Identifier>,
+    pub arg_types: Vec<Identifier>,
     pub return_val: Identifier,
     pub consequence: BlockStatement,
 }

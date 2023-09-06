@@ -1,3 +1,9 @@
-while true {
-
+if x {
+    3
+    false
+} else if true {
+    9
+    true
+} else {
+    "sus"
 }
