@@ -269,12 +269,7 @@ impl Parser {
         while !self.cur_token_is(TokenType::RCURLY) && !self.cur_token_is(TokenType::EOF) {
             let statement = self.parse_statement();
 
-            if statement != Statement::EMPTY
-                && statement
-                    != Statement::EXPRESSION(ExpressionStatement {
-                        expression: Expression::EMPTY,
-                    })
-            {
+            if statement != Statement::EMPTY && statement != EMPTY_EXPRESSION_STATEMENT {
                 statements.push(statement);
             }
             self.next_token();
@@ -431,7 +426,7 @@ impl Parser {
         self.next_token();
         let condition = Box::new(self.parse_expression(LOWEST));
 
-        if condition == Box::from(Expression::EMPTY) {
+        if &condition == &Box::new(Expression::EMPTY) {
             self.throw_error(empty_condition(&TokenType::WHILE, &condition), true);
             return Expression::EMPTY;
         }
@@ -486,6 +481,58 @@ impl Parser {
             consequence,
         };
         Expression::FOR(expression)
+    }
+
+    fn parse_func_expression(&mut self) -> Expression {
+        println!("{}", &self.peek_token.literal);
+
+        if !self.expect_peek(TokenType::IDENT) {
+            self.peek_error(TokenType::IDENT);
+            return Expression::EMPTY;
+        }
+
+        let ident = Identifier::new(self.cur_token.literal.clone());
+
+        if !self.expect_peek(TokenType::LPARENT) {
+            return Expression::EMPTY;
+        }
+
+        let mut args = Vec::new();
+
+        self.next_token();
+
+        while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
+            let arg = Identifier::new(self.cur_token.literal.clone());
+            args.push(arg);
+
+            println!("Current token: {:?}", &self.cur_token);
+
+            if !self.expect_peek(TokenType::COMMA) {
+                self.peek_error(TokenType::COMMA);
+                return Expression::EMPTY;
+            }
+        }
+
+        println!("Args: {:?}", &args);
+
+        self.next_token();
+
+        if !self.expect_peek(TokenType::LCURLY) {
+            self.peek_error(TokenType::LCURLY);
+            return Expression::EMPTY;
+        }
+
+        self.next_token();
+
+        let consequence = self.parse_block_statement();
+
+        return Expression::FUNC(FuncExpression {
+            ident,
+            args,
+            arg_types: vec![Identifier::new("NYI".to_string())],
+            return_type: Identifier::new("NYI".to_string()),
+            consequence,
+        });
     }
 
     fn parse_grouped_expression(&mut self) -> Expression {
@@ -657,8 +704,8 @@ impl Parser {
             TokenType::NUMBER => self.parse_number_literal(),
             TokenType::STRING => self.parse_string_literal(),
             TokenType::LPARENT => self.parse_grouped_expression(),
+            TokenType::FUNC => self.parse_func_expression(),
             /*
-            TokenType::FUNC => self.parse_function_literal(),
             TokenType::LSQUAREBRAC => self.parse_list_literal(),
             TokenType::LCURLY => self.parse_hash_literal(),
             */

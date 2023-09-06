@@ -1,9 +1,3 @@
-if x {
-    3
-    false
-} else if true {
-    9
+func sus (sussy,) {
     true
-} else {
-    "sus"
 }

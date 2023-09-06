@@ -26,8 +26,3 @@ pub fn empty_return_val(value: &Expression) -> String {
 pub fn empty_condition(expression_type: &TokenType, value: &Expression) -> String {
     format!("Expected condition left side of the {}. Got {:?} instead", expression_type.literal(), value)
 }
-
-/// Expected identifier like `x` found `{}` instead
-pub fn invalid_identifier(ident: &String) -> String {
-    format!("Expected identifier like `x` found `{}` instead", ident)
-}

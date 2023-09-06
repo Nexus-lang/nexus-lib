@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::hash::Hash;
 
 /// Statements, Code parts that don't give back a value
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
@@ -43,7 +43,6 @@ pub enum IfType {
     IF,
     ELSEIF,
     ELSE,
-    ILLEGAL,
 }
 
 /// Operators for prefix and infix expressions
@@ -168,7 +167,7 @@ pub struct FuncExpression {
     pub ident: Identifier,
     pub args: Vec<Identifier>,
     pub arg_types: Vec<Identifier>,
-    pub return_val: Identifier,
+    pub return_type: Identifier,
     pub consequence: BlockStatement,
 }
 
@@ -183,4 +182,11 @@ pub struct Boolean {
 #[derive(PartialEq, PartialOrd, Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
+}
+
+// This exists bc im too lazy to type this out all the time
+impl Identifier {
+    pub fn new(value: String) -> Self {
+        Self { value }
+    }
 }
