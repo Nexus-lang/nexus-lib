@@ -29,6 +29,8 @@ pub enum Expression {
     FOR(ForExpression),
     FUNC(FuncExpression),
     CALL(CallExpression),
+    LIST(ListExpression),
+    NONE(NoneLiteral),
     EMPTY,
 }
 
@@ -177,6 +179,15 @@ pub struct CallExpression {
     pub function: Box<Expression>,
     pub args: Vec<Expression>,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct ListExpression {
+    pub content: Vec<Expression>,
+    pub length: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct NoneLiteral;
 
 // booleans (true, false)
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]

@@ -325,6 +325,17 @@ impl Parser {
         Expression::STRINGLITERAL(literal)
     }
 
+    fn parse_list_literal(&mut self) -> Expression {
+        let content = self.parse_raw_list(TokenType::RSQUAREBRAC);
+
+        let expression = ListExpression {
+            length: content.len().clone() as i64,
+            content,
+        };
+
+        Expression::LIST(expression)
+    }
+
     fn parse_if_expression(&mut self) -> Expression {
         self.next_token();
         let condition = Box::new(self.parse_expression(LOWEST));
@@ -534,26 +545,16 @@ impl Parser {
     }
 
     fn parse_call_expression(&mut self, function: Expression) -> Expression {
-        let mut args = Vec::new();
-
         if !self.cur_token_is(TokenType::LPARENT) {
             self.peek_error(TokenType::LPARENT);
         }
 
-        while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
-            self.next_token();
+        let args = self.parse_raw_list(TokenType::RPARENT);
 
-            let arg = self.parse_expression(LOWEST);
-            args.push(arg);
-
-            if !self.peek_token_is(TokenType::COMMA) {
-                break;
-            }
-
-            self.next_token();
-        }
-
-        let expression = CallExpression { function: Box::new(function), args };
+        let expression = CallExpression {
+            function: Box::new(function),
+            args,
+        };
 
         Expression::CALL(expression)
     }
@@ -614,6 +615,24 @@ impl Parser {
             }),
             _ => Expression::EMPTY,
         }
+    }
+
+    fn parse_raw_list(&mut self, end: TokenType) -> Vec<Expression> {
+        let mut list = Vec::new();
+        while !self.peek_token_is(end) && !self.peek_token_is(TokenType::EOF) {
+            self.next_token();
+
+            let entry = self.parse_expression(LOWEST);
+            list.push(entry);
+
+            // TODO: Clean this up
+            if !self.peek_token_is(TokenType::COMMA) {
+                break;
+            }
+
+            self.next_token();
+        }
+        list
     }
 
     fn get_operator(&self, token: &Token) -> Operators {
@@ -746,11 +765,12 @@ impl Parser {
             TokenType::IDENT => self.parse_identifier(),
             TokenType::NUMBER => self.parse_number_literal(),
             TokenType::STRING => self.parse_string_literal(),
+            TokenType::NONE => Expression::NONE(NoneLiteral),
             TokenType::LPARENT => self.parse_grouped_expression(),
             TokenType::FUNC => self.parse_func_expression(),
-            // TODO: add lists
-            /*
             TokenType::LSQUAREBRAC => self.parse_list_literal(),
+            // TODO: add hashes
+            /*
             TokenType::LCURLY => self.parse_hash_literal(),
             */
             TokenType::IF => self.parse_if_expression(),
