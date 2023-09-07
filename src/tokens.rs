@@ -70,6 +70,7 @@ pub enum TokenType {
     COLON,       // :
     ARROW,       // ->
     SEMICOLON,   // ;
+    ANNOTATION,  // @
 
     // other
     ILLEGAL, // illeagl expression
@@ -144,15 +145,11 @@ impl TokenType {
             TokenType::COLON => String::from(":"),
             TokenType::ARROW => String::from("->"),
             TokenType::SEMICOLON => String::from(";"),
+            TokenType::ANNOTATION => String::from("@"),
 
             TokenType::ILLEGAL => String::from("ILLEGAL"),
             TokenType::EOL => String::from("EOL"),
             TokenType::EOF => String::from("EOF"),
-            // Not always unreachable so it is disabled for now
-            #[allow(unreachable_patterns)]
-            _ => {
-                panic!("{:?} is missing a literal type", self)
-            }
         }
     }
 }

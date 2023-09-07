@@ -31,6 +31,7 @@ pub enum Expression {
     CALL(CallExpression),
     LIST(ListExpression),
     INDEX(IndexExpression),
+    ANNOTATION(AnnotationExpression),
     NONE(NoneLiteral),
     EMPTY,
 }
@@ -191,6 +192,11 @@ pub struct IndexExpression {
 pub struct ListExpression {
     pub content: Vec<Expression>,
     pub length: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct AnnotationExpression {
+    pub expression: Box<Expression>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]

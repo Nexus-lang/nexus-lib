@@ -631,6 +631,18 @@ impl Parser {
         }
     }
 
+    fn parse_annotation(&mut self) -> Expression {
+        self.next_token();
+
+        let expression = Box::new(self.parse_expression(LOWEST));
+
+        let annotation = AnnotationExpression {
+            expression
+        };
+
+        Expression::ANNOTATION(annotation)
+    }
+
     fn parse_raw_list(&mut self, end: TokenType) -> Vec<Expression> {
         let mut list = Vec::new();
         while !self.peek_token_is(end) && !self.peek_token_is(TokenType::EOF) {
@@ -794,6 +806,7 @@ impl Parser {
             TokenType::FOR => self.parse_for_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
+            TokenType::ANNOTATION => self.parse_annotation(),
             _ => Expression::EMPTY,
         }
     }

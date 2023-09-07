@@ -348,6 +348,9 @@ impl Lexer {
                         c if c == TokenType::SEMICOLON.literal() => {
                             push_token!(tokens, TokenType::SEMICOLON, self.current_pos_line)
                         }
+                        c if c == TokenType::ANNOTATION.literal() => {
+                            push_token!(tokens, TokenType::ANNOTATION, self.current_pos_line)
+                        }
                         _ => {
                             tokens.push(Token::new(
                                 TokenType::ILLEGAL,
