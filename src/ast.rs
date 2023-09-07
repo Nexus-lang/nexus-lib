@@ -30,6 +30,7 @@ pub enum Expression {
     FUNC(FuncExpression),
     CALL(CallExpression),
     LIST(ListExpression),
+    INDEX(IndexExpression),
     NONE(NoneLiteral),
     EMPTY,
 }
@@ -178,6 +179,12 @@ pub struct FuncExpression {
 pub struct CallExpression {
     pub function: Box<Expression>,
     pub args: Vec<Expression>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct IndexExpression {
+    pub list: Box<Expression>,
+    pub index: Box<Expression>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]

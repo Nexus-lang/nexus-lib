@@ -43,6 +43,7 @@ const PRODUCT: i8 = 5; // *
 const PREFIX: i8 = 6; // -x, +x or !x
 const CALL: i8 = 7; // amogus(x)
 const CONVERSION: i8 = 8;
+const INDEX: i8 = 9;
 
 const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionStatement {
     expression: Expression::EMPTY,
@@ -545,10 +546,6 @@ impl Parser {
     }
 
     fn parse_call_expression(&mut self, function: Expression) -> Expression {
-        if !self.cur_token_is(TokenType::LPARENT) {
-            self.peek_error(TokenType::LPARENT);
-        }
-
         let args = self.parse_raw_list(TokenType::RPARENT);
 
         let expression = CallExpression {
@@ -557,6 +554,23 @@ impl Parser {
         };
 
         Expression::CALL(expression)
+    }
+
+    fn parse_index_expression(&mut self, list: Expression) -> Expression {
+        self.next_token();
+
+        let index = self.parse_expression(LOWEST);
+
+        if !self.expect_peek(TokenType::RSQUAREBRAC) {
+            self.peek_error(TokenType::RSQUAREBRAC);
+            return Expression::EMPTY;
+        }
+
+        let expression = IndexExpression {
+            list: Box::new(list),
+            index: Box::new(index),
+        };
+        Expression::INDEX(expression)
     }
 
     fn parse_grouped_expression(&mut self) -> Expression {
@@ -667,6 +681,7 @@ impl Parser {
             TokenType::MULTIPLY => PRODUCT,
             TokenType::AS => CONVERSION,
             TokenType::LPARENT => CALL,
+            TokenType::LSQUAREBRAC => INDEX,
             _ => LOWEST,
         }
     }
@@ -756,6 +771,7 @@ impl Parser {
             | TokenType::LESSOREQUALTHAN
             | TokenType::GREATEROREQUALTHAN => self.parse_infix_expression(left),
             TokenType::LPARENT => self.parse_call_expression(left),
+            TokenType::LSQUAREBRAC => self.parse_index_expression(left),
             _ => Expression::EMPTY,
         }
     }
