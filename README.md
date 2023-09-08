@@ -98,3 +98,5 @@ This project wouldn't have been possible without the help of these amazing peopl
 - [ReadyPlayerOne14](https://github.com/ReadyPlayerOne14) - **Contributor** and **Design team**
 
 If you want to contribute yourself, follow the [Installation Guide](#installation). Also make sure to read and follow the [Style Guide](STYLE.md)
+
+The original implementation was made possible through [waiig](https://interpreterbook.com/) (MonkeyLang) and [yesmeck](https://github.com/yesmeck)'s amazing implementation of ML in rust

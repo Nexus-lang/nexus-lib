@@ -5,6 +5,7 @@ mod parser;
 mod util;
 mod errors;
 mod evaluator;
+mod object;
 
 use lexer::Lexer;
 use parser::Parser;
