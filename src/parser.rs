@@ -11,6 +11,7 @@ use crate::{
 /// necessary info to
 /// construct Evaluator
 /// and keep track of errors
+#[derive(Clone)]
 pub struct Parser {
     /// Reference to the lexer
     /// to access file and tokenstream
@@ -622,10 +623,10 @@ impl Parser {
     fn parse_boolean(&mut self) -> Expression {
         match self.cur_token.token_type {
             TokenType::TRUE => Expression::BOOLEAN(Boolean {
-                bool_type: Booleans::TRUE,
+                bool_type: BooleanType::TRUE,
             }),
             TokenType::FALSE => Expression::BOOLEAN(Boolean {
-                bool_type: Booleans::FALSE,
+                bool_type: BooleanType::FALSE,
             }),
             _ => Expression::EMPTY,
         }

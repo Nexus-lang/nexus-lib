@@ -38,7 +38,7 @@ pub enum Expression {
 
 /// All allowed booleans (true, false)
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
-pub enum Booleans {
+pub enum BooleanType {
     TRUE,
     FALSE,
 }
@@ -205,7 +205,7 @@ pub struct NoneLiteral;
 // booleans (true, false)
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct Boolean {
-    pub bool_type: Booleans,
+    pub bool_type: BooleanType,
 }
 // ------------- end of all ast types
 

@@ -1,4 +1,1 @@
-@test
-func lol() {
-    print("sus")
-}
+false
