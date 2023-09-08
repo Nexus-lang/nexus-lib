@@ -19,7 +19,7 @@ fn main() {
     let example_code = FileHandler::read_file(if input != "" {
         input.as_str()
     } else {
-        "examples/test.nx"
+        "docs/examples/test.nx"
     });
     // ----
 
