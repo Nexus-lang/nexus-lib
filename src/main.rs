@@ -31,16 +31,11 @@ fn main() {
 
     let mut parser = Parser::new(&mut lexer);
 
-    let evaluator = Evaluator::new(&mut parser);
-
     // tokenize input
     let token_stream = lexer.lex();
 
     // parse tokens
     let program = parser.parse_program();
-
-    // evaluate program
-    let debug_eval = evaluator.eval_program();
 
     // output values
     println!("TOKENS: \n");
@@ -49,7 +44,12 @@ fn main() {
 
     println!("AST: \n");
 
-    println!("{:?}", program);
+    println!("{:?}", &program);
+
+    let evaluator = Evaluator::new(program);
+
+    // evaluate program
+    let debug_eval = evaluator.eval_program();
 
     println!("DEBUG EVAL: \n");
 

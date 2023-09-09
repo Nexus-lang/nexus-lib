@@ -52,7 +52,7 @@ pub enum IfType {
 
 /// Operators for prefix and infix expressions
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
-pub enum Operators {
+pub enum Operator {
     PLUS,         // both
     MINUS,        // both
     BANG,         // pre
@@ -133,7 +133,7 @@ pub struct StringLiteral {
 // prefix (-, +, !)
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct PrefixExpression {
-    pub operator: Operators, // might want to create an enum for this
+    pub operator: Operator, // might want to create an enum for this
     pub right: Box<Expression>,
 }
 
@@ -142,7 +142,7 @@ pub struct PrefixExpression {
 pub struct InfixExpression {
     pub left: Box<Expression>,
     pub right: Box<Expression>,
-    pub operator: Operators,
+    pub operator: Operator,
 }
 
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]

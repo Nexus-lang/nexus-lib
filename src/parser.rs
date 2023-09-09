@@ -592,9 +592,9 @@ impl Parser {
     /// expression affected by prefix
     fn parse_prefix_expression(&mut self) -> Expression {
         let operator = match self.cur_token.token_type {
-            TokenType::PLUS => Operators::PLUS,
-            TokenType::MINUS => Operators::MINUS,
-            TokenType::BANG => Operators::BANG,
+            TokenType::PLUS => Operator::PLUS,
+            TokenType::MINUS => Operator::MINUS,
+            TokenType::BANG => Operator::BANG,
             _ => panic!("Invalid prefix ERROR. Please report"),
         };
 
@@ -662,21 +662,21 @@ impl Parser {
         list
     }
 
-    fn get_operator(&self, token: &Token) -> Operators {
+    fn get_operator(&self, token: &Token) -> Operator {
         match token.token_type {
-            TokenType::PLUS => Operators::PLUS,
-            TokenType::MINUS => Operators::MINUS,
-            TokenType::BANG => Operators::BANG,
-            TokenType::MULTIPLY => Operators::MULTIPLY,
-            TokenType::DIVIDE => Operators::DIVIDE,
-            TokenType::EQUAL => Operators::EQUAL,
-            TokenType::NOTEQUAL => Operators::NOTEQUAL,
-            TokenType::GREATERTHAN => Operators::GREATTHAN,
-            TokenType::LESSTHAN => Operators::LESSTHAN,
-            TokenType::GREATEROREQUALTHAN => Operators::GREATOREQUAL,
-            TokenType::LESSOREQUALTHAN => Operators::LESSOREQUAL,
-            TokenType::AS => Operators::AS,
-            _ => Operators::ILLEGAL,
+            TokenType::PLUS => Operator::PLUS,
+            TokenType::MINUS => Operator::MINUS,
+            TokenType::BANG => Operator::BANG,
+            TokenType::MULTIPLY => Operator::MULTIPLY,
+            TokenType::DIVIDE => Operator::DIVIDE,
+            TokenType::EQUAL => Operator::EQUAL,
+            TokenType::NOTEQUAL => Operator::NOTEQUAL,
+            TokenType::GREATERTHAN => Operator::GREATTHAN,
+            TokenType::LESSTHAN => Operator::LESSTHAN,
+            TokenType::GREATEROREQUALTHAN => Operator::GREATOREQUAL,
+            TokenType::LESSOREQUALTHAN => Operator::LESSOREQUAL,
+            TokenType::AS => Operator::AS,
+            _ => Operator::ILLEGAL,
         }
     }
 

@@ -1,18 +1,15 @@
 use crate::{
-    ast::{Expression, Program, Statement},
+    ast::{Expression, Program, Statement, PrefixExpression, Operator, BooleanType},
     object::*,
-    parser::Parser,
 };
 
 pub struct Evaluator {
-    parser: Parser,
     program: Program,
 }
 
 impl Evaluator {
-    pub fn new(parser: &mut Parser) -> Self {
-        let program = parser.parse_program();
-        Self { parser: parser.clone(), program }
+    pub fn new(program: Program) -> Self {
+        Self { program }
     }
 
     pub fn eval_program(&self) -> Object {
@@ -39,7 +36,7 @@ impl Evaluator {
             Expression::IDENTIFIER(_) => todo!(),
             Expression::NUMBERLITERAL(lit) => Object::Num(Num { value: lit.value }),
             Expression::STRINGLITERAL(_) => todo!(),
-            Expression::PREFIX(_) => todo!(),
+            Expression::PREFIX(lit) => self.eval_prefix_expression(lit),
             Expression::INFIX(_) => todo!(),
             Expression::BOOLEAN(lit) => Object::Bool(Bool { value: lit.bool_type.clone() }),
             Expression::IF(_) => todo!(),
@@ -52,6 +49,36 @@ impl Evaluator {
             Expression::ANNOTATION(_) => todo!(),
             Expression::NONE(_) => Object::None(NoneLit),
             Expression::EMPTY => panic!("Cannot evalutate EMPTY"),
+        }
+    }
+
+    fn eval_prefix_expression(&self, node: &PrefixExpression) -> Object {
+        let right = self.eval_expression(&node.right);
+        // TODO: error checking
+
+        match node.operator {
+            Operator::BANG => self.eval_bang_expression(&right),
+            Operator::PLUS => right,
+            Operator::MINUS => self.eval_minus_expression(&right),
+            _ => todo!(),
+        }
+    }
+
+    fn eval_bang_expression(&self, right: &Object) -> Object {
+        match right {
+            Object::Bool(obj) => match obj.value {
+                BooleanType::TRUE => Object::Bool(Bool { value: BooleanType::FALSE }),
+                BooleanType::FALSE => Object::Bool(Bool { value: BooleanType::TRUE }),
+            },
+            Object::None(_) => todo!(),
+            _ => todo!(),
+        }
+    }
+
+    fn eval_minus_expression(&self, right: &Object) -> Object {
+        match right {
+            Object::Num(num) => Object::Num(Num { value: -num.value }),
+            _ => todo!(),
         }
     }
 }
