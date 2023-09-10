@@ -29,7 +29,7 @@ fn main() {
     // define lexer and parser
     let mut lexer = Lexer::new(example_code);
 
-    let mut parser = Parser::new(&mut lexer);
+    let mut parser = Parser::new(&mut lexer).unwrap();
 
     // tokenize input
     let token_stream = lexer.lex();

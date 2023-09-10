@@ -52,17 +52,20 @@ const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionSt
 
 impl Parser {
     /// Construct Parser from lexer
-    pub fn new(lexer: &mut Lexer) -> Self {
+    pub fn new(lexer: &mut Lexer) -> Result<Self, Error> {
         let token_stream: Vec<Token> = lexer.lex();
-        return Parser {
-            cur_token: token_stream[0].clone(),
-            peek_token: token_stream[1].clone(),
+
+        let parser = Parser {
+            cur_token: token_stream.get(0).cloned().ok_or(Error::LexerError)?,
+            peek_token: token_stream.get(1).cloned().ok_or(Error::LexerError)?,
             errors: vec![],
             current_pos: 0,
             lexer: lexer.clone(),
             line_count: 1,
             token_stream,
         };
+
+        Ok(parser)
     }
 
     /// Increment position in tokenstream
@@ -146,7 +149,7 @@ impl Parser {
         let statement = match self.cur_token.token_type {
             TokenType::VAR => Statement::VAR(VarStatement {
                 name: Identifier {
-                    value: self.peek_token.literal.clone(),
+                    value: self.peek_token.literal.to_string(),
                 },
                 value: {
                     // Identifier
@@ -167,7 +170,7 @@ impl Parser {
             }),
             TokenType::CONST => Statement::CONST(ConstStatement {
                 name: Identifier {
-                    value: self.peek_token.literal.clone(),
+                    value: self.peek_token.literal.to_string(),
                 },
                 value: {
                     // Identifier
@@ -200,7 +203,7 @@ impl Parser {
         let statement = match self.peek_token.token_type {
             TokenType::VARASSIGN => Statement::VAR(VarStatement {
                 name: Identifier {
-                    value: self.cur_token.literal.clone(),
+                    value: self.cur_token.literal.to_string(),
                 },
                 value: {
                     // Assign
@@ -218,7 +221,7 @@ impl Parser {
             }),
             TokenType::CONSTASSIGN => Statement::CONST(ConstStatement {
                 name: Identifier {
-                    value: self.cur_token.literal.clone(),
+                    value: self.cur_token.literal.to_string(),
                 },
                 value: {
                     // Assign
@@ -307,7 +310,7 @@ impl Parser {
 
     fn parse_identifier(&self) -> Expression {
         Expression::IDENTIFIER(Identifier {
-            value: self.cur_token.literal.clone(),
+            value: self.cur_token.literal.to_string(),
         })
     }
 
@@ -322,7 +325,7 @@ impl Parser {
 
     fn parse_string_literal(&self) -> Expression {
         let literal = StringLiteral {
-            value: self.cur_token.literal.clone(),
+            value: self.cur_token.literal.to_string(),
         };
         Expression::STRINGLITERAL(literal)
     }
@@ -468,7 +471,7 @@ impl Parser {
         }
 
         let ident = Identifier {
-            value: self.cur_token.literal.clone(),
+            value: self.cur_token.literal.to_string(),
         };
         println!("{}", &self.cur_token.literal);
 
@@ -505,7 +508,7 @@ impl Parser {
             return Expression::EMPTY;
         }
 
-        let ident = Identifier::new(self.cur_token.literal.clone());
+        let ident = Identifier::new(self.cur_token.literal.to_string());
 
         if !self.expect_peek(TokenType::LPARENT) {
             return Expression::EMPTY;
@@ -516,7 +519,7 @@ impl Parser {
         while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
             self.next_token();
 
-            let arg = Identifier::new(self.cur_token.literal.clone());
+            let arg = Identifier::new(self.cur_token.literal.to_string());
             args.push(arg);
 
             if !self.peek_token_is(TokenType::COMMA) {

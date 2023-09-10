@@ -57,28 +57,28 @@ impl Evaluator {
         // TODO: error checking
 
         match node.operator {
-            Operator::BANG => self.eval_bang_expression(&right),
+            Operator::BANG => self.eval_bang_expression(right),
             Operator::PLUS => right,
-            Operator::MINUS => self.eval_minus_expression(&right),
+            Operator::MINUS => self.eval_minus_expression(right),
             _ => todo!(),
         }
     }
 
-    fn eval_bang_expression(&self, right: &Object) -> Object {
+    fn eval_bang_expression(&self, right: Object) -> Object {
         match right {
             Object::Bool(obj) => match obj.value {
                 BooleanType::TRUE => Object::Bool(Bool { value: BooleanType::FALSE }),
                 BooleanType::FALSE => Object::Bool(Bool { value: BooleanType::TRUE }),
             },
-            Object::None(_) => todo!(),
+            Object::None(_) => right,
             _ => todo!(),
         }
     }
 
-    fn eval_minus_expression(&self, right: &Object) -> Object {
+    fn eval_minus_expression(&self, right: Object) -> Object {
         match right {
             Object::Num(num) => Object::Num(Num { value: -num.value }),
-            _ => todo!(),
+            _ => right,
         }
     }
 }
