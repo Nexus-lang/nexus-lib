@@ -128,6 +128,7 @@ pub struct NumberLiteral {
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct StringLiteral {
     pub value: String,
+    pub references: Vec<Identifier>,
 }
 
 // prefix (-, +, !)

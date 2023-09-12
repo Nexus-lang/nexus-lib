@@ -323,9 +323,23 @@ impl Parser {
         Expression::NUMBERLITERAL(literal)
     }
 
-    fn parse_string_literal(&self) -> Expression {
+    fn parse_string_literal(&mut self) -> Expression {
+        let mut string_raw: Vec<String> = Vec::new();
+        let mut references: Vec<Identifier> = Vec::new();
+        loop {
+            if self.cur_token_is(TokenType::STRING) {
+                string_raw.push(self.cur_token.literal.clone());
+            } else if self.cur_token_is(TokenType::STRINGREF) {
+                string_raw.push(String::from("{}"));
+                references.push(Identifier::new(self.cur_token.literal.clone()))
+            } else {
+                break;
+            }
+            self.next_token();
+        }
         let literal = StringLiteral {
-            value: self.cur_token.literal.to_string(),
+            value: string_raw.join(""),
+            references,
         };
         Expression::STRINGLITERAL(literal)
     }
@@ -640,9 +654,7 @@ impl Parser {
 
         let expression = Box::new(self.parse_expression(LOWEST));
 
-        let annotation = AnnotationExpression {
-            expression
-        };
+        let annotation = AnnotationExpression { expression };
 
         Expression::ANNOTATION(annotation)
     }
