@@ -72,6 +72,10 @@ impl Evaluator {
 
         if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER {
             self.eval_integer_infix_expression(operator, left, right)
+        } else if operator == &Operator::EQUAL {
+            self.native_bool_to_object(left == right)
+        } else if operator == &Operator::NOTEQUAL {
+            self.native_bool_to_object(left != right)
         } else {
             todo!("support for all expressions")
         }
@@ -97,8 +101,6 @@ impl Evaluator {
             Operator::MINUS => Object::Num(Num { value: left_val - right_val }),
             Operator::MULTIPLY => Object::Num(Num { value: left_val * right_val }),
             Operator::DIVIDE => Object::Num(Num { value: left_val / right_val }),
-            Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
-            Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
             Operator::GREATTHAN => self.native_bool_to_object(left_val > right_val),
             Operator::LESSTHAN => self.native_bool_to_object(left_val < right_val),
             Operator::GREATOREQUAL => self.native_bool_to_object(left_val >= right_val),

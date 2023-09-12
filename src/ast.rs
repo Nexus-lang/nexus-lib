@@ -51,7 +51,7 @@ pub enum IfType {
 }
 
 /// Operators for prefix and infix expressions
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub enum Operator {
     PLUS,         // both
     MINUS,        // both
