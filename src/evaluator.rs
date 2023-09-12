@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Expression, Program, Statement, PrefixExpression, Operator, BooleanType},
+    ast::*,
     object::*,
 };
 
@@ -12,15 +12,16 @@ impl Evaluator {
         Self { program }
     }
 
-    pub fn eval_program(&self) -> Object {
+    pub fn eval_program(&mut self) -> Object {
         let mut result = Object::None(NoneLit);
-        for statement in &self.program.statements {
+        for statement in &self.program.statements.clone() {
             result = self.eval_statement(statement);
+            println!("program evalutation: {:?}", result);
         }
         result
     }
 
-    fn eval_statement(&self, statement: &Statement) -> Object {
+    fn eval_statement(&mut self, statement: &Statement) -> Object {
         match statement {
             Statement::VAR(_) => todo!(),
             Statement::CONST(_) => todo!(),
@@ -31,13 +32,13 @@ impl Evaluator {
         }
     }
 
-    fn eval_expression(&self, expression: &Expression) -> Object {
+    fn eval_expression(&mut self, expression: &Expression) -> Object {
         match expression {
             Expression::IDENTIFIER(_) => todo!(),
             Expression::NUMBERLITERAL(lit) => Object::Num(Num { value: lit.value }),
             Expression::STRINGLITERAL(_) => todo!(),
             Expression::PREFIX(lit) => self.eval_prefix_expression(lit),
-            Expression::INFIX(_) => todo!(),
+            Expression::INFIX(lit) => self.eval_infix_expression(lit),
             Expression::BOOLEAN(lit) => Object::Bool(Bool { value: lit.bool_type.clone() }),
             Expression::IF(_) => todo!(),
             Expression::WHILE(_) => todo!(),
@@ -52,7 +53,7 @@ impl Evaluator {
         }
     }
 
-    fn eval_prefix_expression(&self, node: &PrefixExpression) -> Object {
+    fn eval_prefix_expression(&mut self, node: &PrefixExpression) -> Object {
         let right = self.eval_expression(&node.right);
         // TODO: error checking
 
@@ -61,6 +62,42 @@ impl Evaluator {
             Operator::PLUS => right,
             Operator::MINUS => self.eval_minus_expression(right),
             _ => todo!(),
+        }
+    }
+
+    fn eval_infix_expression(&mut self, node: &InfixExpression) -> Object {
+        let left = self.eval_expression(&node.left);
+        let right = self.eval_expression(&node.right);
+        let operator = &node.operator;
+
+        if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER {
+            self.eval_integer_infix_expression(operator, left, right)
+        } else {
+            todo!("support for all expressions")
+        }
+    }
+
+    fn eval_integer_infix_expression(&mut self, operator: &Operator, left: Object, right: Object) -> Object {
+        let left_val: i64;
+        let right_val: i64;
+        if let Object::Num(num) = left {
+            left_val = num.value;
+        } else {
+            panic!("left value is not an integer")
+        }
+
+        if let Object::Num(num) = right {
+            right_val = num.value;
+        } else {
+            panic!("right value is not an integer")
+        }
+
+        match operator {
+            Operator::PLUS => Object::Num(Num { value: left_val + right_val }),
+            Operator::MINUS => Object::Num(Num { value: left_val - right_val }),
+            Operator::MULTIPLY => Object::Num(Num { value: left_val * right_val }),
+            Operator::DIVIDE => Object::Num(Num { value: left_val / right_val }),
+            _ => Object::None(NoneLit)
         }
     }
 

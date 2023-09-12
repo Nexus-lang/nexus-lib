@@ -49,7 +49,7 @@ fn main() {
     println!("{:?}", &program);
 
     // EVALUATOR
-    let evaluator = Evaluator::new(program);
+    let mut evaluator = Evaluator::new(program);
 
     // evaluate program
     let debug_eval = evaluator.eval_program();

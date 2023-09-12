@@ -25,7 +25,7 @@ pub enum Object {
 }
 
 impl Object {
-    fn get_type(&self) -> ObjectType {
+    pub fn get_type(&self) -> ObjectType {
         match self {
             Self::Num(_) => ObjectType::NUMBER,
             Self::Bool(_) => ObjectType::BOOLEAN,
