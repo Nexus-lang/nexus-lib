@@ -1,6 +1,8 @@
+use std::env::current_dir;
+
 use crate::{
     tokens::{Token, TokenType},
-    util::{FileHandler, ToChar},
+    util::{FileHandler, FirstAsChar}, object::Str,
 };
 
 /// Same as tokens.push() but reduces boilerplate
@@ -88,18 +90,16 @@ impl Lexer {
                         self.current_pos_line,
                     ));
                 }
-
-                // handle
-                c if c.is_alphabetic() || c == '_' => {
-
-                }
-                c if c == TokenType::QUOTMARK.to_char() || c == TokenType::APOSTROPHE.to_char() => {
+                c if c.is_alphabetic() || c == '_' => self.lex_ident(&mut tokens, &input_chars),
+                c if c == TokenType::QUOTMARK.first_as_char()
+                    || c == TokenType::APOSTROPHE.first_as_char() =>
+                {
                     self.lex_string(&mut tokens, &input_chars, c);
                 }
                 c if c.is_ascii()
                     && !c.is_alphanumeric()
-                    && c != TokenType::QUOTMARK.to_char()
-                    && c != TokenType::APOSTROPHE.to_char() =>
+                    && c != TokenType::QUOTMARK.first_as_char()
+                    && c != TokenType::APOSTROPHE.first_as_char() =>
                 {
                     match c.to_string() {
                         c if c == TokenType::ASSIGN.literal() => {
@@ -112,7 +112,7 @@ impl Lexer {
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
                             } else if input_chars[self.current_pos - 1]
-                                != TokenType::COLON.to_char()
+                                != TokenType::COLON.first_as_char()
                             {
                                 push_token!(tokens, TokenType::ASSIGN, self.current_pos_line);
                             }
@@ -191,14 +191,15 @@ impl Lexer {
                             }
                         }
                         c if c == TokenType::COLON.literal() => {
-                            if input_chars[self.current_pos + 1] == TokenType::COLON.to_char() {
+                            if input_chars[self.current_pos + 1] == TokenType::COLON.first_as_char()
+                            {
                                 push_token!(tokens, TokenType::CONSTASSIGN, self.current_pos_line);
                             } else if input_chars[self.current_pos + 1]
-                                == TokenType::ASSIGN.to_char()
+                                == TokenType::ASSIGN.first_as_char()
                             {
                                 push_token!(tokens, TokenType::VARASSIGN, self.current_pos_line);
                             } else if input_chars[self.current_pos - 1]
-                                != TokenType::COLON.to_char()
+                                != TokenType::COLON.first_as_char()
                             {
                                 push_token!(tokens, TokenType::COLON, self.current_pos_line)
                             }
@@ -258,47 +259,57 @@ impl Lexer {
             }
         }
         push_token!(tokens, TokenType::EOF, self.current_pos_line);
-        let test = &tokens[tokens.len() - 2];
-        println!("{:?}", test);
 
         tokens
     }
 
-    fn lex_string(&mut self, tokens: &mut Vec<Token>, input_chars: &Vec<char>, c /* current char */: char) -> bool {
+    fn lex_string(
+        &mut self,
+        tokens: &mut Vec<Token>,
+        input_chars: &Vec<char>,
+        c /* current char */: char,
+    ) {
         let mut identifier = String::new();
 
         let mut next_pos = self.current_pos + 1;
-        while next_pos < input_chars.len()
-            && input_chars[next_pos] != TokenType::LCURLY.to_char()
-        {
-            if (c == TokenType::QUOTMARK.to_char()
-                && input_chars[next_pos] != TokenType::QUOTMARK.to_char()
-                || c == TokenType::APOSTROPHE.to_char()
-                    && input_chars[next_pos] != TokenType::APOSTROPHE.to_char())
-                && input_chars[next_pos] != TokenType::LCURLY.to_char()
+        while next_pos < input_chars.len() {
+            // check whether first character is apostrophe or quotation mark
+            // and end string depending on that ;)
+            if (c == TokenType::QUOTMARK.first_as_char()
+                && input_chars[next_pos] != TokenType::QUOTMARK.first_as_char())
+                || (c == TokenType::APOSTROPHE.first_as_char()
+                    && input_chars[next_pos] != TokenType::APOSTROPHE.first_as_char())
             {
-                identifier.push(input_chars[next_pos]);
-                next_pos += 1;
-                self.current_pos_line += 1;
+                // check if reference is passed into string
+                // Reference example: "Hello, {Person("john").name}"
+                if input_chars[next_pos] == TokenType::LCURLY.first_as_char() {
+                    println!("string ref");
+                    tokens.push(Token::new_with_ident(
+                        TokenType::STRING,
+                        identifier.clone(),
+                        self.current_pos_line,
+                    ));
+                    identifier = String::new();
+                    next_pos += 1;
+                    // update string lexing position after string reference has been tokenized
+                    next_pos = self.lex_string_ref(tokens, input_chars, next_pos);
+                    next_pos += 1;
+                } else {
+                    println!("pushing: {}", input_chars[next_pos]);
+                    identifier.push(input_chars[next_pos]);
+                    next_pos += 1;
+                }
             } else {
-                next_pos += 1;
                 break;
             }
         }
-
         tokens.push(Token::new_with_ident(
             TokenType::STRING,
             identifier.clone(),
             self.current_pos_line,
         ));
-
-        if input_chars[next_pos] == TokenType::RCURLY.to_char() {
-            return true;
-        }
-
+        next_pos += 1;
         self.current_pos = next_pos;
-
-        false
     }
 
     fn lex_ident(&mut self, tokens: &mut Vec<Token>, input_chars: &Vec<char>) {
@@ -400,5 +411,36 @@ impl Lexer {
                 ));
             }
         }
+    }
+
+    /// lexes a string reference. Built for lex string. Do not use outside!
+    /// `Returns: `
+    fn lex_string_ref(
+        &mut self,
+        tokens: &mut Vec<Token>,
+        input_chars: &Vec<char>,
+        next_pos: usize,
+    ) -> usize {
+        let mut mut_next_pos = next_pos;
+        let mut identifier = String::new();
+        identifier.push(self.ch);
+
+        while mut_next_pos < input_chars.len()
+            && input_chars[mut_next_pos] != TokenType::RCURLY.first_as_char()
+        {
+            println!("pushing: {}", input_chars[mut_next_pos]);
+            identifier.push(input_chars[mut_next_pos]);
+            mut_next_pos += 1;
+            self.current_pos_line += 1;
+        }
+
+        self.current_pos = mut_next_pos;
+
+        tokens.push(Token::new_with_ident(
+            TokenType::STRINGREF,
+            identifier,
+            self.current_pos_line,
+        ));
+        mut_next_pos
     }
 }

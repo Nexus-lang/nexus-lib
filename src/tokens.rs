@@ -1,4 +1,4 @@
-use crate::util::ToChar;
+use crate::util::FirstAsChar;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TokenType {
@@ -33,7 +33,8 @@ pub enum TokenType {
     OR,  // or
 
     // identifier, literals
-    IDENT,  // identifiers (names)
+    IDENT,           // identifiers (names)
+    STRINGREF, // reference to a variable, function, class, enum...
     NUMBER, // numbers
     STRING, // text
 
@@ -112,6 +113,7 @@ impl TokenType {
             TokenType::OR => String::from("or"),
 
             TokenType::IDENT => String::from("IDENT"),
+            TokenType::STRINGREF => String::from("STRINGREF"),
             TokenType::NUMBER => String::from("NUMBER"),
             TokenType::STRING => String::from("STRING"),
 
@@ -154,8 +156,8 @@ impl TokenType {
     }
 }
 
-impl ToChar for TokenType {
-    fn to_char(&self) -> char {
+impl FirstAsChar for TokenType {
+    fn first_as_char(&self) -> char {
         let chars: Vec<char> = self.literal().chars().collect();
         if chars.len() > 0 {
             chars[0]

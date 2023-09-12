@@ -26,26 +26,29 @@ fn main() {
     });
     // ----
 
-    // define lexer and parser
+    // LEXER
     let mut lexer = Lexer::new(example_code);
-
-    let mut parser = Parser::new(&mut lexer).unwrap();
 
     // tokenize input
     let token_stream = lexer.lex();
-
-    // parse tokens
-    let program = parser.parse_program();
 
     // output values
     println!("TOKENS: \n");
 
     println!("{:?} \n", token_stream);
+    
+    // PARSER
+    let mut parser = Parser::new(&mut lexer).unwrap();
+
+    // parse tokens
+    let program = parser.parse_program();
+
 
     println!("AST: \n");
 
     println!("{:?}", &program);
 
+    // EVALUATOR
     let evaluator = Evaluator::new(program);
 
     // evaluate program

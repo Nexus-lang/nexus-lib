@@ -9,13 +9,13 @@ pub struct FileHandler {
     pub file_content: String,
 }
 
-pub trait ToChar {
+pub trait FirstAsChar {
     /// Returns first character of a string as a char.
     /// Most useful when converting string with only
     /// one character to a char.
     /// 
     /// Will panic if string is empty
-    fn to_char(&self) -> char;
+    fn first_as_char(&self) -> char;
 }
 
 impl FileHandler {
