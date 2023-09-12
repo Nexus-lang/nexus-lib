@@ -97,7 +97,20 @@ impl Evaluator {
             Operator::MINUS => Object::Num(Num { value: left_val - right_val }),
             Operator::MULTIPLY => Object::Num(Num { value: left_val * right_val }),
             Operator::DIVIDE => Object::Num(Num { value: left_val / right_val }),
+            Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
+            Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
+            Operator::GREATTHAN => self.native_bool_to_object(left_val > right_val),
+            Operator::LESSTHAN => self.native_bool_to_object(left_val < right_val),
+            Operator::GREATOREQUAL => self.native_bool_to_object(left_val >= right_val),
+            Operator::LESSOREQUAL => self.native_bool_to_object(left_val <= right_val),
             _ => Object::None(NoneLit)
+        }
+    }
+
+    fn native_bool_to_object(&self, bool: bool) -> Object {
+        match bool {
+            true => Object::Bool(Bool { value: BooleanType::TRUE }),
+            false => Object::Bool(Bool { value: BooleanType::FALSE }),
         }
     }
 
