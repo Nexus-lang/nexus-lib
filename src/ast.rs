@@ -7,6 +7,7 @@ pub enum Statement {
     CONST(ConstStatement),
     RETURN(ReturnStatement),
     LOCAL(LocalStatement),
+    BLOCK(BlockStatement),
     /// Statement wrapper for expressions
     ///
     /// Required because The ast only

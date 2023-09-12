@@ -1,1 +1,5 @@
-true != true
+if false {
+    false
+} else if true {
+    true
+}

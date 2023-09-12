@@ -12,10 +12,14 @@ impl Evaluator {
         Self { program }
     }
 
+    fn eval(&mut self, statement: &Statement) -> Object {
+        self.eval_statement(statement)
+    }
+
     pub fn eval_program(&mut self) -> Object {
         let mut result = Object::None(NoneLit);
         for statement in &self.program.statements.clone() {
-            result = self.eval_statement(statement);
+            result = self.eval(statement);
             println!("program evalutation: {:?}", result);
         }
         result
@@ -29,6 +33,7 @@ impl Evaluator {
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr_stmt) => self.eval_expression(&expr_stmt.expression),
             Statement::EMPTY => todo!(),
+            Statement::BLOCK(block) => self.eval_block_statement(block),
         }
     }
 
@@ -40,7 +45,7 @@ impl Evaluator {
             Expression::PREFIX(lit) => self.eval_prefix_expression(lit),
             Expression::INFIX(lit) => self.eval_infix_expression(lit),
             Expression::BOOLEAN(lit) => Object::Bool(Bool { value: lit.bool_type.clone() }),
-            Expression::IF(_) => todo!(),
+            Expression::IF(lit) => self.eval_if_expression(lit),
             Expression::WHILE(_) => todo!(),
             Expression::FOR(_) => todo!(),
             Expression::FUNC(_) => todo!(),
@@ -105,7 +110,60 @@ impl Evaluator {
             Operator::LESSTHAN => self.native_bool_to_object(left_val < right_val),
             Operator::GREATOREQUAL => self.native_bool_to_object(left_val >= right_val),
             Operator::LESSOREQUAL => self.native_bool_to_object(left_val <= right_val),
+            Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
+            Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
             _ => Object::None(NoneLit)
+        }
+    }
+
+    fn eval_block_statement(&mut self, block: &BlockStatement) -> Object {
+        let mut result = Object::None(NoneLit);
+
+        for stmt in block.statements.iter() {
+            result = self.eval_statement(stmt);
+        }
+
+        result
+    }
+
+    fn eval_if_expression(&mut self, node: &IfExpression) -> Object {
+        let condition = self.eval_expression(&node.condition.as_ref().clone());
+
+        if self.is_truthy(condition) {
+            println!("alternative: {:?}", node.alternative);
+            return self.eval_block_statement(&node.consequence);
+        } else if node.alternative != None {
+            println!("evaluating alt");
+            return self.eval_else_expression(&node.alternative.as_ref().unwrap());
+        } else {
+            todo!()
+        }
+    }
+
+    fn eval_else_expression(&mut self, alternative: &Box<IfExpression>) -> Object {
+        let alt = *alternative.clone();
+        let condition = self.eval_expression(&Expression::IF(alt));
+
+        if self.is_truthy(condition) {
+            println!("sus if");
+            return self.eval_block_statement(&alternative.consequence);
+        } else if alternative.alternative != None {
+            println!("sus else if");
+            return self.eval_else_expression(&alternative.alternative.as_ref().unwrap());
+        } else {
+            println!("nothingness");
+            Object::None(NoneLit)
+        }
+    }
+
+    fn is_truthy(&mut self, object: Object) -> bool {
+        match object {
+            Object::Bool(bool) => match bool.value {
+                BooleanType::TRUE => true,
+                BooleanType::FALSE => false,
+            },
+            Object::None(_) => false,
+            _ => todo!(),
         }
     }
 

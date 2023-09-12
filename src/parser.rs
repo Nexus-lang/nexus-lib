@@ -413,7 +413,9 @@ impl Parser {
 
                 let mut alternative: Option<Box<IfExpression>> = None;
 
-                if self.expect_peek(TokenType::ELSE) {
+                println!("sus");
+
+                if self.peek_token_is(TokenType::ELSE) {
                     alternative = self.parse_else_expression();
                 }
 
