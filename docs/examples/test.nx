@@ -1,5 +1,2 @@
-if false {
-    false
-} else if true {
-    true
-}
+true
+print(false)

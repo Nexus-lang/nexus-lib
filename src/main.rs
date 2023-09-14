@@ -30,7 +30,7 @@ fn main() {
     let mut lexer = Lexer::new(example_code);
 
     // tokenize input
-    let token_stream = lexer.lex();
+    let token_stream = lexer.lex(None);
 
     // output values
     println!("TOKENS: \n");

@@ -87,8 +87,8 @@ impl Evaluator {
     }
 
     fn eval_integer_infix_expression(&mut self, operator: &Operator, left: Object, right: Object) -> Object {
-        let left_val: i64;
-        let right_val: i64;
+        let left_val: f64;
+        let right_val: f64;
         if let Object::Num(num) = left {
             left_val = num.value;
         } else {

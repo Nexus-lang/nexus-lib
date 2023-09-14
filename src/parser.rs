@@ -53,7 +53,7 @@ const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionSt
 impl Parser {
     /// Construct Parser from lexer
     pub fn new(lexer: &mut Lexer) -> Result<Self, Error> {
-        let token_stream: Vec<Token> = lexer.lex();
+        let token_stream: Vec<Token> = lexer.lex(None);
 
         let parser = Parser {
             cur_token: token_stream.get(0).cloned().ok_or(Error::LexerError)?,

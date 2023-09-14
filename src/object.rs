@@ -41,7 +41,7 @@ pub trait Inspector {
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct Num {
-    pub value: i64,
+    pub value: f64,
 }
 
 impl Inspector for Num {

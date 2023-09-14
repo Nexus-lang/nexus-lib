@@ -1,14 +1,15 @@
-use std::env::current_dir;
-
 use crate::{
     tokens::{Token, TokenType},
-    util::{FileHandler, FirstAsChar}, object::Str,
+    util::{FileHandler, FirstAsChar},
 };
 
 /// Same as tokens.push() but reduces boilerplate
 macro_rules! push_token {
+    ($tokens:expr, $variant:path, $literal:expr, $cur_pos:expr) => {
+        $tokens.push(Token::new($variant, $literal, $cur_pos))
+    };
     ($tokens:expr, $variant:path, $cur_pos:expr) => {
-        $tokens.push(Token::new($variant, $cur_pos))
+        push_token!($tokens, $variant, $variant.literal(), $cur_pos)
     };
 }
 
@@ -44,8 +45,11 @@ impl Lexer {
     }
 
     /// Tokenizes the [`Lexer::input`]
-    pub fn lex(&mut self) -> Vec<Token> {
-        let input_chars: Vec<char> = self.input.file_content.chars().collect();
+    pub fn lex(&mut self, alt_lex_string: Option<String>) -> Vec<Token> {
+        let input_chars: Vec<char> = match alt_lex_string {
+            Some(alt) => alt.chars().collect(),
+            None => self.input.file_content.chars().collect(),
+        };
         let mut tokens: Vec<Token> = Vec::new();
 
         self.current_pos = 0;
@@ -84,11 +88,7 @@ impl Lexer {
                         self.current_pos_line += 1;
                     }
 
-                    tokens.push(Token::new_with_ident(
-                        TokenType::NUMBER,
-                        identifier,
-                        self.current_pos_line,
-                    ));
+                    push_token!(tokens, TokenType::NUMBER, identifier, self.current_pos_line);
                 }
                 c if c.is_alphabetic() || c == '_' => self.lex_ident(&mut tokens, &input_chars),
                 c if c == TokenType::QUOTMARK.first_as_char()
@@ -241,11 +241,7 @@ impl Lexer {
                             push_token!(tokens, TokenType::ANNOTATION, self.current_pos_line)
                         }
                         _ => {
-                            tokens.push(Token::new_with_ident(
-                                TokenType::ILLEGAL,
-                                c.to_string(),
-                                self.current_pos_line,
-                            ));
+                            push_token!(tokens, TokenType::ILLEGAL, c.to_string(), self.current_pos_line);
                         }
                     }
                     self.current_pos += 1;
@@ -284,11 +280,7 @@ impl Lexer {
                 // Reference example: "Hello, {Person("john").name}"
                 if input_chars[next_pos] == TokenType::LCURLY.first_as_char() {
                     println!("string ref");
-                    tokens.push(Token::new_with_ident(
-                        TokenType::STRING,
-                        identifier.clone(),
-                        self.current_pos_line,
-                    ));
+                    push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
                     identifier = String::new();
                     next_pos += 1;
                     // update string lexing position after string reference has been tokenized
@@ -303,11 +295,7 @@ impl Lexer {
                 break;
             }
         }
-        tokens.push(Token::new_with_ident(
-            TokenType::STRING,
-            identifier.clone(),
-            self.current_pos_line,
-        ));
+        push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
         next_pos += 1;
         self.current_pos = next_pos;
     }
@@ -404,11 +392,7 @@ impl Lexer {
                 push_token!(tokens, TokenType::OR, self.current_pos_line);
             }
             _ => {
-                tokens.push(Token::new_with_ident(
-                    TokenType::IDENT,
-                    identifier,
-                    self.current_pos_line,
-                ));
+                push_token!(tokens, TokenType::IDENT, identifier, self.current_pos_line);
             }
         }
     }
@@ -425,6 +409,8 @@ impl Lexer {
         let mut identifier = String::new();
         identifier.push(self.ch);
 
+        push_token!(tokens, TokenType::STRINGREF, self.current_pos_line);
+
         while mut_next_pos < input_chars.len()
             && input_chars[mut_next_pos] != TokenType::RCURLY.first_as_char()
         {
@@ -436,11 +422,6 @@ impl Lexer {
 
         self.current_pos = mut_next_pos;
 
-        tokens.push(Token::new_with_ident(
-            TokenType::STRINGREF,
-            identifier,
-            self.current_pos_line,
-        ));
         mut_next_pos
     }
 }

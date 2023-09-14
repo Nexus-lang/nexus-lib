@@ -177,15 +177,7 @@ pub struct Token {
 impl Token {
     /// constructs new token
     // this is then appended to the token list
-    pub fn new(token_type: TokenType, cur_pos: usize) -> Self {
-        Token {
-            literal: token_type.literal(),
-            token_type,
-            cur_pos: cur_pos as i32,
-        }
-    }
-
-    pub fn new_with_ident(token_type: TokenType, literal: String, cur_pos: usize) -> Self {
+    pub fn new(token_type: TokenType, literal: String, cur_pos: usize) -> Self {
         Token {
             literal: literal,
             token_type,

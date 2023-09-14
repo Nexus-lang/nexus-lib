@@ -1,7 +1,7 @@
 use std::hash::Hash;
 
 /// Statements, Code parts that don't give back a value
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub enum Statement {
     VAR(VarStatement),
     CONST(ConstStatement),
@@ -17,7 +17,7 @@ pub enum Statement {
 }
 
 /// Expressions, Code parts that don't give back a value
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Expression {
     IDENTIFIER(Identifier),
     NUMBERLITERAL(NumberLiteral),
@@ -76,33 +76,33 @@ pub struct Identifier {
     pub value: String,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct LocalStatement {
     pub left: Box<Statement>,
 }
 
 // var
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct VarStatement {
     pub name: Identifier,
     pub value: Expression,
 }
 
 // const
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ConstStatement {
     pub name: Identifier,
     pub value: Expression,
 }
 
 // return
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ReturnStatement {
     pub return_value: Expression,
 }
 
 // expression (literals, arithmetic operations, functions, if, while...)
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ExpressionStatement {
     pub expression: Expression,
 }
@@ -114,40 +114,40 @@ pub struct ExpressionStatement {
 /// }
 ///  ```
 ///
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct BlockStatement {
     pub statements: Vec<Statement>,
 }
 
 // number literal
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct NumberLiteral {
-    pub value: i64,
+    pub value: f64,
 }
 
 // string literal
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct StringLiteral {
     pub value: String,
     pub references: Vec<Identifier>,
 }
 
 // prefix (-, +, !)
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct PrefixExpression {
     pub operator: Operator, // might want to create an enum for this
     pub right: Box<Expression>,
 }
 
 // Binary operations (4 + 5, 1 != 2...)
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct InfixExpression {
     pub left: Box<Expression>,
     pub right: Box<Expression>,
     pub operator: Operator,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct IfExpression {
     pub if_type: IfType,
     pub condition: Box<Expression>,
@@ -156,20 +156,20 @@ pub struct IfExpression {
     pub alternative: Option<Box<IfExpression>>,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ForExpression {
     pub ident: Identifier,
     pub loop_list: Box<Expression>,
     pub consequence: BlockStatement,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct WhileExpression {
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct FuncExpression {
     pub ident: Identifier,
     pub args: Vec<Identifier>,
@@ -178,25 +178,25 @@ pub struct FuncExpression {
     pub consequence: BlockStatement,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct CallExpression {
     pub function: Box<Expression>,
     pub args: Vec<Expression>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct IndexExpression {
     pub list: Box<Expression>,
     pub index: Box<Expression>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ListExpression {
     pub content: Vec<Expression>,
     pub length: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct AnnotationExpression {
     pub expression: Box<Expression>,
 }
