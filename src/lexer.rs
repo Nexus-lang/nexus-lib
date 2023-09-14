@@ -1,6 +1,8 @@
+use std::process::id;
+
 use crate::{
     tokens::{Token, TokenType},
-    util::{FileHandler, FirstAsChar},
+    util::{FileHandler, FirstAsChar}, object::Str,
 };
 
 /// Same as tokens.push() but reduces boilerplate
@@ -47,13 +49,18 @@ impl Lexer {
     /// Tokenizes the [`Lexer::input`]
     pub fn lex(&mut self, alt_lex_string: Option<String>) -> Vec<Token> {
         let input_chars: Vec<char> = match alt_lex_string {
-            Some(alt) => alt.chars().collect(),
+            Some(alt) => {
+                println!("alternative: {alt}");
+                alt.chars().collect()
+            },
             None => self.input.file_content.chars().collect(),
         };
         let mut tokens: Vec<Token> = Vec::new();
 
         self.current_pos = 0;
         self.current_pos_line = 1;
+        let input_string: String = input_chars.clone().into_iter().collect();
+        println!("identifier: {}", input_string);
         while self.current_pos < input_chars.len() {
             self.ch = input_chars[self.current_pos];
 
@@ -90,11 +97,12 @@ impl Lexer {
 
                     push_token!(tokens, TokenType::NUMBER, identifier, self.current_pos_line);
                 }
-                c if c.is_alphabetic() || c == '_' => self.lex_ident(&mut tokens, &input_chars),
+                c if c.is_alphabetic() || c == '_' => {self.lex_ident(&mut tokens, &input_chars);},
                 c if c == TokenType::QUOTMARK.first_as_char()
                     || c == TokenType::APOSTROPHE.first_as_char() =>
                 {
                     self.lex_string(&mut tokens, &input_chars, c);
+                    println!("strrrrrring: {input_string}")
                 }
                 c if c.is_ascii()
                     && !c.is_alphanumeric()
@@ -279,10 +287,11 @@ impl Lexer {
                 // check if reference is passed into string
                 // Reference example: "Hello, {Person("john").name}"
                 if input_chars[next_pos] == TokenType::LCURLY.first_as_char() {
-                    println!("string ref");
+                    println!("string ref from: {:?}", input_chars[next_pos]);
                     push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
                     identifier = String::new();
                     next_pos += 1;
+                    println!("moved pos: string ref from: {:?}", input_chars[next_pos]);
                     // update string lexing position after string reference has been tokenized
                     next_pos = self.lex_string_ref(tokens, input_chars, next_pos);
                     next_pos += 1;
@@ -300,7 +309,7 @@ impl Lexer {
         self.current_pos = next_pos;
     }
 
-    fn lex_ident(&mut self, tokens: &mut Vec<Token>, input_chars: &Vec<char>) {
+    fn lex_ident(&mut self, tokens: &mut Vec<Token>, input_chars: &Vec<char>) -> Vec<Token> {
         let mut identifier = String::new();
         identifier.push(self.ch);
 
@@ -392,9 +401,11 @@ impl Lexer {
                 push_token!(tokens, TokenType::OR, self.current_pos_line);
             }
             _ => {
+                println!("idddddddddddddddddddddddddddddddddddddddent: {}", &identifier);
                 push_token!(tokens, TokenType::IDENT, identifier, self.current_pos_line);
             }
         }
+        tokens.to_vec()
     }
 
     /// lexes a string reference. Built for lex string. Do not use outside!
@@ -407,18 +418,19 @@ impl Lexer {
     ) -> usize {
         let mut mut_next_pos = next_pos;
         let mut identifier = String::new();
-        identifier.push(self.ch);
-
         push_token!(tokens, TokenType::STRINGREF, self.current_pos_line);
 
         while mut_next_pos < input_chars.len()
             && input_chars[mut_next_pos] != TokenType::RCURLY.first_as_char()
         {
-            println!("pushing: {}", input_chars[mut_next_pos]);
             identifier.push(input_chars[mut_next_pos]);
             mut_next_pos += 1;
-            self.current_pos_line += 1;
         }
+
+        println!("sus identifier: {identifier}");
+        let mut test = self.lex(Some(identifier));
+        test.pop();
+        println!("important::::{:?}", test);
 
         self.current_pos = mut_next_pos;
 

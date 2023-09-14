@@ -41,7 +41,7 @@ impl Evaluator {
         match expression {
             Expression::IDENTIFIER(_) => todo!(),
             Expression::NUMBERLITERAL(lit) => Object::Num(Num { value: lit.value }),
-            Expression::STRINGLITERAL(_) => todo!(),
+            Expression::STRINGLITERAL(_) => Object::None(NoneLit),
             Expression::PREFIX(lit) => self.eval_prefix_expression(lit),
             Expression::INFIX(lit) => self.eval_infix_expression(lit),
             Expression::BOOLEAN(lit) => Object::Bool(Bool { value: lit.bool_type.clone() }),
