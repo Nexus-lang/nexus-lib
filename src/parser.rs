@@ -325,14 +325,24 @@ impl Parser {
 
     fn parse_string_literal(&mut self) -> Expression {
         let mut string_raw: Vec<String> = Vec::new();
-        let mut references: Vec<Identifier> = Vec::new();
+        let mut references: Vec<Expression> = Vec::new();
         loop {
             if self.cur_token_is(TokenType::STRING) {
                 string_raw.push(self.cur_token.literal.clone());
-            } else if self.cur_token_is(TokenType::STRINGREF) {
+            } else if self.cur_token_is(TokenType::STRINGREFB) {
                 string_raw.push(String::from("{}"));
-                references.push(Identifier::new(self.cur_token.literal.clone()))
-            } else {
+                self.next_token();
+                println!("String ref, next token: {:?}", self.peek_token.token_type);
+                while !self.peek_token_is(TokenType::STRINGREFE) && !self.peek_token_is(TokenType::EOF) {
+                    let expression = self.parse_expression(LOWEST);
+                    println!("Da expression: {:?}", expression);
+                    if expression != Expression::EMPTY {
+                        references.push(expression);
+                    }
+                    self.next_token();
+                    println!("cur token: {:?}", self.cur_token)
+                }
+            } else if self.cur_token_is(TokenType::STRINGE) {
                 break;
             }
             self.next_token();
@@ -810,7 +820,7 @@ impl Parser {
         match self.cur_token.token_type {
             TokenType::IDENT => self.parse_identifier(),
             TokenType::NUMBER => self.parse_number_literal(),
-            TokenType::STRING => self.parse_string_literal(),
+            TokenType::STRINGB => self.parse_string_literal(),
             TokenType::NONE => Expression::NONE(NoneLiteral),
             TokenType::LPARENT => self.parse_grouped_expression(),
             TokenType::FUNC => self.parse_func_expression(),

@@ -33,10 +33,16 @@ pub enum TokenType {
     OR,  // or
 
     // identifier, literals
-    IDENT,           // identifiers (names)
-    STRINGREF, // reference to a variable, function, class, enum...
+    IDENT, // identifiers (names)
+    // reference to a variable, function, class, enum...
+    STRINGREFB, // beginning
+    STRINGREFE, // end
+
     NUMBER, // numbers
     STRING, // text
+
+    STRINGB,
+    STRINGE,
 
     // symbols
     // arithmetic operators and comparing
@@ -113,9 +119,12 @@ impl TokenType {
             TokenType::OR => String::from("or"),
 
             TokenType::IDENT => String::from("IDENT"),
-            TokenType::STRINGREF => String::from("STRINGREF"),
+            TokenType::STRINGREFB => String::from("STRINGREFB"), // beginning
+            TokenType::STRINGREFE => String::from("STRINGREFE"), // end
             TokenType::NUMBER => String::from("NUMBER"),
             TokenType::STRING => String::from("STRING"),
+            TokenType::STRINGB => String::from("STRINGB"),
+            TokenType::STRINGE => String::from("STRINGE"),
 
             TokenType::PLUS => String::from("+"),
             TokenType::MINUS => String::from("-"),

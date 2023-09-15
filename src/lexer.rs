@@ -276,6 +276,7 @@ impl Lexer {
         let mut identifier = String::new();
 
         let mut next_pos = self.current_pos + 1;
+        push_token!(tokens, TokenType::STRINGB, self.current_pos_line);
         while next_pos < input_chars.len() {
             // check whether first character is apostrophe or quotation mark
             // and end string depending on that ;)
@@ -285,7 +286,7 @@ impl Lexer {
                     && input_chars[next_pos] != TokenType::APOSTROPHE.first_as_char())
             {
                 // check if reference is passed into string
-                // Reference example: "Hello, {Person("john").name}"
+                // Reference example: "Hello, {name()}"
                 if input_chars[next_pos] == TokenType::LCURLY.first_as_char() {
                     println!("string ref from: {:?}", input_chars[next_pos]);
                     push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
@@ -305,6 +306,7 @@ impl Lexer {
             }
         }
         push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
+        push_token!(tokens, TokenType::STRINGE, self.current_pos_line);
         next_pos += 1;
         self.current_pos = next_pos;
     }
@@ -418,7 +420,7 @@ impl Lexer {
     ) -> usize {
         let mut mut_next_pos = next_pos;
         let mut identifier = String::new();
-        push_token!(tokens, TokenType::STRINGREF, self.current_pos_line);
+        push_token!(tokens, TokenType::STRINGREFB, self.current_pos_line);
 
         while mut_next_pos < input_chars.len()
             && input_chars[mut_next_pos] != TokenType::RCURLY.first_as_char()
@@ -427,12 +429,14 @@ impl Lexer {
             mut_next_pos += 1;
         }
 
-        println!("sus identifier: {identifier}");
-        let mut test = self.lex(Some(identifier));
-        test.pop();
-        println!("important::::{:?}", test);
+        let mut reference = self.lex(Some(identifier));
+        reference.pop();
 
         self.current_pos = mut_next_pos;
+
+        reference.iter().for_each(|t| tokens.push(t.to_owned()));
+
+        push_token!(tokens, TokenType::STRINGREFE, self.current_pos_line);
 
         mut_next_pos
     }
