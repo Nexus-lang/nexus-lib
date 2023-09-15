@@ -332,15 +332,12 @@ impl Parser {
             } else if self.cur_token_is(TokenType::STRINGREFB) {
                 string_raw.push(String::from("{}"));
                 self.next_token();
-                println!("String ref, next token: {:?}", self.peek_token.token_type);
                 while !self.peek_token_is(TokenType::STRINGREFE) && !self.peek_token_is(TokenType::EOF) {
                     let expression = self.parse_expression(LOWEST);
-                    println!("Da expression: {:?}", expression);
                     if expression != Expression::EMPTY {
                         references.push(expression);
                     }
                     self.next_token();
-                    println!("cur token: {:?}", self.cur_token)
                 }
             } else if self.cur_token_is(TokenType::STRINGE) {
                 break;
@@ -423,8 +420,6 @@ impl Parser {
 
                 let mut alternative: Option<Box<IfExpression>> = None;
 
-                println!("sus");
-
                 if self.peek_token_is(TokenType::ELSE) {
                     alternative = self.parse_else_expression();
                 }
@@ -499,7 +494,6 @@ impl Parser {
         let ident = Identifier {
             value: self.cur_token.literal.to_string(),
         };
-        println!("{}", &self.cur_token.literal);
 
         if !self.expect_peek(TokenType::IN) {
             self.peek_error(TokenType::IN);
@@ -527,7 +521,6 @@ impl Parser {
     }
 
     fn parse_func_expression(&mut self) -> Expression {
-        println!("{}", &self.peek_token.literal);
 
         if !self.expect_peek(TokenType::IDENT) {
             self.peek_error(TokenType::IDENT);
