@@ -294,7 +294,6 @@ impl Parser {
     /// depending on current token
     fn parse_expression(&mut self, precedence: i8) -> Expression {
         let prefix = self.prefix_parse();
-        println!("Da prefix: {:?}", prefix);
         if prefix == Expression::EMPTY {
             self.no_prefix_parse_error();
             return Expression::EMPTY;
