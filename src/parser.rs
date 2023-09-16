@@ -294,6 +294,7 @@ impl Parser {
     /// depending on current token
     fn parse_expression(&mut self, precedence: i8) -> Expression {
         let prefix = self.prefix_parse();
+        println!("Da prefix: {:?}", prefix);
         if prefix == Expression::EMPTY {
             self.no_prefix_parse_error();
             return Expression::EMPTY;
@@ -332,7 +333,7 @@ impl Parser {
             } else if self.cur_token_is(TokenType::STRINGREFB) {
                 string_raw.push(String::from("{}"));
                 self.next_token();
-                while !self.peek_token_is(TokenType::STRINGREFE) && !self.peek_token_is(TokenType::EOF) {
+                while !self.cur_token_is(TokenType::STRINGREFE) && !self.peek_token_is(TokenType::EOF) {
                     let expression = self.parse_expression(LOWEST);
                     if expression != Expression::EMPTY {
                         references.push(expression);
@@ -570,6 +571,7 @@ impl Parser {
 
     fn parse_call_expression(&mut self, function: Expression) -> Expression {
         let args = self.parse_raw_list(TokenType::RPARENT);
+        self.next_token();
 
         let expression = CallExpression {
             function: Box::new(function),
@@ -639,6 +641,9 @@ impl Parser {
         let precedence = self.cur_precedence();
         self.next_token();
         expression.right = Box::new(self.parse_expression(precedence));
+        if self.peek_token_is(TokenType::NUMBER) || self.peek_token_is(TokenType::STRING) || self.peek_token_is(TokenType::TRUE) || self.peek_token_is(TokenType::FALSE) || self.peek_token_is(TokenType::LSQUAREBRAC) || self.peek_token_is(TokenType::LCURLY) {
+            self.throw_error("Statements need to be seperated by newline or semicolon".to_string(), true);
+        }
         Expression::INFIX(expression)
     }
 

@@ -1,1 +1,1 @@
-print("a {name()} b")
+"hello {name} {sus} {popoee}"
