@@ -1,7 +1,4 @@
-use crate::{
-    ast::*,
-    object::*,
-};
+use crate::{ast::*, object::*};
 
 pub struct Evaluator {
     program: Program,
@@ -21,6 +18,10 @@ impl Evaluator {
         for statement in &self.program.statements.clone() {
             result = self.eval(statement);
             println!("program evalutation: {:?}", result);
+            result = match result {
+                Object::Return(lit) => {return *lit.value.clone();},
+                _ => result.clone(),
+            };
         }
         result
     }
@@ -29,7 +30,7 @@ impl Evaluator {
         match statement {
             Statement::VAR(_) => todo!(),
             Statement::CONST(_) => todo!(),
-            Statement::RETURN(_) => todo!(),
+            Statement::RETURN(ret_stmt) => self.eval_return_statement(&ret_stmt),
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr_stmt) => self.eval_expression(&expr_stmt.expression),
             Statement::EMPTY => todo!(),
@@ -44,7 +45,9 @@ impl Evaluator {
             Expression::STRINGLITERAL(_) => Object::None(NoneLit),
             Expression::PREFIX(lit) => self.eval_prefix_expression(lit),
             Expression::INFIX(lit) => self.eval_infix_expression(lit),
-            Expression::BOOLEAN(lit) => Object::Bool(Bool { value: lit.bool_type.clone() }),
+            Expression::BOOLEAN(lit) => Object::Bool(Bool {
+                value: lit.bool_type.clone(),
+            }),
             Expression::IF(lit) => self.eval_if_expression(lit),
             Expression::WHILE(_) => todo!(),
             Expression::FOR(_) => todo!(),
@@ -86,7 +89,12 @@ impl Evaluator {
         }
     }
 
-    fn eval_integer_infix_expression(&mut self, operator: &Operator, left: Object, right: Object) -> Object {
+    fn eval_integer_infix_expression(
+        &mut self,
+        operator: &Operator,
+        left: Object,
+        right: Object,
+    ) -> Object {
         let left_val: f64;
         let right_val: f64;
         if let Object::Num(num) = left {
@@ -102,17 +110,25 @@ impl Evaluator {
         }
 
         match operator {
-            Operator::PLUS => Object::Num(Num { value: left_val + right_val }),
-            Operator::MINUS => Object::Num(Num { value: left_val - right_val }),
-            Operator::MULTIPLY => Object::Num(Num { value: left_val * right_val }),
-            Operator::DIVIDE => Object::Num(Num { value: left_val / right_val }),
+            Operator::PLUS => Object::Num(Num {
+                value: left_val + right_val,
+            }),
+            Operator::MINUS => Object::Num(Num {
+                value: left_val - right_val,
+            }),
+            Operator::MULTIPLY => Object::Num(Num {
+                value: left_val * right_val,
+            }),
+            Operator::DIVIDE => Object::Num(Num {
+                value: left_val / right_val,
+            }),
             Operator::GREATTHAN => self.native_bool_to_object(left_val > right_val),
             Operator::LESSTHAN => self.native_bool_to_object(left_val < right_val),
             Operator::GREATOREQUAL => self.native_bool_to_object(left_val >= right_val),
             Operator::LESSOREQUAL => self.native_bool_to_object(left_val <= right_val),
             Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
             Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
-            _ => Object::None(NoneLit)
+            _ => Object::None(NoneLit),
         }
     }
 
@@ -121,6 +137,11 @@ impl Evaluator {
 
         for stmt in block.statements.iter() {
             result = self.eval_statement(stmt);
+
+            match result {
+                Object::Return(_) => return result,
+                _ => continue,
+            }
         }
 
         result
@@ -156,6 +177,13 @@ impl Evaluator {
         }
     }
 
+    fn eval_return_statement(&mut self, ret_stmt: &ReturnStatement) -> Object {
+        let value = Box::from(self.eval(&&Statement::EXPRESSION(ExpressionStatement {
+            expression: ret_stmt.return_value.clone(),
+        })));
+        Object::Return(Return { value })
+    }
+
     fn is_truthy(&mut self, object: Object) -> bool {
         match object {
             Object::Bool(bool) => match bool.value {
@@ -169,16 +197,24 @@ impl Evaluator {
 
     fn native_bool_to_object(&self, bool: bool) -> Object {
         match bool {
-            true => Object::Bool(Bool { value: BooleanType::TRUE }),
-            false => Object::Bool(Bool { value: BooleanType::FALSE }),
+            true => Object::Bool(Bool {
+                value: BooleanType::TRUE,
+            }),
+            false => Object::Bool(Bool {
+                value: BooleanType::FALSE,
+            }),
         }
     }
 
     fn eval_bang_expression(&self, right: Object) -> Object {
         match right {
             Object::Bool(obj) => match obj.value {
-                BooleanType::TRUE => Object::Bool(Bool { value: BooleanType::FALSE }),
-                BooleanType::FALSE => Object::Bool(Bool { value: BooleanType::TRUE }),
+                BooleanType::TRUE => Object::Bool(Bool {
+                    value: BooleanType::FALSE,
+                }),
+                BooleanType::FALSE => Object::Bool(Bool {
+                    value: BooleanType::TRUE,
+                }),
             },
             Object::None(_) => right,
             _ => todo!(),

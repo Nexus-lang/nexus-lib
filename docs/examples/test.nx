@@ -1,1 +1,6 @@
-"hello {name} {sus} {popoee}"
+if true {
+    if true {
+        return 10
+    }
+    return 0
+}

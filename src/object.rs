@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::ast::BooleanType;
 
 #[derive(Debug, PartialEq, PartialOrd)]
@@ -8,6 +6,7 @@ pub enum ObjectType {
     BOOLEAN,
     STRING,
     NONE,
+    RETURN,
     FUNCTION,
     BUILTINFUNCTION,
     LIST,
@@ -16,12 +15,13 @@ pub enum ObjectType {
     ERROR,
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Object {
     Num(Num),
     Bool(Bool),
     Str(Str),
     None(NoneLit),
+    Return(Return),
 }
 
 impl Object {
@@ -31,6 +31,7 @@ impl Object {
             Self::Bool(_) => ObjectType::BOOLEAN,
             Self::Str(_) => ObjectType::STRING,
             Self::None(_) => ObjectType::NONE,
+            Self::Return(_) => ObjectType::RETURN,
         }
     }
 }
@@ -39,7 +40,7 @@ pub trait Inspector {
     fn inspect(&self) -> String;
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Num {
     pub value: f64,
 }
@@ -50,7 +51,7 @@ impl Inspector for Num {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Bool {
     pub value: BooleanType
 }
@@ -64,7 +65,7 @@ impl Inspector for Bool {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Str {
     pub value: i64,
 }
@@ -75,5 +76,16 @@ impl Inspector for Str {
     }
 }
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct NoneLit;
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Return {
+    pub value: Box<Object>,
+}
+
+impl Inspector for Return {
+    fn inspect(&self) -> String {
+        format!("{:?}", self.value)
+    }
+}

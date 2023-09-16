@@ -1,8 +1,6 @@
-use std::process::id;
-
 use crate::{
     tokens::{Token, TokenType},
-    util::{FileHandler, FirstAsChar}, object::Str,
+    util::{FileHandler, FirstAsChar},
 };
 
 /// Same as tokens.push() but reduces boilerplate
@@ -58,7 +56,6 @@ impl Lexer {
 
         self.current_pos = 0;
         self.current_pos_line = 1;
-        let input_string: String = input_chars.clone().into_iter().collect();
         while self.current_pos < input_chars.len() {
             self.ch = input_chars[self.current_pos];
 
