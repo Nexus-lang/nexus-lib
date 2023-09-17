@@ -20,6 +20,7 @@ impl Evaluator {
             println!("program evalutation: {:?}", result);
             result = match result {
                 Object::Return(lit) => {return *lit.value.clone();},
+                Object::Error(_) => return result,
                 _ => result.clone(),
             };
         }
@@ -57,7 +58,7 @@ impl Evaluator {
             Expression::INDEX(_) => todo!(),
             Expression::ANNOTATION(_) => todo!(),
             Expression::NONE(_) => Object::None(NoneLit),
-            Expression::EMPTY => panic!("Cannot evalutate EMPTY"),
+            Expression::EMPTY => Object::Error(Error::new("Cannot evaluate EMPTY expression")),
         }
     }
 
@@ -69,7 +70,7 @@ impl Evaluator {
             Operator::BANG => self.eval_bang_expression(right),
             Operator::PLUS => right,
             Operator::MINUS => self.eval_minus_expression(right),
-            _ => todo!(),
+            _ => Object::Error(Error::new(format!("Illegal prefix operation: {:?}", node.operator).as_str())),
         }
     }
 
@@ -85,7 +86,7 @@ impl Evaluator {
         } else if operator == &Operator::NOTEQUAL {
             self.native_bool_to_object(left != right)
         } else {
-            todo!("support for all expressions")
+            Object::Error(Error::new(format!("Unknown operation: left: {:?}, right: {:?}, operator: {:?}", left, right, operator).as_str()))
         }
     }
 
@@ -100,13 +101,13 @@ impl Evaluator {
         if let Object::Num(num) = left {
             left_val = num.value;
         } else {
-            panic!("left value is not an integer")
+            return Object::Error(Error::new(format!("left value is not a number. Expected number found: {:?} instead", left).as_str()));
         }
 
         if let Object::Num(num) = right {
             right_val = num.value;
         } else {
-            panic!("right value is not an integer")
+            return Object::Error(Error::new(format!("right value is not a number. Expected number found: {:?} instead", right).as_str()));
         }
 
         match operator {
@@ -148,9 +149,13 @@ impl Evaluator {
     }
 
     fn eval_if_expression(&mut self, node: &IfExpression) -> Object {
-        let condition = self.eval_expression(&node.condition.as_ref().clone());
+        // sussy unweap
+        let condition = match &node.condition.clone() {
+            Some(condition) => self.eval_expression(&condition),
+            None => Object::None(NoneLit),
+        }; // &node.condition.as_ref().clone().unwrap()
 
-        if self.is_truthy(condition) {
+        if condition != Object::None(NoneLit) && self.is_truthy(condition) {
             println!("alternative: {:?}", node.alternative);
             return self.eval_block_statement(&node.consequence);
         } else if node.alternative != None {
@@ -163,9 +168,12 @@ impl Evaluator {
 
     fn eval_else_expression(&mut self, alternative: &Box<IfExpression>) -> Object {
         let alt = *alternative.clone();
-        let condition = self.eval_expression(&Expression::IF(alt));
+        let condition = match &alt.condition.clone() {
+            Some(cond) => self.eval_expression(cond),
+            None => Object::None(NoneLit),
+        };
 
-        if self.is_truthy(condition) {
+        if condition != Object::None(NoneLit) && self.is_truthy(condition) {
             println!("sus if");
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
@@ -191,7 +199,7 @@ impl Evaluator {
                 BooleanType::FALSE => false,
             },
             Object::None(_) => false,
-            _ => todo!(),
+            _ => todo!("{:?}", object),
         }
     }
 

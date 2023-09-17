@@ -21,6 +21,7 @@ pub enum Object {
     Bool(Bool),
     Str(Str),
     None(NoneLit),
+    Error(Error),
     Return(Return),
 }
 
@@ -31,13 +32,10 @@ impl Object {
             Self::Bool(_) => ObjectType::BOOLEAN,
             Self::Str(_) => ObjectType::STRING,
             Self::None(_) => ObjectType::NONE,
+            Self::Error(_) => ObjectType::ERROR,
             Self::Return(_) => ObjectType::RETURN,
         }
     }
-}
-
-pub trait Inspector {
-    fn inspect(&self) -> String;
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -45,24 +43,9 @@ pub struct Num {
     pub value: f64,
 }
 
-impl Inspector for Num {
-    fn inspect(&self) -> String {
-        self.value.to_string()
-    }
-}
-
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Bool {
     pub value: BooleanType
-}
-
-impl Inspector for Bool {
-    fn inspect(&self) -> String {
-        match self.value {
-            BooleanType::TRUE => "true".to_string(),
-            BooleanType::FALSE => "false".to_string()
-        }
-    }
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -70,22 +53,21 @@ pub struct Str {
     pub value: i64,
 }
 
-impl Inspector for Str {
-    fn inspect(&self) -> String {
-        self.value.to_string()
-    }
-}
-
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct NoneLit;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
-pub struct Return {
-    pub value: Box<Object>,
+pub struct Error {
+    message: String,
 }
 
-impl Inspector for Return {
-    fn inspect(&self) -> String {
-        format!("{:?}", self.value)
+impl Error {
+    pub fn new(msg: &str) -> Error {
+        Error { message: format!("Error: {}", msg) }
     }
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Return {
+    pub value: Box<Object>,
 }

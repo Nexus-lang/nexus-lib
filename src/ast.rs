@@ -150,7 +150,7 @@ pub struct InfixExpression {
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct IfExpression {
     pub if_type: IfType,
-    pub condition: Box<Expression>,
+    pub condition: Option<Box<Expression>>,
     pub consequence: BlockStatement,
     // 0: condition; 1: consequence
     pub alternative: Option<Box<IfExpression>>,

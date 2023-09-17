@@ -364,10 +364,11 @@ impl Parser {
 
     fn parse_if_expression(&mut self) -> Expression {
         self.next_token();
-        let condition = Box::new(self.parse_expression(LOWEST));
+        let condition = Some(Box::new(self.parse_expression(LOWEST)));
 
-        if condition == Box::from(Expression::EMPTY) {
-            self.throw_error(empty_condition(&TokenType::IF, &condition), true);
+        if condition == Some(Box::from(Expression::EMPTY)) {
+            // sussy unwrap replace with safe thingy
+            self.throw_error(empty_condition(&TokenType::IF, &condition.unwrap()), true);
             return Expression::EMPTY;
         }
 
@@ -407,7 +408,7 @@ impl Parser {
 
                 self.next_token();
 
-                let condition = Box::new(self.parse_expression(LOWEST));
+                let condition = Some(Box::new(self.parse_expression(LOWEST)));
 
                 if !self.expect_peek(TokenType::LCURLY) {
                     self.peek_error(TokenType::LCURLY);
@@ -435,7 +436,7 @@ impl Parser {
             TokenType::LCURLY => {
                 let if_type = IfType::ELSE;
 
-                let condition = Box::new(Expression::EMPTY);
+                let condition = None;
 
                 self.next_token();
 
