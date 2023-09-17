@@ -162,7 +162,7 @@ impl Evaluator {
             println!("evaluating alt");
             return self.eval_else_expression(&node.alternative.as_ref().unwrap());
         } else {
-            todo!()
+            Object::UnMetIf(UnmetIf)
         }
     }
 
@@ -173,7 +173,7 @@ impl Evaluator {
             None => Object::None(NoneLit),
         };
 
-        if condition != Object::None(NoneLit) && self.is_truthy(condition) {
+        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(condition) {
             println!("sus if");
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
@@ -181,7 +181,7 @@ impl Evaluator {
             return self.eval_else_expression(&alternative.alternative.as_ref().unwrap());
         } else {
             println!("nothingness");
-            Object::None(NoneLit)
+            Object::UnMetIf(UnmetIf)
         }
     }
 

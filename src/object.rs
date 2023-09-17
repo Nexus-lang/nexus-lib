@@ -13,6 +13,7 @@ pub enum ObjectType {
     SET,
     HASH,
     ERROR,
+    UNMETIF,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -22,6 +23,7 @@ pub enum Object {
     Str(Str),
     None(NoneLit),
     Error(Error),
+    UnMetIf(UnmetIf),
     Return(Return),
 }
 
@@ -34,6 +36,7 @@ impl Object {
             Self::None(_) => ObjectType::NONE,
             Self::Error(_) => ObjectType::ERROR,
             Self::Return(_) => ObjectType::RETURN,
+            Self::UnMetIf(_) => ObjectType::UNMETIF,
         }
     }
 }
@@ -71,3 +74,7 @@ impl Error {
 pub struct Return {
     pub value: Box<Object>,
 }
+
+// Kinda weird will be improved in rewrite I promise :3
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct UnmetIf;

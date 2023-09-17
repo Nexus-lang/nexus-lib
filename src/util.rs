@@ -49,3 +49,15 @@ pub fn input() -> String {
         .expect("failed to read input");
     input.trim().to_string()
 }
+
+pub trait ToSome<T> {
+    /// Wraps a value in Some(...)
+    /// Built for qol purposes :D
+    fn to_some(self) -> Option<T>;
+}
+
+impl<T> ToSome<T> for T {
+    fn to_some(self) -> Option<T> {
+        Some(self)
+    }
+}
