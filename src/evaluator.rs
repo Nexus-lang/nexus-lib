@@ -1,4 +1,7 @@
-use crate::{ast::*, object::*};
+use std::process::{exit, self};
+use colored::{self, Colorize};
+
+use crate::{ast::*, object::*, util};
 
 pub struct Evaluator {
     program: Program,
@@ -24,6 +27,7 @@ impl Evaluator {
                 _ => result.clone(),
             };
         }
+        println!("{}", Object::Bool(Bool { value: BooleanType::FALSE }).literal());
         result
     }
 
@@ -199,7 +203,12 @@ impl Evaluator {
                 BooleanType::FALSE => false,
             },
             Object::None(_) => false,
-            _ => todo!("{:?}", object),
+            _ => {
+                throw_error(Error::new(format!("Invalid condition: {}", object.literal()).as_str()));
+                // this will not be returned as throw_error()
+                // will terminate the process
+                false
+            },
         }
     }
 
@@ -235,4 +244,11 @@ impl Evaluator {
             _ => right,
         }
     }
+}
+
+fn throw_error(err: Error) {
+    println!("{}: {}", "Error:".red(), err.message.trim());
+    println!("PRESS ANY KEY TO EXIT");
+    util::input();
+    process::exit(0);
 }

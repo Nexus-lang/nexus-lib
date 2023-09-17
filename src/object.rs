@@ -41,6 +41,20 @@ impl Object {
     }
 }
 
+impl Literal for Object {
+    fn literal(&self) -> String {
+        match self {
+            Object::Num(num) => (num.value as i32).to_string(),
+            Object::Bool(bool) => format!("{:?}", bool.value).to_lowercase(),
+            Object::Str(_) => todo!(),
+            Object::None(_) => String::from("none"),
+            Object::Error(_) => todo!(),
+            Object::UnMetIf(_) => todo!(),
+            Object::Return(ret) => format!("return {}", ret.value.literal()),
+        }    
+    }
+}
+
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Num {
     pub value: f64,
@@ -61,12 +75,12 @@ pub struct NoneLit;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Error {
-    message: String,
+    pub message: String,
 }
 
 impl Error {
     pub fn new(msg: &str) -> Error {
-        Error { message: format!("Error: {}", msg) }
+        Error { message: msg.to_string() }
     }
 }
 
@@ -78,3 +92,7 @@ pub struct Return {
 // Kinda weird will be improved in rewrite I promise :3
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct UnmetIf;
+
+pub trait Literal {
+    fn literal(&self) -> String;
+}

@@ -18,6 +18,18 @@ pub trait FirstAsChar {
     fn first_as_char(&self) -> char;
 }
 
+pub trait ToSome<T> {
+    /// Wraps a value in Some(...)
+    /// Built for qol purposes :D
+    fn to_some(self) -> Option<T>;
+}
+
+impl<T> ToSome<T> for T {
+    fn to_some(self) -> Option<T> {
+        Some(self)
+    }
+}
+
 impl FileHandler {
     /// Constructs FileHandler from file path
     pub fn read_file(path: &str) -> FileHandler {
@@ -48,16 +60,4 @@ pub fn input() -> String {
         .read_line(&mut input)
         .expect("failed to read input");
     input.trim().to_string()
-}
-
-pub trait ToSome<T> {
-    /// Wraps a value in Some(...)
-    /// Built for qol purposes :D
-    fn to_some(self) -> Option<T>;
-}
-
-impl<T> ToSome<T> for T {
-    fn to_some(self) -> Option<T> {
-        Some(self)
-    }
 }
