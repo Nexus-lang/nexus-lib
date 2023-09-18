@@ -30,6 +30,7 @@ pub struct Parser {
     /// to construct error message
     line_count: i32,
     // -------
+    enable_dbg: bool,
 }
 
 // determines which operations has priority.
@@ -52,7 +53,7 @@ const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionSt
 
 impl Parser {
     /// Construct Parser from lexer
-    pub fn new(lexer: &mut Lexer) -> Result<Self, Error> {
+    pub fn new(lexer: &mut Lexer, enable_dbg: bool) -> Result<Self, Error> {
         let token_stream: Vec<Token> = lexer.lex(None);
 
         let parser = Parser {
@@ -62,6 +63,7 @@ impl Parser {
             current_pos: 0,
             lexer: lexer.clone(),
             line_count: 1,
+            enable_dbg,
             token_stream,
         };
 
@@ -94,7 +96,9 @@ impl Parser {
                 program.statements.push(statement);
             }
         }
-        println!("Errors: {:?}", self.errors);
+        if self.enable_dbg {
+            println!("Errors: {:?}", self.errors);
+        }
 
         program
     }
@@ -332,7 +336,9 @@ impl Parser {
             } else if self.cur_token_is(TokenType::STRINGREFB) {
                 string_raw.push(String::from("{}"));
                 self.next_token();
-                while !self.cur_token_is(TokenType::STRINGREFE) && !self.peek_token_is(TokenType::EOF) {
+                while !self.cur_token_is(TokenType::STRINGREFE)
+                    && !self.peek_token_is(TokenType::EOF)
+                {
                     let expression = self.parse_expression(LOWEST);
                     if expression != Expression::EMPTY {
                         references.push(expression);
@@ -522,7 +528,6 @@ impl Parser {
     }
 
     fn parse_func_expression(&mut self) -> Expression {
-
         if !self.expect_peek(TokenType::IDENT) {
             self.peek_error(TokenType::IDENT);
             return Expression::EMPTY;
@@ -641,8 +646,17 @@ impl Parser {
         let precedence = self.cur_precedence();
         self.next_token();
         expression.right = Box::new(self.parse_expression(precedence));
-        if self.peek_token_is(TokenType::NUMBER) || self.peek_token_is(TokenType::STRING) || self.peek_token_is(TokenType::TRUE) || self.peek_token_is(TokenType::FALSE) || self.peek_token_is(TokenType::LSQUAREBRAC) || self.peek_token_is(TokenType::LCURLY) {
-            self.throw_error("Statements need to be seperated by newline or semicolon".to_string(), true);
+        if self.peek_token_is(TokenType::NUMBER)
+            || self.peek_token_is(TokenType::STRING)
+            || self.peek_token_is(TokenType::TRUE)
+            || self.peek_token_is(TokenType::FALSE)
+            || self.peek_token_is(TokenType::LSQUAREBRAC)
+            || self.peek_token_is(TokenType::LCURLY)
+        {
+            self.throw_error(
+                "Statements need to be seperated by newline or semicolon".to_string(),
+                true,
+            );
         }
         Expression::INFIX(expression)
     }
@@ -790,7 +804,7 @@ impl Parser {
         self.errors.push(msg);
         if exit {
             println!("{:?}", self.errors);
-            println!("PRESS ANY KEY TO EXIT");
+            print!("PRESS ANY KEY TO EXIT");
             util::input();
             process::exit(1);
         }

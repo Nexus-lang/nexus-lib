@@ -1,5 +1,10 @@
 use std::fs::File;
 use std::io::{Read, self, Write};
+use std::process;
+
+use colored::Colorize;
+
+use crate::object::Error;
 
 /// Handles files and stores file path
 /// for error messages
@@ -60,4 +65,12 @@ pub fn input() -> String {
         .read_line(&mut input)
         .expect("failed to read input");
     input.trim().to_string()
+
+}
+
+pub fn throw_error(err: Error) {
+    println!("{}: {}", "Error:".red(), err.message.trim());
+    print!("PRESS ANY KEY TO EXIT");
+    input();
+    process::exit(0);
 }

@@ -1,26 +1,28 @@
-mod tokens;
 mod ast;
-mod lexer;
-mod parser;
-mod util;
+mod builtin;
 mod errors;
 mod evaluator;
+mod lexer;
 mod object;
+mod parser;
+mod tokens;
+mod util;
 
 use lexer::Lexer;
 use parser::Parser;
-use util::{FileHandler, input};
+use util::{input, FileHandler};
 
-use crate::evaluator::Evaluator;
+use crate::{evaluator::Evaluator, util::throw_error, object::Error};
 
 fn main() {
     // select the file to interpret
-    println!("Enter file to interpret or type ENTER to use default file:");
+    println!("Enter file to interpret or press ENTER to use default file:");
     print!(">>");
-    let input = input(); 
+    let input_file = input();
+    let dbg_enabled = dbg_enabled();
 
-    let example_code = FileHandler::read_file(if input != "" {
-        input.as_str()
+    let example_code = FileHandler::read_file(if input_file != "" {
+        input_file.as_str()
     } else {
         "docs/examples/test.nx"
     });
@@ -33,20 +35,25 @@ fn main() {
     let token_stream = lexer.lex(None);
 
     // output values
-    println!("TOKENS: \n");
+    if dbg_enabled {
+        println!("TOKENS: \n");
 
-    println!("{:?} \n", token_stream);
-    
+        println!("{:?} \n", token_stream);
+    }
+
     // PARSER
-    let mut parser = Parser::new(&mut lexer).unwrap();
+    let mut parser = Parser::new(&mut lexer, dbg_enabled).unwrap();
 
     // parse tokens
     let program = parser.parse_program();
 
+    if dbg_enabled {
+        println!("AST: \n");
 
-    println!("AST: \n");
+        println!("{:?}", &program);
+    }
 
-    println!("{:?}", &program);
+    println!("Output:");
 
     // EVALUATOR
     let mut evaluator = Evaluator::new(program);
@@ -54,10 +61,29 @@ fn main() {
     // evaluate program
     let debug_eval = evaluator.eval_program();
 
-    println!("DEBUG EVAL: \n");
+    println!();
 
-    println!("{:?}", debug_eval);
+    if dbg_enabled {
+        println!("DEBUG EVAL: \n");
 
-    println!("PRESS ANY KEY TO EXIT");
+        println!("{:?}", debug_eval);
+    }
+    print!("PRESS ANY KEY TO EXIT");
     util::input();
+}
+
+fn dbg_enabled() -> bool {
+    println!("Enable debug mode (y/n) press ENTER to use debug mode (default)");
+    print!(">>");
+    let input_dbg = input();
+    println!();
+    let dbg_enabled = if input_dbg == "y" || input_dbg == "" {
+        true
+    } else if input_dbg == "n" {
+        false
+    } else {
+        throw_error(Error::new(format!("Invalid input. Expected y/n or empty. Got `{}` instead", input_dbg).as_str()));
+        panic!()
+    };
+    dbg_enabled
 }

@@ -1,4 +1,7 @@
-use crate::ast::BooleanType;
+use crate::{
+    ast::{BooleanType, Expression},
+    builtin,
+};
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum ObjectType {
@@ -25,6 +28,7 @@ pub enum Object {
     Error(Error),
     UnMetIf(UnmetIf),
     Return(Return),
+    BuiltInFunction(BuiltInFunction),
 }
 
 impl Object {
@@ -37,6 +41,7 @@ impl Object {
             Self::Error(_) => ObjectType::ERROR,
             Self::Return(_) => ObjectType::RETURN,
             Self::UnMetIf(_) => ObjectType::UNMETIF,
+            Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
         }
     }
 }
@@ -51,7 +56,16 @@ impl Literal for Object {
             Object::Error(_) => todo!(),
             Object::UnMetIf(_) => todo!(),
             Object::Return(ret) => format!("return {}", ret.value.literal()),
-        }    
+            Object::BuiltInFunction(func) => {
+                let mut fmt_string = format!("{}(", func.func.name());
+                func.args.iter().for_each(|x| {
+                    fmt_string.push_str(x.literal().as_str());
+                    fmt_string.push_str(", ")
+                });
+                fmt_string.push(')');
+                fmt_string
+            }
+        }
     }
 }
 
@@ -62,7 +76,7 @@ pub struct Num {
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Bool {
-    pub value: BooleanType
+    pub value: BooleanType,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -80,7 +94,9 @@ pub struct Error {
 
 impl Error {
     pub fn new(msg: &str) -> Error {
-        Error { message: msg.to_string() }
+        Error {
+            message: msg.to_string(),
+        }
     }
 }
 
@@ -92,6 +108,12 @@ pub struct Return {
 // Kinda weird will be improved in rewrite I promise :3
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct UnmetIf;
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct BuiltInFunction {
+    pub func: builtin::BuiltinFunction,
+    pub args: Vec<Object>,
+}
 
 pub trait Literal {
     fn literal(&self) -> String;
