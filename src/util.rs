@@ -68,7 +68,7 @@ pub fn input() -> String {
 
 }
 
-pub fn throw_error(err: Error) {
+pub fn throw_error(err: &Error) {
     println!("{}: {}", "Error:".red(), err.message.trim());
     print!("PRESS ANY KEY TO EXIT");
     input();

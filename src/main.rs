@@ -7,6 +7,7 @@ mod object;
 mod parser;
 mod tokens;
 mod util;
+mod enviroment;
 
 use lexer::Lexer;
 use parser::Parser;
@@ -82,7 +83,7 @@ fn dbg_enabled() -> bool {
     } else if input_dbg == "n" {
         false
     } else {
-        throw_error(Error::new(format!("Invalid input. Expected y/n or empty. Got `{}` instead", input_dbg).as_str()));
+        throw_error(&Error::new(format!("Invalid input. Expected y/n or empty. Got `{}` instead", input_dbg).as_str()));
         panic!()
     };
     dbg_enabled

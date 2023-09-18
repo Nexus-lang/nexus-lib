@@ -1,12 +1,14 @@
-use crate::{ast::*, builtin, object::*, util::throw_error};
+use crate::{ast::*, builtin, object::*, util::throw_error, enviroment::Environment};
 
 pub struct Evaluator {
     program: Program,
+    env: Environment,
 }
 
 impl Evaluator {
     pub fn new(program: Program) -> Self {
-        Self { program }
+        let env = Environment::new();
+        Self { program, env }
     }
 
     fn eval(&mut self, statement: &Statement) -> Object {
@@ -31,8 +33,16 @@ impl Evaluator {
 
     fn eval_statement(&mut self, statement: &Statement) -> Object {
         match statement {
-            Statement::VAR(_) => todo!(),
-            Statement::CONST(_) => todo!(),
+            Statement::VAR(var) => {
+                let val = self.eval_expression(&var.value);
+                self.env.set(&var.name.value, &val);
+                Object::Var(Var { value: Box::from(val) })
+            },
+            Statement::CONST(constant) => {
+                let val = self.eval_expression(&constant.value);
+                self.env.set(&constant.name.value, &val);
+                Object::Var(Var { value: Box::from(val) })
+            },
             Statement::RETURN(ret) => self.eval_return_statement(&ret),
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
@@ -43,7 +53,7 @@ impl Evaluator {
 
     fn eval_expression(&mut self, expression: &Expression) -> Object {
         match expression {
-            Expression::IDENTIFIER(_) => todo!(),
+            Expression::IDENTIFIER(ident) => self.eval_identifier(ident),
             Expression::NUMBERLITERAL(num) => Object::Num(Num { value: num.value }),
             Expression::STRINGLITERAL(str) => self.eval_string_literal(str),
             Expression::PREFIX(prefix) => self.eval_prefix_expression(prefix),
@@ -64,6 +74,18 @@ impl Evaluator {
         }
     }
 
+    fn eval_identifier(&mut self, ident: &Identifier) -> Object {
+        match self.env.get(ident.value.clone()) {
+            Ok(obj) => obj,
+            Err(_) => {
+                let err = Error::new("Cannot find identifier");
+                throw_error(&err);
+                Object::Error(err)
+            },
+        }
+    }
+
+    // TODO: Correct formatting. Example: "{x} is cool" -> " is cool{x}"
     fn eval_string_literal(&mut self, node: &StringLiteral) -> Object {
         let mut char_stream: Vec<char> = node.value.chars().collect();
         let mut ref_pos = 0;
@@ -276,7 +298,7 @@ impl Evaluator {
             },
             Object::None(_) => false,
             _ => {
-                throw_error(Error::new(
+                throw_error(&Error::new(
                     format!("Invalid condition: {}", object.literal()).as_str(),
                 ));
                 // this will not be returned as throw_error()

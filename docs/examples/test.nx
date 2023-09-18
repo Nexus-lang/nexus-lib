@@ -1,1 +1,3 @@
-"hello {true}"
+var greet = "Hello, James!"
+
+print("{greet} Good to see you")

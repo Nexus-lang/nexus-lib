@@ -1,5 +1,5 @@
 use crate::{
-    ast::{BooleanType, Expression},
+    ast::BooleanType,
     builtin,
 };
 
@@ -10,6 +10,7 @@ pub enum ObjectType {
     STRING,
     NONE,
     RETURN,
+    VAR,
     FUNCTION,
     BUILTINFUNCTION,
     LIST,
@@ -28,6 +29,7 @@ pub enum Object {
     Error(Error),
     UnMetIf(UnmetIf),
     Return(Return),
+    Var(Var),
     BuiltInFunction(BuiltInFunction),
 }
 
@@ -40,6 +42,7 @@ impl Object {
             Self::None(_) => ObjectType::NONE,
             Self::Error(_) => ObjectType::ERROR,
             Self::Return(_) => ObjectType::RETURN,
+            Self::Var(_) => ObjectType::VAR,
             Self::UnMetIf(_) => ObjectType::UNMETIF,
             Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
         }
@@ -56,6 +59,7 @@ impl Literal for Object {
             Object::Error(_) => todo!(),
             Object::UnMetIf(_) => todo!(),
             Object::Return(ret) => format!("return {}", ret.value.literal()),
+            Object::Var(var) => todo!(),
             Object::BuiltInFunction(func) => {
                 let mut fmt_string = format!("{}(", func.func.name());
                 func.args.iter().for_each(|x| {
@@ -102,6 +106,11 @@ impl Error {
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Return {
+    pub value: Box<Object>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Var {
     pub value: Box<Object>,
 }
 
