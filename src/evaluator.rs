@@ -1,4 +1,4 @@
-use crate::{ast::*, object::*, util::throw_error, builtin};
+use crate::{ast::*, builtin, object::*, util::throw_error};
 
 pub struct Evaluator {
     program: Program,
@@ -18,7 +18,9 @@ impl Evaluator {
         for statement in &self.program.statements.clone() {
             result = Some(self.eval(statement));
             result = match result {
-                Some(Object::Return(lit)) => {return Some(*lit.value.clone());},
+                Some(Object::Return(lit)) => {
+                    return Some(*lit.value.clone());
+                }
                 Some(Object::Error(err)) => return Some(Object::Error(err)),
                 Some(Object::UnMetIf(_)) => None,
                 _ => Some(result.clone().unwrap()),
@@ -43,7 +45,7 @@ impl Evaluator {
         match expression {
             Expression::IDENTIFIER(_) => todo!(),
             Expression::NUMBERLITERAL(num) => Object::Num(Num { value: num.value }),
-            Expression::STRINGLITERAL(_) => Object::None(NoneLit),
+            Expression::STRINGLITERAL(str) => self.eval_string_literal(str),
             Expression::PREFIX(prefix) => self.eval_prefix_expression(prefix),
             Expression::INFIX(infix) => self.eval_infix_expression(infix),
             Expression::BOOLEAN(bool) => Object::Bool(Bool {
@@ -62,6 +64,42 @@ impl Evaluator {
         }
     }
 
+    fn eval_string_literal(&mut self, node: &StringLiteral) -> Object {
+        let mut char_stream: Vec<char> = node.value.chars().collect();
+        let mut ref_pos = 0;
+        let mut c_stream_pos = 0;
+        let mut literal_references: Vec<String> = Vec::new();
+
+        {
+            let references = &node.references;
+            references
+                .iter()
+                .for_each(|x| literal_references.push(self.eval_expression(x).literal()));
+        }
+
+        while c_stream_pos < char_stream.len() {
+            let mut cur_ref: Vec<char> = Vec::new();
+            if node.references.len() > 0 {
+                cur_ref = literal_references[ref_pos].chars().collect();
+            }
+
+            if char_stream[c_stream_pos] == '{' {
+                char_stream.remove(c_stream_pos);
+                char_stream.remove(c_stream_pos);
+                cur_ref.iter().for_each(|x| char_stream.push(*x));
+                if ref_pos + 1 < node.references.len() {
+                    ref_pos += 1;
+                }
+            }
+
+            c_stream_pos += 1;
+        }
+
+        let str: String = char_stream.into_iter().collect();
+
+        Object::Str(Str { value: str })
+    }
+
     fn eval_prefix_expression(&mut self, node: &PrefixExpression) -> Object {
         let right = self.eval_expression(&node.right);
         // TODO: error checking
@@ -70,7 +108,9 @@ impl Evaluator {
             Operator::BANG => self.eval_bang_expression(right),
             Operator::PLUS => right,
             Operator::MINUS => self.eval_minus_expression(right),
-            _ => Object::Error(Error::new(format!("Illegal prefix operation: {:?}", node.operator).as_str())),
+            _ => Object::Error(Error::new(
+                format!("Illegal prefix operation: {:?}", node.operator).as_str(),
+            )),
         }
     }
 
@@ -86,7 +126,13 @@ impl Evaluator {
         } else if operator == &Operator::NOTEQUAL {
             self.native_bool_to_object(left != right)
         } else {
-            Object::Error(Error::new(format!("Unknown operation: left: {:?}, right: {:?}, operator: {:?}", left, right, operator).as_str()))
+            Object::Error(Error::new(
+                format!(
+                    "Unknown operation: left: {:?}, right: {:?}, operator: {:?}",
+                    left, right, operator
+                )
+                .as_str(),
+            ))
         }
     }
 
@@ -101,13 +147,25 @@ impl Evaluator {
         if let Object::Num(num) = left {
             left_val = num.value;
         } else {
-            return Object::Error(Error::new(format!("left value is not a number. Expected number found: {:?} instead", left).as_str()));
+            return Object::Error(Error::new(
+                format!(
+                    "left value is not a number. Expected number found: {:?} instead",
+                    left
+                )
+                .as_str(),
+            ));
         }
 
         if let Object::Num(num) = right {
             right_val = num.value;
         } else {
-            return Object::Error(Error::new(format!("right value is not a number. Expected number found: {:?} instead", right).as_str()));
+            return Object::Error(Error::new(
+                format!(
+                    "right value is not a number. Expected number found: {:?} instead",
+                    right
+                )
+                .as_str(),
+            ));
         }
 
         match operator {
@@ -171,7 +229,8 @@ impl Evaluator {
             None => Object::None(NoneLit),
         };
 
-        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(condition) {
+        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(condition)
+        {
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
             return self.eval_else_expression(&alternative.alternative.as_ref().unwrap());
@@ -196,11 +255,14 @@ impl Evaluator {
                         let evaluated_arg = self.eval_expression(&arg);
                         args.push(evaluated_arg)
                     }
-                    let func = BuiltInFunction { func:builtin::BuiltinFunction::PRINT, args };
+                    let func = BuiltInFunction {
+                        func: builtin::BuiltinFunction::PRINT,
+                        args,
+                    };
                     builtin::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
-                },
-                _ => todo!()
+                }
+                _ => todo!(),
             },
             _ => todo!(),
         }
@@ -214,11 +276,13 @@ impl Evaluator {
             },
             Object::None(_) => false,
             _ => {
-                throw_error(Error::new(format!("Invalid condition: {}", object.literal()).as_str()));
+                throw_error(Error::new(
+                    format!("Invalid condition: {}", object.literal()).as_str(),
+                ));
                 // this will not be returned as throw_error()
                 // will terminate the process
                 false
-            },
+            }
         }
     }
 

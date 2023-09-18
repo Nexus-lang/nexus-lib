@@ -51,7 +51,7 @@ impl Literal for Object {
         match self {
             Object::Num(num) => (num.value as i32).to_string(),
             Object::Bool(bool) => format!("{:?}", bool.value).to_lowercase(),
-            Object::Str(_) => todo!(),
+            Object::Str(str) => str.value.to_string(),
             Object::None(_) => String::from("none"),
             Object::Error(_) => todo!(),
             Object::UnMetIf(_) => todo!(),
@@ -81,7 +81,7 @@ pub struct Bool {
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Str {
-    pub value: i64,
+    pub value: String,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
