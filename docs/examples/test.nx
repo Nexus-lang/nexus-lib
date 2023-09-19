@@ -1,6 +1,8 @@
 func doStuff(x, y) {
-    print(y)
     print(x)
+    print(y)
 }
 
 doStuff(200, 100)
+
+print(x)

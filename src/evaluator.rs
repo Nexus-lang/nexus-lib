@@ -294,6 +294,11 @@ impl Evaluator {
                     Object::BuiltInFunction(func)
                 }
                 _ => {
+                    let old_env = self.env.clone();
+                    let new_env = self.env.clone();
+
+                    self.env = new_env.clone();
+
                     let func = match self.env.get(ident.value.clone()) {
                         Ok(obj) => obj,
                         Err(_) => {
@@ -324,6 +329,8 @@ impl Evaluator {
                     for stmt in func_obj.body.statements {
                         self.eval(&stmt);
                     }
+
+                    self.env = old_env;
 
                     func
                 }
