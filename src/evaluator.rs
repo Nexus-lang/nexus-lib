@@ -105,10 +105,12 @@ impl Evaluator {
                 cur_ref = literal_references[ref_pos].chars().collect();
             }
 
+            cur_ref.reverse();
+
             if char_stream[c_stream_pos] == '{' {
                 char_stream.remove(c_stream_pos);
                 char_stream.remove(c_stream_pos);
-                cur_ref.iter().for_each(|x| char_stream.push(*x));
+                cur_ref.iter().for_each(|x| char_stream.insert(c_stream_pos, *x));
                 if ref_pos + 1 < node.references.len() {
                     ref_pos += 1;
                 }
