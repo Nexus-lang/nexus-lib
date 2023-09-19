@@ -1,3 +1,9 @@
-var greet = "Hello, James!"
+const stuff = "Stuff"
 
-print("{greet} Good to see you")
+func doStuff() {
+    if stuff == "stuff" {
+        print("ballz")
+    }
+}
+
+doStuff()

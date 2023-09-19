@@ -570,7 +570,7 @@ impl Parser {
             args,
             arg_types: vec![Identifier::new("NYI".to_string())],
             return_type: Identifier::new("NYI".to_string()),
-            consequence,
+            body: consequence,
         });
     }
 
@@ -646,18 +646,6 @@ impl Parser {
         let precedence = self.cur_precedence();
         self.next_token();
         expression.right = Box::new(self.parse_expression(precedence));
-        if self.peek_token_is(TokenType::NUMBER)
-            || self.peek_token_is(TokenType::STRING)
-            || self.peek_token_is(TokenType::TRUE)
-            || self.peek_token_is(TokenType::FALSE)
-            || self.peek_token_is(TokenType::LSQUAREBRAC)
-            || self.peek_token_is(TokenType::LCURLY)
-        {
-            self.throw_error(
-                "Statements need to be seperated by newline or semicolon".to_string(),
-                true,
-            );
-        }
         Expression::INFIX(expression)
     }
 

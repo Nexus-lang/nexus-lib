@@ -7,7 +7,6 @@ pub enum Statement {
     CONST(ConstStatement),
     RETURN(ReturnStatement),
     LOCAL(LocalStatement),
-    BLOCK(BlockStatement),
     /// Statement wrapper for expressions
     ///
     /// Required because The ast only
@@ -175,7 +174,7 @@ pub struct FuncExpression {
     pub args: Vec<Identifier>,
     pub arg_types: Vec<Identifier>,
     pub return_type: Identifier,
-    pub consequence: BlockStatement,
+    pub body: BlockStatement,
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]

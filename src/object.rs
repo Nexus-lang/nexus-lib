@@ -1,5 +1,5 @@
 use crate::{
-    ast::BooleanType,
+    ast::{BlockStatement, BooleanType},
     builtin,
 };
 
@@ -30,6 +30,7 @@ pub enum Object {
     UnMetIf(UnmetIf),
     Return(Return),
     Var(Var),
+    Function(Function),
     BuiltInFunction(BuiltInFunction),
 }
 
@@ -45,6 +46,7 @@ impl Object {
             Self::Var(_) => ObjectType::VAR,
             Self::UnMetIf(_) => ObjectType::UNMETIF,
             Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
+            Self::Function(_) => ObjectType::FUNCTION,
         }
     }
 }
@@ -69,6 +71,7 @@ impl Literal for Object {
                 fmt_string.push(')');
                 fmt_string
             }
+            Object::Function(func) => todo!(),
         }
     }
 }
@@ -112,6 +115,23 @@ pub struct Return {
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Var {
     pub value: Box<Object>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Function {
+    pub name: String,
+    pub body: BlockStatement,
+}
+
+impl Function {
+    pub fn empty() -> Self {
+        Function {
+            name: "".to_string(),
+            body: BlockStatement {
+                statements: Vec::new(),
+            },
+        }
+    }
 }
 
 // Kinda weird will be improved in rewrite I promise :3

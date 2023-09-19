@@ -47,7 +47,6 @@ impl Evaluator {
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
             Statement::EMPTY => todo!(),
-            Statement::BLOCK(block) => self.eval_block_statement(block),
         }
     }
 
@@ -64,7 +63,7 @@ impl Evaluator {
             Expression::IF(lit) => self.eval_if_expression(lit),
             Expression::WHILE(_) => todo!(),
             Expression::FOR(_) => todo!(),
-            Expression::FUNC(_) => todo!(),
+            Expression::FUNC(func) => self.eval_func_expression(func),
             Expression::CALL(call) => self.eval_call(call),
             Expression::LIST(_) => todo!(),
             Expression::INDEX(_) => todo!(),
@@ -270,12 +269,12 @@ impl Evaluator {
         Object::Return(Return { value })
     }
 
-    fn eval_call(&mut self, call: &CallExpression) -> Object {
-        match *call.function.clone() {
+    fn eval_call(&mut self, node: &CallExpression) -> Object {
+        match *node.function.clone() {
             Expression::IDENTIFIER(ident) => match ident.value {
                 i if i == builtin::BuiltinFunction::PRINT.name() => {
                     let mut args: Vec<Object> = Vec::new();
-                    for arg in &call.args {
+                    for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
                         args.push(evaluated_arg)
                     }
@@ -286,10 +285,38 @@ impl Evaluator {
                     builtin::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
                 }
-                _ => todo!(),
+                _ => {
+                    let func = match self.env.get(ident.value.clone()) {
+                        Ok(obj) => obj,
+                        Err(_) => {
+                            let err = Error::new("Cannot find identifier");
+                            throw_error(&err);
+                            return Object::Error(err);
+                        },
+                    };
+                    
+                    let func_obj = if let Object::Function(func_obj) = func.clone() {
+                        func_obj
+                    } else {
+                        throw_error(&Error { message: "Identifier is not a function".to_string() });
+                        Function::empty()
+                    };
+
+                    for stmt in func_obj.body.statements {
+                        self.eval(&stmt);
+                    }
+
+                    func
+                },
             },
             _ => todo!(),
         }
+    }
+
+    fn eval_func_expression(&mut self, node: &FuncExpression) -> Object {
+        let obj = Object::Function(Function { name: node.ident.value.clone(), body: node.body.clone() });
+        self.env.set(&node.ident.value, &obj);
+        obj
     }
 
     fn is_truthy(&mut self, object: Object) -> bool {
