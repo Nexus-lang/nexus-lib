@@ -1,9 +1,6 @@
-const stuff = "Stuff"
-
-func doStuff() {
-    if stuff == "stuff" {
-        print("ballz")
-    }
+func doStuff(x, y) {
+    print(y)
+    print(x)
 }
 
-doStuff()
+doStuff(200, 100)

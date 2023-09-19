@@ -1,4 +1,6 @@
-use crate::{ast::*, builtin, object::*, util::throw_error, enviroment::Environment};
+use std::str::EncodeUtf16;
+
+use crate::{ast::*, builtin, enviroment::Environment, object::*, util::throw_error};
 
 pub struct Evaluator {
     program: Program,
@@ -36,13 +38,17 @@ impl Evaluator {
             Statement::VAR(var) => {
                 let val = self.eval_expression(&var.value);
                 self.env.set(&var.name.value, &val);
-                Object::Var(Var { value: Box::from(val) })
-            },
+                Object::Var(Var {
+                    value: Box::from(val),
+                })
+            }
             Statement::CONST(constant) => {
                 let val = self.eval_expression(&constant.value);
                 self.env.set(&constant.name.value, &val);
-                Object::Var(Var { value: Box::from(val) })
-            },
+                Object::Var(Var {
+                    value: Box::from(val),
+                })
+            }
             Statement::RETURN(ret) => self.eval_return_statement(&ret),
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
@@ -77,10 +83,10 @@ impl Evaluator {
         match self.env.get(ident.value.clone()) {
             Ok(obj) => obj,
             Err(_) => {
-                let err = Error::new("Cannot find identifier");
+                let err = Error::new(format!("Cannot find identifier: {}", ident.value.as_str()).as_str());
                 throw_error(&err);
                 Object::Error(err)
-            },
+            }
         }
     }
 
@@ -109,7 +115,9 @@ impl Evaluator {
             if char_stream[c_stream_pos] == '{' {
                 char_stream.remove(c_stream_pos);
                 char_stream.remove(c_stream_pos);
-                cur_ref.iter().for_each(|x| char_stream.insert(c_stream_pos, *x));
+                cur_ref
+                    .iter()
+                    .for_each(|x| char_stream.insert(c_stream_pos, *x));
                 if ref_pos + 1 < node.references.len() {
                     ref_pos += 1;
                 }
@@ -289,32 +297,47 @@ impl Evaluator {
                     let func = match self.env.get(ident.value.clone()) {
                         Ok(obj) => obj,
                         Err(_) => {
-                            let err = Error::new("Cannot find identifier");
+                            let err = Error::new(format!("Cannot find identifier: {}", ident.value.as_str()).as_str());
                             throw_error(&err);
                             return Object::Error(err);
-                        },
+                        }
                     };
-                    
+
                     let func_obj = if let Object::Function(func_obj) = func.clone() {
                         func_obj
                     } else {
-                        throw_error(&Error { message: "Identifier is not a function".to_string() });
+                        throw_error(&Error {
+                            message: "Identifier is not a function".to_string(),
+                        });
                         Function::empty()
                     };
+
+                    for (index, arg) in func_obj.args.iter().enumerate() {
+                        if index < node.args.len() {
+                            let cur_arg = self.eval_expression(&node.args[index]);
+                            self.env.set(&arg.value, &cur_arg);
+                        } else {
+                            break;
+                        }
+                    }
 
                     for stmt in func_obj.body.statements {
                         self.eval(&stmt);
                     }
 
                     func
-                },
+                }
             },
             _ => todo!(),
         }
     }
 
     fn eval_func_expression(&mut self, node: &FuncExpression) -> Object {
-        let obj = Object::Function(Function { name: node.ident.value.clone(), body: node.body.clone() });
+        let obj = Object::Function(Function {
+            name: node.ident.value.clone(),
+            args: node.args.clone(),
+            body: node.body.clone(),
+        });
         self.env.set(&node.ident.value, &obj);
         obj
     }

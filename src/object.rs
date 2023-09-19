@@ -1,5 +1,5 @@
 use crate::{
-    ast::{BlockStatement, BooleanType},
+    ast::{BlockStatement, BooleanType, Identifier},
     builtin,
 };
 
@@ -120,6 +120,7 @@ pub struct Var {
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Function {
     pub name: String,
+    pub args: Vec<Identifier>,
     pub body: BlockStatement,
 }
 
@@ -127,6 +128,7 @@ impl Function {
     pub fn empty() -> Self {
         Function {
             name: "".to_string(),
+            args: Vec::new(),
             body: BlockStatement {
                 statements: Vec::new(),
             },
