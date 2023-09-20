@@ -1,8 +1,3 @@
-func doStuff(x, y) {
-    print(x)
-    print(y)
+while true {
+    print("amogus")
 }
-
-doStuff(200, 100)
-
-print(x)

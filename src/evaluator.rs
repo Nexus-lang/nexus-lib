@@ -67,7 +67,7 @@ impl Evaluator {
                 value: bool.bool_type.clone(),
             }),
             Expression::IF(lit) => self.eval_if_expression(lit),
-            Expression::WHILE(_) => todo!(),
+            Expression::WHILE(while_loop) => self.eval_while_expression(while_loop),
             Expression::FOR(_) => todo!(),
             Expression::FUNC(func) => self.eval_func_expression(func),
             Expression::CALL(call) => self.eval_call(call),
@@ -244,7 +244,7 @@ impl Evaluator {
             None => Object::None(NoneLit),
         }; // &node.condition.as_ref().clone().unwrap()
 
-        if condition != Object::None(NoneLit) && self.is_truthy(condition) {
+        if condition != Object::None(NoneLit) && self.is_truthy(&condition) {
             return self.eval_block_statement(&node.consequence);
         } else if node.alternative != None {
             return self.eval_else_expression(&node.alternative.as_ref().unwrap());
@@ -260,7 +260,7 @@ impl Evaluator {
             None => Object::None(NoneLit),
         };
 
-        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(condition)
+        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(&condition)
         {
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
@@ -268,6 +268,14 @@ impl Evaluator {
         } else {
             Object::UnMetIf(UnmetIf)
         }
+    }
+
+    fn eval_while_expression(&mut self, node: &WhileExpression) -> Object {
+        let condition = self.eval_expression(&*node.condition);
+        while self.is_truthy(&condition) {
+            self.eval_block_statement(&node.consequence);
+        }
+        self.eval_block_statement(&node.consequence)
     }
 
     fn eval_return_statement(&mut self, ret_stmt: &ReturnStatement) -> Object {
@@ -349,7 +357,7 @@ impl Evaluator {
         obj
     }
 
-    fn is_truthy(&mut self, object: Object) -> bool {
+    fn is_truthy(&mut self, object: &Object) -> bool {
         match object {
             Object::Bool(bool) => match bool.value {
                 BooleanType::TRUE => true,
