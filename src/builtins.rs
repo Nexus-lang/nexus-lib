@@ -1,4 +1,7 @@
-use crate::{object::{self, Literal, Error}, util::{input, throw_error}};
+use crate::{
+    object::{self, Error, Literal},
+    util::{input, throw_error},
+};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum BuiltinFunction {
@@ -23,12 +26,19 @@ impl BuiltinFunction {
 
     /* calling the functions */
     pub fn print_val(func: &object::BuiltInFunction) {
-        println!("{}", (func.args[0]).literal())
+        println!();
+        for (index, arg) in func.args.iter().enumerate() {
+            if index + 1 < func.args.len() {
+                print!("{} ", arg.literal())
+            } else {
+                print!("{}", arg.literal())
+            }
+        }
     }
 
     pub fn read_input(func: &object::BuiltInFunction) -> String {
-        if func.args.len() == 1 {
-            print!("{}", func.args[0].literal())
+        if func.args.len() > 0 {
+            Self::print_val(func);
         } else if func.args.len() > 1 {
             throw_error(&Error::new("Function cannot have more than one argument"))
         }
