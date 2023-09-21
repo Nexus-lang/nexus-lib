@@ -37,15 +37,16 @@ pub struct Parser {
 // E.g. 5 + 5 * 3, 5 + 15 = 20;
 // We see that the product is higher than the sum.
 const LOWEST: i8 = 0;
-const EQUALS: i8 = 1; // ==
-const LESSGREATER: i8 = 2; // > or <
-const LESSGREATEREQUAL: i8 = 3; // >= or <=
-const SUM: i8 = 4; // +
-const PRODUCT: i8 = 5; // *
-const PREFIX: i8 = 6; // -x, +x or !x
-const CALL: i8 = 7; // amogus(x)
-const CONVERSION: i8 = 8;
-const INDEX: i8 = 9;
+const RANGE: i8 = 1;
+const EQUALS: i8 = 2; // ==
+const LESSGREATER: i8 = 3; // > or <
+const LESSGREATEREQUAL: i8 = 4; // >= or <=
+const SUM: i8 = 5; // +
+const PRODUCT: i8 = 6; // *
+const PREFIX: i8 = 7; // -x, +x or !x
+const CALL: i8 = 8; // amogus(x)
+const CONVERSION: i8 = 9;
+const INDEX: i8 = 10;
 
 const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionStatement {
     expression: Expression::EMPTY,
@@ -576,6 +577,10 @@ impl Parser {
 
     fn parse_call_expression(&mut self, function: Expression) -> Expression {
         let args = self.parse_raw_list(TokenType::RPARENT);
+        println!("CURRENT TOKEN: {:?}", self.cur_token);
+
+        self.expect_peek(TokenType::RPARENT);
+
         self.next_token();
 
         let expression = CallExpression {
@@ -703,6 +708,7 @@ impl Parser {
             TokenType::GREATEROREQUALTHAN => Operator::GREATOREQUAL,
             TokenType::LESSOREQUALTHAN => Operator::LESSOREQUAL,
             TokenType::AS => Operator::AS,
+            TokenType::RANGE => Operator::RANGE,
             _ => Operator::ILLEGAL,
         }
     }
@@ -722,6 +728,7 @@ impl Parser {
             TokenType::AS => CONVERSION,
             TokenType::LPARENT => CALL,
             TokenType::LSQUAREBRAC => INDEX,
+            TokenType::RANGE => RANGE,
             _ => LOWEST,
         }
     }
@@ -809,7 +816,8 @@ impl Parser {
             | TokenType::LESSTHAN
             | TokenType::GREATERTHAN
             | TokenType::LESSOREQUALTHAN
-            | TokenType::GREATEROREQUALTHAN => self.parse_infix_expression(left),
+            | TokenType::GREATEROREQUALTHAN
+            | TokenType::RANGE => self.parse_infix_expression(left),
             TokenType::LPARENT => self.parse_call_expression(left),
             TokenType::LSQUAREBRAC => self.parse_index_expression(left),
             _ => Expression::EMPTY,

@@ -1,5 +1,5 @@
 mod ast;
-mod builtin;
+mod builtins;
 mod errors;
 mod evaluator;
 mod lexer;
@@ -8,6 +8,8 @@ mod parser;
 mod tokens;
 mod util;
 mod enviroment;
+
+use std::time::Instant;
 
 use lexer::Lexer;
 use parser::Parser;
@@ -21,6 +23,8 @@ fn main() {
     print!(">>");
     let input_file = input();
     let dbg_enabled = dbg_enabled();
+    
+    let start_time = Instant::now();
 
     let example_code = FileHandler::read_file(if input_file != "" {
         input_file.as_str()
@@ -64,11 +68,19 @@ fn main() {
 
     println!();
 
+    let elapsed_time = start_time.elapsed();
+
     if dbg_enabled {
         println!("DEBUG EVAL: \n");
 
         println!("{:?}", debug_eval);
+
+        let seconds = elapsed_time.as_secs();
+        let millis = elapsed_time.subsec_millis();
+    
+        println!("Execution time: {} seconds {} milliseconds", seconds, millis);
     }
+
     print!("PRESS ANY KEY TO EXIT");
     util::input();
 }

@@ -206,6 +206,16 @@ impl Lexer {
                                 push_token!(tokens, TokenType::COLON, self.current_pos_line)
                             }
                         }
+                        c if c == TokenType::DOT.literal() => {
+                            if input_chars[self.current_pos + 1] == TokenType::RANGE.first_as_char()
+                            {
+                                push_token!(tokens, TokenType::RANGE, self.current_pos_line);
+                                self.current_pos += 1;
+                                self.current_pos_line += 1;
+                            } else {
+                                push_token!(tokens, TokenType::DOT, self.current_pos_line);
+                            }
+                        }
                         c if c == TokenType::COMMA.literal() => {
                             push_token!(tokens, TokenType::COMMA, self.current_pos_line)
                         }

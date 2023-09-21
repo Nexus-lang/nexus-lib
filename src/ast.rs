@@ -65,6 +65,7 @@ pub enum Operator {
     GREATOREQUAL, // in
     LESSOREQUAL,  // in
     AS,           // in
+    RANGE,        // in
     ILLEGAL,
 }
 

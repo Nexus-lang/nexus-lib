@@ -1,6 +1,4 @@
-use std::str::EncodeUtf16;
-
-use crate::{ast::*, builtin, enviroment::Environment, object::*, util::throw_error};
+use crate::{ast::*, builtins, enviroment::Environment, object::*, util::throw_error};
 
 pub struct Evaluator {
     program: Program,
@@ -26,7 +24,7 @@ impl Evaluator {
                     return Some(*lit.value.clone());
                 }
                 Some(Object::Error(err)) => return Some(Object::Error(err)),
-                Some(Object::UnMetIf(_)) => None,
+                Some(Object::UnMetExpr(_)) => None,
                 _ => Some(result.clone().unwrap()),
             };
         }
@@ -66,9 +64,9 @@ impl Evaluator {
             Expression::BOOLEAN(bool) => Object::Bool(Bool {
                 value: bool.bool_type.clone(),
             }),
-            Expression::IF(lit) => self.eval_if_expression(lit),
+            Expression::IF(if_expr) => self.eval_if_expression(if_expr),
             Expression::WHILE(while_loop) => self.eval_while_expression(while_loop),
-            Expression::FOR(_) => todo!(),
+            Expression::FOR(for_loop) => self.eval_for_expression(for_loop),
             Expression::FUNC(func) => self.eval_func_expression(func),
             Expression::CALL(call) => self.eval_call(call),
             Expression::LIST(_) => todo!(),
@@ -87,7 +85,7 @@ impl Evaluator {
                 throw_error(&err);
                 Object::Error(err)
             }
-        }
+        } 
     }
 
     // TODO: Correct formatting. Example: "{x} is cool" -> " is cool{x}"
@@ -156,6 +154,8 @@ impl Evaluator {
             self.native_bool_to_object(left == right)
         } else if operator == &Operator::NOTEQUAL {
             self.native_bool_to_object(left != right)
+        } else if operator == &Operator::RANGE {
+            Object::Range(Range { left: Box::from(left), right: Box::from(right) })
         } else {
             Object::Error(Error::new(
                 format!(
@@ -218,6 +218,7 @@ impl Evaluator {
             Operator::LESSOREQUAL => self.native_bool_to_object(left_val <= right_val),
             Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
             Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
+            Operator::RANGE => Object::Range(Range { left: Box::from(Object::Num(Num::new(left_val))), right: Box::from(Object::Num(Num::new(right_val))) }),
             _ => Object::None(NoneLit),
         }
     }
@@ -249,7 +250,7 @@ impl Evaluator {
         } else if node.alternative != None {
             return self.eval_else_expression(&node.alternative.as_ref().unwrap());
         } else {
-            Object::UnMetIf(UnmetIf)
+            Object::UnMetExpr(UnmetExpr)
         }
     }
 
@@ -266,7 +267,7 @@ impl Evaluator {
         } else if alternative.alternative != None {
             return self.eval_else_expression(&alternative.alternative.as_ref().unwrap());
         } else {
-            Object::UnMetIf(UnmetIf)
+            Object::UnMetExpr(UnmetExpr)
         }
     }
 
@@ -276,6 +277,29 @@ impl Evaluator {
             self.eval_block_statement(&node.consequence);
         }
         self.eval_block_statement(&node.consequence)
+    }
+
+    fn eval_for_expression(&mut self, node: &ForExpression) -> Object {
+        let range = self.eval_expression(&node.loop_list);
+        let range_lit = match range {
+            Object::Range(range) => range,
+            _ => todo!("{:?}", range),
+        };
+
+        let range_left = match *range_lit.left {
+            Object::Num(num) => num,
+            _ => todo!()
+        };
+
+        let range_right = match *range_lit.right {
+            Object::Num(num) => num,
+            _ => todo!()
+        };
+
+        for i in range_left.value as i32..range_right.value as i32 - 1 {
+            self.eval_block_statement(&node.consequence);
+        }
+        return self.eval_block_statement(&node.consequence);
     }
 
     fn eval_return_statement(&mut self, ret_stmt: &ReturnStatement) -> Object {
@@ -288,17 +312,30 @@ impl Evaluator {
     fn eval_call(&mut self, node: &CallExpression) -> Object {
         match *node.function.clone() {
             Expression::IDENTIFIER(ident) => match ident.value {
-                i if i == builtin::BuiltinFunction::PRINT.name() => {
+                i if i == builtins::BuiltinFunction::PRINT.name() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
                         args.push(evaluated_arg)
                     }
                     let func = BuiltInFunction {
-                        func: builtin::BuiltinFunction::PRINT,
+                        func: builtins::BuiltinFunction::PRINT,
                         args,
                     };
-                    builtin::BuiltinFunction::print_val(&func);
+                    builtins::BuiltinFunction::print_val(&func);
+                    Object::BuiltInFunction(func)
+                }                
+                i if i == builtins::BuiltinFunction::INPUT.name() => {
+                    let mut args: Vec<Object> = Vec::new();
+                    for arg in &node.args {
+                        let evaluated_arg = self.eval_expression(&arg);
+                        args.push(evaluated_arg)
+                    }
+                    let func = BuiltInFunction {
+                        func: builtins::BuiltinFunction::PRINT,
+                        args,
+                    };
+                    builtins::BuiltinFunction::read_input(&func);
                     Object::BuiltInFunction(func)
                 }
                 _ => {

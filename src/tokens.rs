@@ -53,6 +53,7 @@ pub enum TokenType {
     ASSIGN,      // =
     VARASSIGN,   // :=
     CONSTASSIGN, // ::
+    RANGE,       // x..x
 
     EQUAL,              // ==
     NOTEQUAL,           // !=
@@ -133,6 +134,7 @@ impl TokenType {
             TokenType::ASSIGN => String::from("="),
             TokenType::VARASSIGN => String::from(":="),
             TokenType::CONSTASSIGN => String::from("::"),
+            TokenType::RANGE => String::from(".."),
 
             TokenType::EQUAL => String::from("=="),
             TokenType::NOTEQUAL => String::from("!="),

@@ -1,6 +1,6 @@
 use crate::{
     ast::{BlockStatement, BooleanType, Identifier},
-    builtin,
+    builtins,
 };
 
 #[derive(Debug, PartialEq, PartialOrd)]
@@ -16,6 +16,7 @@ pub enum ObjectType {
     LIST,
     SET,
     HASH,
+    RANGE,
     ERROR,
     UNMETIF,
 }
@@ -27,11 +28,12 @@ pub enum Object {
     Str(Str),
     None(NoneLit),
     Error(Error),
-    UnMetIf(UnmetIf),
+    UnMetExpr(UnmetExpr),
     Return(Return),
     Var(Var),
     Function(Function),
     BuiltInFunction(BuiltInFunction),
+    Range(Range),
 }
 
 impl Object {
@@ -44,9 +46,10 @@ impl Object {
             Self::Error(_) => ObjectType::ERROR,
             Self::Return(_) => ObjectType::RETURN,
             Self::Var(_) => ObjectType::VAR,
-            Self::UnMetIf(_) => ObjectType::UNMETIF,
+            Self::UnMetExpr(_) => ObjectType::UNMETIF,
             Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
             Self::Function(_) => ObjectType::FUNCTION,
+            Self::Range(_) => ObjectType::RANGE,
         }
     }
 }
@@ -59,7 +62,7 @@ impl Literal for Object {
             Object::Str(str) => str.value.to_string(),
             Object::None(_) => String::from("none"),
             Object::Error(_) => todo!(),
-            Object::UnMetIf(_) => todo!(),
+            Object::UnMetExpr(_) => todo!(),
             Object::Return(ret) => format!("return {}", ret.value.literal()),
             Object::Var(var) => todo!(),
             Object::BuiltInFunction(func) => {
@@ -72,6 +75,7 @@ impl Literal for Object {
                 fmt_string
             }
             Object::Function(func) => todo!(),
+            Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal())
         }
     }
 }
@@ -79,6 +83,12 @@ impl Literal for Object {
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Num {
     pub value: f64,
+}
+
+impl Num {
+    pub fn new(value: f64) -> Self {
+        Num { value }
+    }
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -138,12 +148,18 @@ impl Function {
 
 // Kinda weird will be improved in rewrite I promise :3
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
-pub struct UnmetIf;
+pub struct UnmetExpr;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct BuiltInFunction {
-    pub func: builtin::BuiltinFunction,
+    pub func: builtins::BuiltinFunction,
     pub args: Vec<Object>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Range {
+    pub left: Box<Object>,
+    pub right: Box<Object>,
 }
 
 pub trait Literal {
