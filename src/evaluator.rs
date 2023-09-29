@@ -18,14 +18,12 @@ impl Evaluator {
     pub fn eval_program(&mut self) -> Option<Object> {
         let mut result = Some(Object::None(NoneLit));
         for statement in &self.program.statements.clone() {
-            println!("Evalutating: {:?}", statement);
             result = Some(self.eval(statement));
         }
         result
     }
 
     fn eval_statement(&mut self, statement: &Statement) -> Object {
-        println!("XXXX {:?}", self.env.get(String::from("x")));
         match statement {
             Statement::VAR(var) => {
                 let val = self.eval_expression(&var.value);
@@ -389,7 +387,6 @@ impl Evaluator {
                     }
 
                     for stmt in func_obj.body.statements {
-                        println!("Evaluating stmts");
                         let obj = self.eval(&stmt);
                         match obj {
                             Object::Return(ret) => {

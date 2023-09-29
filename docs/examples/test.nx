@@ -3,8 +3,4 @@ func foo() {
     return x + 10
 }
 
-var x = foo()
-
-var y = x
-
-print(y)
+print(foo())
