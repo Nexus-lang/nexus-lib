@@ -27,6 +27,7 @@ pub enum Expression {
     IF(IfExpression),
     WHILE(WhileExpression),
     FOR(ForExpression),
+    WHEN(WhenExpression),
     FUNC(FuncExpression),
     CALL(CallExpression),
     LIST(ListExpression),
@@ -154,6 +155,18 @@ pub struct IfExpression {
     pub consequence: BlockStatement,
     // 0: condition; 1: consequence
     pub alternative: Option<Box<IfExpression>>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct WhenExpression {
+    pub value: Box<Expression>,
+    pub cases: Vec<CaseStatement>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct CaseStatement {
+    pub case_condition: Expression,
+    pub case_consequence: BlockStatement,
 }
 
 #[derive(PartialEq, PartialOrd, Debug, Clone)]

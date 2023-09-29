@@ -74,6 +74,7 @@ impl Evaluator {
             Expression::ANNOTATION(_) => todo!(),
             Expression::NONE(_) => Object::None(NoneLit),
             Expression::EMPTY => Object::Error(Error::new("Cannot evaluate EMPTY expression")),
+            Expression::WHEN(when) => self.eval_when_expression(when),
         }
     }
 
@@ -271,6 +272,24 @@ impl Evaluator {
         }
     }
 
+    fn eval_when_expression(&mut self, node: &WhenExpression) -> Object {
+        let compare_value = &*node.value;
+        
+        let cases = &*node.cases;
+
+        let mut block: Object = Object::None(NoneLit);
+        
+        for case in cases {
+            if self.eval_expression(compare_value) == self.eval_expression(&case.case_condition) {
+                block = self.eval_block_statement(&case.case_consequence);
+                println!("matched!")
+            } else {
+                println!("Did not match")
+            }
+        }
+        block
+    }
+
     fn eval_while_expression(&mut self, node: &WhileExpression) -> Object {
         let condition = self.eval_expression(&*node.condition);
         while self.is_truthy(&condition) {
@@ -296,7 +315,7 @@ impl Evaluator {
             _ => todo!()
         };
 
-        for i in range_left.value as i32..range_right.value as i32 - 1 {
+        for _ in range_left.value as i32..range_right.value as i32 - 1 {
             self.eval_block_statement(&node.consequence);
         }
         return self.eval_block_statement(&node.consequence);

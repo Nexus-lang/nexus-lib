@@ -1,1 +1,8 @@
-input("sus", "amogus")
+when 9 {
+    8 -> {
+        print("sussy")
+    }
+    9 -> {
+        print("susssssss amogus")
+    }
+}

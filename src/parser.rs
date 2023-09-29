@@ -1,4 +1,4 @@
-use std::process;
+use std::{f32::consts::E, process};
 
 use crate::{
     ast::*,
@@ -282,7 +282,7 @@ impl Parser {
             if statement != Statement::EMPTY && statement != EMPTY_EXPRESSION_STATEMENT {
                 statements.push(statement);
             }
-            self.next_token();
+            self.print_cur_token();
         }
 
         BlockStatement { statements }
@@ -575,9 +575,56 @@ impl Parser {
         });
     }
 
+    fn parse_when_expression(&mut self) -> Expression {
+        self.print_cur_token();
+        self.next_token();
+        let val = self.parse_expression(LOWEST);
+        let mut cases = Vec::new();
+        println!("val_1 {:?}, cur_token: {:?}", val, self.cur_token);
+        self.next_token();
+        self.print_cur_token();
+        self.next_token();
+        self.print_cur_token();
+        // Cur token is first case
+        self.next_token();
+        while !self.cur_token_is(TokenType::RCURLY) {
+            let case = self.parse_case_statement();
+            cases.push(case);
+        }
+        
+        Expression::WHEN(WhenExpression {
+            value: Box::from(val),
+            cases,
+        })
+    }
+
+    /// current token needs to be compare value
+    fn parse_case_statement(&mut self) -> CaseStatement {
+        self.print_cur_token();
+        let val = self.parse_expression(LOWEST);
+        println!("val_1 {:?}, cur_token: {:?}", val, self.cur_token);
+        self.next_token();
+        self.print_cur_token();
+        self.next_token();
+        self.print_cur_token();
+        self.next_token();
+        self.print_cur_token();
+        let block = self.parse_block_statement();
+        println!("block: {:?}", block);
+        self.print_cur_token();
+        self.next_token();
+        self.print_cur_token();
+        self.next_token();
+        self.print_cur_token();
+
+        CaseStatement {
+            case_condition: val,
+            case_consequence: block,
+        }
+    }
+
     fn parse_call_expression(&mut self, function: Expression) -> Expression {
         let args = self.parse_raw_list(TokenType::RPARENT);
-        println!("CURRENT TOKEN: {:?}", self.cur_token);
 
         self.expect_peek(TokenType::RPARENT);
 
@@ -840,6 +887,7 @@ impl Parser {
             TokenType::IF => self.parse_if_expression(),
             TokenType::WHILE => self.parse_while_expression(),
             TokenType::FOR => self.parse_for_expression(),
+            TokenType::WHEN => self.parse_when_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             TokenType::ANNOTATION => self.parse_annotation(),
@@ -851,5 +899,9 @@ impl Parser {
         while !self.cur_token_is(TokenType::EOL) && !self.cur_token_is(TokenType::EOF) {
             self.next_token();
         }
+    }
+
+    fn print_cur_token(&self) {
+        println!("{:?}", self.cur_token)
     }
 }

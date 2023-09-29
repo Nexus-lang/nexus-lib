@@ -74,12 +74,12 @@ fn main() {
         println!("DEBUG EVAL: \n");
 
         println!("{:?}", debug_eval);
+    }
 
         let seconds = elapsed_time.as_secs();
         let millis = elapsed_time.subsec_millis();
     
         println!("Execution time: {} seconds {} milliseconds", seconds, millis);
-    }
 
     print!("PRESS ANY KEY TO EXIT");
     util::input();
