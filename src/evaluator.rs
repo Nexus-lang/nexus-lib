@@ -18,20 +18,14 @@ impl Evaluator {
     pub fn eval_program(&mut self) -> Option<Object> {
         let mut result = Some(Object::None(NoneLit));
         for statement in &self.program.statements.clone() {
+            println!("Evalutating: {:?}", statement);
             result = Some(self.eval(statement));
-            result = match result {
-                Some(Object::Return(lit)) => {
-                    return Some(*lit.value.clone());
-                }
-                Some(Object::Error(err)) => return Some(Object::Error(err)),
-                Some(Object::UnMetExpr(_)) => None,
-                _ => Some(result.clone().unwrap()),
-            };
         }
         result
     }
 
     fn eval_statement(&mut self, statement: &Statement) -> Object {
+        println!("XXXX {:?}", self.env.get(String::from("x")));
         match statement {
             Statement::VAR(var) => {
                 let val = self.eval_expression(&var.value);
@@ -47,7 +41,9 @@ impl Evaluator {
                     value: Box::from(val),
                 })
             }
-            Statement::RETURN(ret) => self.eval_return_statement(&ret),
+            Statement::RETURN(ret) => {
+                return Object::Return(Return { value: Box::new(self.eval_expression(&ret.return_value)) });
+            }
             Statement::LOCAL(_) => todo!(),
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
             Statement::EMPTY => todo!(),
@@ -82,11 +78,13 @@ impl Evaluator {
         match self.env.get(ident.value.clone()) {
             Ok(obj) => obj,
             Err(_) => {
-                let err = Error::new(format!("Cannot find identifier: {}", ident.value.as_str()).as_str());
+                let err = Error::new(
+                    format!("Cannot find identifier: {}", ident.value.as_str()).as_str(),
+                );
                 throw_error(&err);
                 Object::Error(err)
             }
-        } 
+        }
     }
 
     // TODO: Correct formatting. Example: "{x} is cool" -> " is cool{x}"
@@ -156,7 +154,10 @@ impl Evaluator {
         } else if operator == &Operator::NOTEQUAL {
             self.native_bool_to_object(left != right)
         } else if operator == &Operator::RANGE {
-            Object::Range(Range { left: Box::from(left), right: Box::from(right) })
+            Object::Range(Range {
+                left: Box::from(left),
+                right: Box::from(right),
+            })
         } else {
             Object::Error(Error::new(
                 format!(
@@ -219,7 +220,10 @@ impl Evaluator {
             Operator::LESSOREQUAL => self.native_bool_to_object(left_val <= right_val),
             Operator::EQUAL => self.native_bool_to_object(left_val == right_val),
             Operator::NOTEQUAL => self.native_bool_to_object(left_val != right_val),
-            Operator::RANGE => Object::Range(Range { left: Box::from(Object::Num(Num::new(left_val))), right: Box::from(Object::Num(Num::new(right_val))) }),
+            Operator::RANGE => Object::Range(Range {
+                left: Box::from(Object::Num(Num::new(left_val))),
+                right: Box::from(Object::Num(Num::new(right_val))),
+            }),
             _ => Object::None(NoneLit),
         }
     }
@@ -231,7 +235,7 @@ impl Evaluator {
             result = self.eval_statement(stmt);
 
             match result {
-                Object::Return(_) => return result,
+                Object::Return(ret) => return *ret.value,
                 _ => continue,
             }
         }
@@ -262,7 +266,8 @@ impl Evaluator {
             None => Object::None(NoneLit),
         };
 
-        if alt.if_type == IfType::ELSE || alt.if_type == IfType::ELSEIF && self.is_truthy(&condition)
+        if alt.if_type == IfType::ELSE
+            || alt.if_type == IfType::ELSEIF && self.is_truthy(&condition)
         {
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
@@ -274,17 +279,14 @@ impl Evaluator {
 
     fn eval_when_expression(&mut self, node: &WhenExpression) -> Object {
         let compare_value = &*node.value;
-        
+
         let cases = &*node.cases;
 
         let mut block: Object = Object::None(NoneLit);
-        
+
         for case in cases {
             if self.eval_expression(compare_value) == self.eval_expression(&case.case_condition) {
                 block = self.eval_block_statement(&case.case_consequence);
-                println!("matched!")
-            } else {
-                println!("Did not match")
             }
         }
         block
@@ -307,25 +309,18 @@ impl Evaluator {
 
         let range_left = match *range_lit.left {
             Object::Num(num) => num,
-            _ => todo!()
+            _ => todo!(),
         };
 
         let range_right = match *range_lit.right {
             Object::Num(num) => num,
-            _ => todo!()
+            _ => todo!(),
         };
 
         for _ in range_left.value as i32..range_right.value as i32 - 1 {
             self.eval_block_statement(&node.consequence);
         }
         return self.eval_block_statement(&node.consequence);
-    }
-
-    fn eval_return_statement(&mut self, ret_stmt: &ReturnStatement) -> Object {
-        let value = Box::from(self.eval(&&Statement::EXPRESSION(ExpressionStatement {
-            expression: ret_stmt.return_value.clone(),
-        })));
-        Object::Return(Return { value })
     }
 
     fn eval_call(&mut self, node: &CallExpression) -> Object {
@@ -343,7 +338,7 @@ impl Evaluator {
                     };
                     builtins::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
-                }                
+                }
                 i if i == builtins::BuiltinFunction::INPUT.name() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
@@ -366,7 +361,10 @@ impl Evaluator {
                     let func = match self.env.get(ident.value.clone()) {
                         Ok(obj) => obj,
                         Err(_) => {
-                            let err = Error::new(format!("Cannot find identifier: {}", ident.value.as_str()).as_str());
+                            let err = Error::new(
+                                format!("Cannot find identifier: {}", ident.value.as_str())
+                                    .as_str(),
+                            );
                             throw_error(&err);
                             return Object::Error(err);
                         }
@@ -391,7 +389,14 @@ impl Evaluator {
                     }
 
                     for stmt in func_obj.body.statements {
-                        self.eval(&stmt);
+                        println!("Evaluating stmts");
+                        let obj = self.eval(&stmt);
+                        match obj {
+                            Object::Return(ret) => {
+                                return *ret.value;
+                            },
+                            _ => continue,
+                        }
                     }
 
                     self.env = old_env;

@@ -1,8 +1,10 @@
-when 9 {
-    8 -> {
-        print("sussy")
-    }
-    9 -> {
-        print("susssssss amogus")
-    }
+func foo() {
+    var x = 190 + 73
+    return x + 10
 }
+
+var x = foo()
+
+var y = x
+
+print(y)
