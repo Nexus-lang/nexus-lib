@@ -1,6 +1,6 @@
 use crate::{
     ast::{Arg, BlockStatement, BooleanType},
-    builtins,
+    builtins::{self, BuiltinType},
 };
 
 #[derive(Debug, PartialEq, PartialOrd)]
@@ -19,6 +19,13 @@ pub enum ObjectType {
     RANGE,
     ERROR,
     UNMETIF,
+    Type,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub enum Type {
+    NORMAL(TypeLit),
+    BUILTIN(BuiltinType),
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -34,6 +41,7 @@ pub enum Object {
     Function(Function),
     BuiltInFunction(BuiltInFunction),
     Range(Range),
+    Type(Type)
 }
 
 impl Object {
@@ -50,6 +58,7 @@ impl Object {
             Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
             Self::Function(_) => ObjectType::FUNCTION,
             Self::Range(_) => ObjectType::RANGE,
+            Self::Type(_) => ObjectType::Type,
         }
     }
 }
@@ -57,7 +66,7 @@ impl Object {
 impl Literal for Object {
     fn literal(&self) -> String {
         match self {
-            Object::Num(num) => (num.value as i32).to_string(),
+            Object::Num(num) => num.value.to_string(),
             Object::Bool(bool) => format!("{:?}", bool.value).to_lowercase(),
             Object::Str(str) => str.value.to_string(),
             Object::None(_) => String::from("none"),
@@ -66,7 +75,7 @@ impl Literal for Object {
             Object::Return(ret) => format!("return {}", ret.value.literal()),
             Object::Var(_) => todo!(),
             Object::BuiltInFunction(func) => {
-                let mut fmt_string = format!("{}(", func.func.name());
+                let mut fmt_string = format!("{}(", func.func.literal());
                 func.args.iter().for_each(|x| {
                     fmt_string.push_str(x.literal().as_str());
                     fmt_string.push_str(", ")
@@ -76,6 +85,10 @@ impl Literal for Object {
             }
             Object::Function(_) => todo!(),
             Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal()),
+            Object::Type(type_type) => match &type_type {
+                Type::NORMAL(normal) => normal.type_name.to_string(),
+                Type::BUILTIN(builtin) => builtin.literal(),
+            },
         }
     }
 }
@@ -110,9 +123,9 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(msg: &str) -> Error {
+    pub fn new(msg: String) -> Error {
         Error {
-            message: msg.to_string(),
+            message: msg,
         }
     }
 }
@@ -160,6 +173,12 @@ pub struct BuiltInFunction {
 pub struct Range {
     pub left: Box<Object>,
     pub right: Box<Object>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct TypeLit {
+    type_name: String,
+    is_builtin: bool,
 }
 
 pub trait Literal {

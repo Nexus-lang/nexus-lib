@@ -1,4 +1,10 @@
-use crate::{ast::*, builtins, enviroment::Environment, object::*, util::throw_error};
+use crate::{
+    ast::*,
+    builtins::{self, BuiltinType},
+    enviroment::Environment,
+    object::{self, *},
+    util::throw_error,
+};
 
 pub struct Evaluator {
     program: Program,
@@ -78,7 +84,7 @@ impl Evaluator {
             Expression::INDEX(_) => todo!(),
             Expression::ANNOTATION(_) => todo!(),
             Expression::NONE(_) => Object::None(NoneLit),
-            Expression::EMPTY => Object::Error(Error::new("Cannot evaluate EMPTY expression")),
+            Expression::EMPTY => Object::Error(Error::new("Cannot evaluate EMPTY expression".to_string())),
             Expression::WHEN(when) => self.eval_when_expression(when),
         }
     }
@@ -86,13 +92,23 @@ impl Evaluator {
     fn eval_identifier(&mut self, ident: &Identifier) -> Object {
         match self.env.get(&ident.value) {
             Ok(obj) => obj.obj,
-            Err(_) => {
-                let err = Error::new(
-                    format!("Cannot find identifier: {}", ident.value.as_str()).as_str(),
-                );
-                throw_error(&err);
-                Object::Error(err)
-            }
+            Err(_) => match &ident.value {
+                i if i == &BuiltinType::BOOLEAN.literal() => {
+                    Object::Type(object::Type::BUILTIN(BuiltinType::BOOLEAN))
+                }
+                i if i == &BuiltinType::NUMBER.literal() => {
+                    Object::Type(object::Type::BUILTIN(BuiltinType::NUMBER))
+                }
+                i if i == &BuiltinType::STRING.literal() => {
+                    Object::Type(object::Type::BUILTIN(BuiltinType::STRING))
+                }
+                _ => {
+                    let err =
+                        Error::new(format!("Cannot find identifier: {}", ident.value));
+                    throw_error(&err);
+                    Object::Error(err)
+                }
+            },
         }
     }
 
@@ -146,68 +162,83 @@ impl Evaluator {
             Operator::PLUS => right,
             Operator::MINUS => self.eval_minus_expression(right),
             _ => Object::Error(Error::new(
-                format!("Illegal prefix operation: {:?}", node.operator).as_str(),
+                format!("Illegal prefix operation: {:?}", node.operator),
             )),
         }
     }
 
     fn eval_infix_expression(&mut self, node: &InfixExpression) -> Object {
-        println!("AMOGUS");
         let left = self.eval_expression(&node.left);
         let right = self.eval_expression(&node.right);
         let operator = &node.operator;
 
         if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER {
-            self.eval_integer_infix_expression(operator, left, right)
-        }
-        //
-        else if operator == &Operator::EQUAL {
-            self.native_bool_to_object(left == right)
-        } else if operator == &Operator::NOTEQUAL {
-            self.native_bool_to_object(left != right)
-        } else if operator == &Operator::ASSIGN {
-            match &*node.left {
-                Expression::IDENTIFIER(ident) => self.env.modify(&ident.value, right),
-                Expression::NUMBERLITERAL(_) => todo!(),
-                Expression::STRINGLITERAL(_) => todo!(),
-                Expression::PREFIX(_) => todo!(),
-                Expression::INFIX(_) => todo!(),
-                Expression::BOOLEAN(_) => todo!(),
-                Expression::IF(_) => todo!(),
-                Expression::WHILE(_) => todo!(),
-                Expression::FOR(_) => todo!(),
-                Expression::WHEN(_) => todo!(),
-                Expression::FUNC(_) => todo!(),
-                Expression::CALL(_) => todo!(),
-                Expression::LIST(_) => todo!(),
-                Expression::INDEX(_) => todo!(),
-                Expression::ANNOTATION(_) => todo!(),
-                Expression::NONE(_) => todo!(),
-                Expression::EMPTY => todo!(),
-            }
-            match self.env.get(
-                &match &*node.left {
-                    Expression::IDENTIFIER(ident) => ident,
-                    _ => todo!(),
-                }
-                .value,
-            ) {
-                Ok(obj) => return obj.obj,
-                Err(_) => todo!(),
-            };
-        } else if operator == &Operator::RANGE {
-            Object::Range(Range {
-                left: Box::from(left),
-                right: Box::from(right),
-            })
+            return self.eval_integer_infix_expression(operator, left, right);
         } else {
-            Object::Error(Error::new(
-                format!(
-                    "Unknown operation: left: {:?}, right: {:?}, operator: {:?}",
-                    left, right, operator
-                )
-                .as_str(),
-            ))
+            return match operator {
+                Operator::EQUAL => self.native_bool_to_object(left == right),
+                Operator::NOTEQUAL => self.native_bool_to_object(left != right),
+                Operator::AS => self.eval_conversion_infix_expression(node, left),
+                Operator::RANGE => Object::Range(Range {
+                    left: Box::from(left),
+                    right: Box::from(right),
+                }),
+                Operator::ASSIGN => self.eval_assign_infix_expression(node, right),
+                _ => Object::Error(Error::new(
+                    format!(
+                        "Unknown operation: left: {:?}, right: {:?}, operator: {:?}",
+                        left, right, operator
+                    )
+                )),
+            };
+        }
+    }
+
+    fn eval_assign_infix_expression(&mut self, node: &InfixExpression, right: Object) -> Object {
+        match &*node.left {
+            Expression::IDENTIFIER(ident) => self.env.modify(&ident.value, right),
+            _ => todo!(),
+        }
+        match self.env.get(
+            &match &*node.left {
+                Expression::IDENTIFIER(ident) => ident,
+                _ => todo!(),
+            }
+            .value,
+        ) {
+            Ok(obj) => return obj.obj,
+            Err(_) => todo!(),
+        };
+    }
+
+    fn eval_conversion_infix_expression(&mut self, node: &InfixExpression, left: Object) -> Object {
+        match &*node.right {
+            Expression::IDENTIFIER(right) => match &right.value {
+                r if r == &BuiltinType::STRING.literal() => Object::Str(Str {
+                    value: left.literal(),
+                }),
+                r if r == &BuiltinType::NUMBER.literal() => Object::Num(Num {
+                    value: match &left.literal().parse() {
+                        Ok(num) => *num,
+                        Err(_) => {
+                            throw_error(&Error::new(format!("Failed to convert {} to a number. This value cannot be convertes", &left.literal())));
+                            0f64
+                        }
+                    },
+                }),
+                r if r == &BuiltinType::BOOLEAN.literal() => Object::Bool(Bool {
+                    value: match left.literal().as_str() {
+                        "true" => BooleanType::TRUE,
+                        "false" => BooleanType::FALSE,
+                        _ => {
+                            throw_error(&Error::new(format!("Failed to convert {} to a boolean (true or false)", left.literal())));
+                            BooleanType::FALSE
+                        }
+                    },
+                }),
+                _ => todo!("implement support for self defined types"),
+            },
+            _ => todo!(),
         }
     }
 
@@ -227,7 +258,6 @@ impl Evaluator {
                     "left value is not a number. Expected number found: {:?} instead",
                     left
                 )
-                .as_str(),
             ));
         }
 
@@ -239,7 +269,6 @@ impl Evaluator {
                     "right value is not a number. Expected number found: {:?} instead",
                     right
                 )
-                .as_str(),
             ));
         }
 
@@ -368,7 +397,7 @@ impl Evaluator {
     fn eval_call(&mut self, node: &CallExpression) -> Object {
         match *node.function.clone() {
             Expression::IDENTIFIER(ident) => match ident.value {
-                i if i == builtins::BuiltinFunction::PRINT.name() => {
+                i if i == builtins::BuiltinFunction::PRINT.literal() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
@@ -381,7 +410,7 @@ impl Evaluator {
                     builtins::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
                 }
-                i if i == builtins::BuiltinFunction::INPUT.name() => {
+                i if i == builtins::BuiltinFunction::INPUT.literal() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
@@ -405,7 +434,6 @@ impl Evaluator {
                         Err(_) => {
                             let err = Error::new(
                                 format!("Cannot find identifier: {}", ident.value.as_str())
-                                    .as_str(),
                             );
                             throw_error(&err);
                             return Object::Error(err);
@@ -467,7 +495,7 @@ impl Evaluator {
             Object::None(_) => false,
             _ => {
                 throw_error(&Error::new(
-                    format!("Invalid condition: {}", object.literal()).as_str(),
+                    format!("Invalid condition: {}", object.literal()),
                 ));
                 // this will not be returned as throw_error()
                 // will terminate the process

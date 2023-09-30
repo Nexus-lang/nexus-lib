@@ -1,6 +1,6 @@
 use crate::{
-    object::{self, Error, Literal},
-    util::{input, throw_error},
+    object::{self, Literal},
+    util::input,
 };
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
@@ -16,14 +16,26 @@ pub enum BuiltinType {
     BOOLEAN,
 }
 
-impl BuiltinFunction {
-    pub fn name(&self) -> String {
+impl Literal for BuiltinType {
+    fn literal(&self) -> String {
+        match self {
+            BuiltinType::STRING => String::from("Str"),
+            BuiltinType::NUMBER => String::from("Num"),
+            BuiltinType::BOOLEAN => String::from("Bool"),
+        }
+    }
+}
+
+impl Literal for BuiltinFunction {
+    fn literal(&self) -> String {
         match self {
             Self::PRINT => String::from("print"),
             Self::INPUT => String::from("input"),
         }
     }
+}
 
+impl BuiltinFunction {
     /* calling the functions */
     pub fn print_val(func: &object::BuiltInFunction) {
         println!();

@@ -107,7 +107,6 @@ fn dbg_enabled() -> bool {
                 "Invalid input. Expected y/n or empty. Got `{}` instead",
                 input_dbg
             )
-            .as_str(),
         ));
         panic!()
     };
