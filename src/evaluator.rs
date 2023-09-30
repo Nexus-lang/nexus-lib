@@ -12,7 +12,7 @@ impl Evaluator {
     }
 
     fn eval(&mut self, statement: &Statement) -> Object {
-        self.eval_statement(statement)
+        self.eval_statement(statement, false)
     }
 
     pub fn eval_program(&mut self) -> Option<Object> {
@@ -23,26 +23,36 @@ impl Evaluator {
         result
     }
 
-    fn eval_statement(&mut self, statement: &Statement) -> Object {
+    fn eval_statement(&mut self, statement: &Statement, is_local: bool) -> Object {
         match statement {
             Statement::VAR(var) => {
                 let val = self.eval_expression(&var.value);
-                self.env.set(&var.name.value, &val);
+                self.env.set(&var.name.value, &val, is_local, false);
+                println!("local: {}", is_local);
                 Object::Var(Var {
                     value: Box::from(val),
+                    is_local,
                 })
             }
             Statement::CONST(constant) => {
                 let val = self.eval_expression(&constant.value);
-                self.env.set(&constant.name.value, &val);
+                self.env.set(&constant.name.value, &val, is_local, true);
                 Object::Var(Var {
                     value: Box::from(val),
+                    is_local,
                 })
             }
             Statement::RETURN(ret) => {
                 return Object::Return(Return { value: Box::new(self.eval_expression(&ret.return_value)) });
             }
-            Statement::LOCAL(_) => todo!(),
+            Statement::LOCAL(stmt) => {println!("LOCAL");match &*stmt.left {
+                Statement::VAR(_) => self.eval_statement(&*stmt.left, true),
+                Statement::CONST(_) => todo!(),
+                Statement::RETURN(_) => todo!(),
+                Statement::LOCAL(_) => todo!(),
+                Statement::EXPRESSION(_) => todo!(),
+                Statement::EMPTY => todo!(),
+            }},
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
             Statement::EMPTY => todo!(),
         }
@@ -74,7 +84,7 @@ impl Evaluator {
 
     fn eval_identifier(&mut self, ident: &Identifier) -> Object {
         match self.env.get(ident.value.clone()) {
-            Ok(obj) => obj,
+            Ok(obj) => obj.obj,
             Err(_) => {
                 let err = Error::new(
                     format!("Cannot find identifier: {}", ident.value.as_str()).as_str(),
@@ -230,7 +240,7 @@ impl Evaluator {
         let mut result = Object::None(NoneLit);
 
         for stmt in block.statements.iter() {
-            result = self.eval_statement(stmt);
+            result = self.eval_statement(stmt, false);
 
             match result {
                 Object::Return(ret) => return *ret.value,
@@ -368,8 +378,8 @@ impl Evaluator {
                         }
                     };
 
-                    let func_obj = if let Object::Function(func_obj) = func.clone() {
-                        func_obj
+                    let func_obj = if let Object::Function(func) = func.obj.clone() {
+                        func
                     } else {
                         throw_error(&Error {
                             message: "Identifier is not a function".to_string(),
@@ -380,7 +390,7 @@ impl Evaluator {
                     for (index, arg) in func_obj.args.iter().enumerate() {
                         if index < node.args.len() {
                             let cur_arg = self.eval_expression(&node.args[index]);
-                            self.env.set(&arg.arg.value, &cur_arg);
+                            self.env.set(&arg.arg.value, &cur_arg, false, false);
                         } else {
                             break;
                         }
@@ -398,7 +408,9 @@ impl Evaluator {
 
                     self.env = old_env;
 
-                    func
+                    println!("\n{}", &func.is_local);
+
+                    func.obj
                 }
             },
             _ => todo!(),

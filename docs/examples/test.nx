@@ -1,8 +1,5 @@
-var x = func(y) {
-    y()
-    print("Sussy")
+local var foo = func(y) {
+    print(y)
 }
 
-x(func() {
-    print("susssssss")
-})
+foo("Amogus")

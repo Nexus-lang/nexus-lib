@@ -1,5 +1,5 @@
 use crate::{
-    ast::{BlockStatement, BooleanType, Identifier, Arg},
+    ast::{BlockStatement, BooleanType, Arg},
     builtins,
 };
 
@@ -64,7 +64,7 @@ impl Literal for Object {
             Object::Error(_) => todo!(),
             Object::UnMetExpr(_) => todo!(),
             Object::Return(ret) => format!("return {}", ret.value.literal()),
-            Object::Var(var) => todo!(),
+            Object::Var(_) => todo!(),
             Object::BuiltInFunction(func) => {
                 let mut fmt_string = format!("{}(", func.func.name());
                 func.args.iter().for_each(|x| {
@@ -74,7 +74,7 @@ impl Literal for Object {
                 fmt_string.push(')');
                 fmt_string
             }
-            Object::Function(func) => todo!(),
+            Object::Function(_) => todo!(),
             Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal())
         }
     }
@@ -125,6 +125,8 @@ pub struct Return {
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Var {
     pub value: Box<Object>,
+    // It's called local. why is it public then xD
+    pub is_local: bool,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]

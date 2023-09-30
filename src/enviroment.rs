@@ -3,8 +3,15 @@ use std::collections::HashMap;
 use crate::object::Object;
 
 #[derive(Debug, Clone)]
+pub struct EnvObj {
+    pub is_const: bool,
+    pub is_local: bool,
+    pub obj: Object,
+}
+
+#[derive(Debug, Clone)]
 pub struct Environment {
-    store: HashMap<String, Object>,
+    store: HashMap<String, EnvObj>,
 }
 
 impl Environment {
@@ -13,7 +20,7 @@ impl Environment {
         Environment { store: s}
     }
 
-    pub fn get(&self, name: String) -> Result<Object, ()> {
+    pub fn get(&self, name: String) -> Result<EnvObj, ()> {
         let obj = match self.store.get(&name) {
             Some(val) => Ok(val.clone()),
             None => {
@@ -23,8 +30,8 @@ impl Environment {
         obj
     }
 
-    pub fn set(&mut self, name: &String, val: &Object) -> Object {
-        self.store.insert(name.to_string(), val.clone());
+    pub fn set(&mut self, name: &String, val: &Object, is_local: bool, is_const: bool) -> Object {
+        self.store.insert(name.to_string(), EnvObj { is_const, is_local, obj: val.to_owned() });
         val.clone()
     }
 }
