@@ -878,7 +878,7 @@ impl Parser {
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             TokenType::ANNOTATION => self.parse_annotation(),
-            _ => {println!("eeeeeeeeeeee"); Expression::EMPTY},
+            _ => Expression::EMPTY,
         }
     }
 

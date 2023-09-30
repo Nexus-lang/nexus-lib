@@ -1,3 +1,5 @@
+use std::process::id;
+
 use crate::{ast::*, builtins, enviroment::Environment, object::*, util::throw_error};
 
 pub struct Evaluator {
@@ -42,7 +44,9 @@ impl Evaluator {
                 })
             }
             Statement::RETURN(ret) => {
-                return Object::Return(Return { value: Box::new(self.eval_expression(&ret.return_value)) });
+                return Object::Return(Return {
+                    value: Box::new(self.eval_expression(&ret.return_value)),
+                });
             }
             Statement::LOCAL(stmt) => match &*stmt.left {
                 Statement::VAR(_) => self.eval_statement(&*stmt.left, true),
@@ -82,7 +86,7 @@ impl Evaluator {
     }
 
     fn eval_identifier(&mut self, ident: &Identifier) -> Object {
-        match self.env.get(ident.value.clone()) {
+        match self.env.get(&ident.value) {
             Ok(obj) => obj.obj,
             Err(_) => {
                 let err = Error::new(
@@ -150,16 +154,53 @@ impl Evaluator {
     }
 
     fn eval_infix_expression(&mut self, node: &InfixExpression) -> Object {
+        println!("AMOGUS");
         let left = self.eval_expression(&node.left);
         let right = self.eval_expression(&node.right);
         let operator = &node.operator;
 
         if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER {
             self.eval_integer_infix_expression(operator, left, right)
-        } else if operator == &Operator::EQUAL {
+        }
+        //
+        else if operator == &Operator::EQUAL {
             self.native_bool_to_object(left == right)
         } else if operator == &Operator::NOTEQUAL {
             self.native_bool_to_object(left != right)
+        } else if operator == &Operator::ASSIGN {
+            match &*node.left {
+                Expression::IDENTIFIER(ident) => self.env.modify(&ident.value, right),
+                Expression::NUMBERLITERAL(_) => todo!(),
+                Expression::STRINGLITERAL(_) => todo!(),
+                Expression::PREFIX(_) => todo!(),
+                Expression::INFIX(_) => todo!(),
+                Expression::BOOLEAN(_) => todo!(),
+                Expression::IF(_) => todo!(),
+                Expression::WHILE(_) => todo!(),
+                Expression::FOR(_) => todo!(),
+                Expression::WHEN(_) => todo!(),
+                Expression::FUNC(_) => todo!(),
+                Expression::CALL(_) => todo!(),
+                Expression::LIST(_) => todo!(),
+                Expression::INDEX(_) => todo!(),
+                Expression::ANNOTATION(_) => todo!(),
+                Expression::NONE(_) => todo!(),
+                Expression::EMPTY => todo!(),
+            }
+            match self.env.get(
+                &match &*node.left {
+                    Expression::IDENTIFIER(ident) => ident,
+                    _ => todo!(),
+                }
+                .value,
+            ) {
+                Ok(obj) => return if !obj.is_const {
+                    obj.obj
+                } else {
+                    todo!()
+                },
+                Err(_) => todo!(),
+            };
         } else if operator == &Operator::RANGE {
             Object::Range(Range {
                 left: Box::from(left),
@@ -365,7 +406,7 @@ impl Evaluator {
 
                     self.env = new_env.clone();
 
-                    let func = match self.env.get(ident.value.clone()) {
+                    let func = match self.env.get(&ident.value) {
                         Ok(obj) => obj,
                         Err(_) => {
                             let err = Error::new(
@@ -400,7 +441,7 @@ impl Evaluator {
                         match obj {
                             Object::Return(ret) => {
                                 return *ret.value;
-                            },
+                            }
                             _ => continue,
                         }
                     }
