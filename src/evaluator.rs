@@ -28,7 +28,6 @@ impl Evaluator {
             Statement::VAR(var) => {
                 let val = self.eval_expression(&var.value);
                 self.env.set(&var.name.value, &val, is_local, false);
-                println!("local: {}", is_local);
                 Object::Var(Var {
                     value: Box::from(val),
                     is_local,
@@ -45,14 +44,14 @@ impl Evaluator {
             Statement::RETURN(ret) => {
                 return Object::Return(Return { value: Box::new(self.eval_expression(&ret.return_value)) });
             }
-            Statement::LOCAL(stmt) => {println!("LOCAL");match &*stmt.left {
+            Statement::LOCAL(stmt) => match &*stmt.left {
                 Statement::VAR(_) => self.eval_statement(&*stmt.left, true),
-                Statement::CONST(_) => todo!(),
+                Statement::CONST(_) => self.eval_statement(&*stmt.left, true),
                 Statement::RETURN(_) => todo!(),
                 Statement::LOCAL(_) => todo!(),
                 Statement::EXPRESSION(_) => todo!(),
                 Statement::EMPTY => todo!(),
-            }},
+            },
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
             Statement::EMPTY => todo!(),
         }

@@ -1,5 +1,1 @@
-local var foo = func(y) {
-    print(y)
-}
-
-foo("Amogus")
+0 as 1

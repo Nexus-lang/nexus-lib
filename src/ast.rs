@@ -67,6 +67,7 @@ pub enum Operator {
     LESSOREQUAL,  // in
     AS,           // in
     RANGE,        // in
+    ASSIGN,       // assign
     ILLEGAL,
 }
 

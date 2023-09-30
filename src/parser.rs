@@ -37,16 +37,17 @@ pub struct Parser {
 // E.g. 5 + 5 * 3, 5 + 15 = 20;
 // We see that the product is higher than the sum.
 const LOWEST: i8 = 0;
-const RANGE: i8 = 1;
-const EQUALS: i8 = 2; // ==
-const LESSGREATER: i8 = 3; // > or <
-const LESSGREATEREQUAL: i8 = 4; // >= or <=
-const SUM: i8 = 5; // +
-const PRODUCT: i8 = 6; // *
-const PREFIX: i8 = 7; // -x, +x or !x
-const CALL: i8 = 8; // amogus(x)
-const CONVERSION: i8 = 9;
-const INDEX: i8 = 10;
+const ASSIGN: i8 = 1;
+const RANGE: i8 = 2;
+const EQUALS: i8 = 3; // ==
+const LESSGREATER: i8 = 4; // > or <
+const LESSGREATEREQUAL: i8 = 5; // >= or <=
+const SUM: i8 = 6; // +
+const PRODUCT: i8 = 7; // *
+const PREFIX: i8 = 8; // -x, +x or !x
+const CALL: i8 = 9; // amogus(x)
+const CONVERSION: i8 = 10;
+const INDEX: i8 = 11;
 
 const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionStatement {
     expression: Expression::EMPTY,
@@ -666,6 +667,7 @@ impl Parser {
         })
     }
 
+    // TODO: remove mutability. We aren't in go
     fn parse_infix_expression(&mut self, left: Expression) -> Expression {
         let mut expression = InfixExpression {
             operator: self.get_operator(&self.cur_token),
@@ -737,6 +739,7 @@ impl Parser {
             TokenType::LESSOREQUALTHAN => Operator::LESSOREQUAL,
             TokenType::AS => Operator::AS,
             TokenType::RANGE => Operator::RANGE,
+            TokenType::ASSIGN => Operator::ASSIGN,
             _ => Operator::ILLEGAL,
         }
     }
@@ -757,6 +760,7 @@ impl Parser {
             TokenType::LPARENT => CALL,
             TokenType::LSQUAREBRAC => INDEX,
             TokenType::RANGE => RANGE,
+            TokenType::ASSIGN => ASSIGN,
             _ => LOWEST,
         }
     }
@@ -845,6 +849,8 @@ impl Parser {
             | TokenType::GREATERTHAN
             | TokenType::LESSOREQUALTHAN
             | TokenType::GREATEROREQUALTHAN
+            | TokenType::ASSIGN
+            | TokenType::AS
             | TokenType::RANGE => self.parse_infix_expression(left),
             TokenType::LPARENT => self.parse_call_expression(left),
             TokenType::LSQUAREBRAC => self.parse_index_expression(left),
@@ -872,7 +878,7 @@ impl Parser {
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
             TokenType::ANNOTATION => self.parse_annotation(),
-            _ => Expression::EMPTY,
+            _ => {println!("eeeeeeeeeeee"); Expression::EMPTY},
         }
     }
 
