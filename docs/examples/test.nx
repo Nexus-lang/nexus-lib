@@ -1,6 +1,8 @@
-func foo() {
-    var x = 190 + 73
-    return x + 10
+var x = func(y) {
+    y()
+    print("Sussy")
 }
 
-print(foo())
+x(func() {
+    print("susssssss")
+})

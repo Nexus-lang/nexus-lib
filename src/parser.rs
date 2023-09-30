@@ -156,6 +156,7 @@ impl Parser {
                 name: Identifier {
                     value: self.peek_token.literal.to_string(),
                 },
+                var_type: None,
                 value: {
                     // Identifier
                     self.next_token();
@@ -177,6 +178,7 @@ impl Parser {
                 name: Identifier {
                     value: self.peek_token.literal.to_string(),
                 },
+                const_type: None,
                 value: {
                     // Identifier
                     self.next_token();
@@ -210,6 +212,7 @@ impl Parser {
                 name: Identifier {
                     value: self.cur_token.literal.to_string(),
                 },
+                var_type: None,
                 value: {
                     // Assign
                     self.next_token();
@@ -228,6 +231,7 @@ impl Parser {
                 name: Identifier {
                     value: self.cur_token.literal.to_string(),
                 },
+                const_type: None,
                 value: {
                     // Assign
                     self.next_token();
@@ -528,23 +532,18 @@ impl Parser {
     }
 
     fn parse_func_expression(&mut self) -> Expression {
-        if !self.expect_peek(TokenType::IDENT) {
-            self.peek_error(TokenType::IDENT);
-            return Expression::EMPTY;
-        }
-
-        let ident = Identifier::new(self.cur_token.literal.to_string());
-
-        if !self.expect_peek(TokenType::LPARENT) {
-            return Expression::EMPTY;
-        }
+        self.expect_peek(TokenType::LPARENT);
 
         let mut args = Vec::new();
 
         while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
             self.next_token();
+            println!("{:?}", self.cur_token);
 
-            let arg = Identifier::new(self.cur_token.literal.to_string());
+            let arg = Arg {
+                arg: Identifier::new(self.cur_token.literal.to_string()),
+                arg_type: None,
+            };
             args.push(arg);
 
             if !self.peek_token_is(TokenType::COMMA) {
@@ -566,10 +565,8 @@ impl Parser {
         let consequence = self.parse_block_statement();
 
         return Expression::FUNC(FuncExpression {
-            ident,
             args,
-            arg_types: vec![Identifier::new("NYI".to_string())],
-            return_type: Identifier::new("NYI".to_string()),
+            return_type: None,
             body: consequence,
         });
     }
@@ -707,7 +704,7 @@ impl Parser {
         let mut list = Vec::new();
         while !self.peek_token_is(end) && !self.peek_token_is(TokenType::EOF) {
             self.next_token();
-            
+
             let entry = self.parse_expression(LOWEST);
             list.push(entry);
 

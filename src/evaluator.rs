@@ -380,7 +380,7 @@ impl Evaluator {
                     for (index, arg) in func_obj.args.iter().enumerate() {
                         if index < node.args.len() {
                             let cur_arg = self.eval_expression(&node.args[index]);
-                            self.env.set(&arg.value, &cur_arg);
+                            self.env.set(&arg.arg.value, &cur_arg);
                         } else {
                             break;
                         }
@@ -406,13 +406,10 @@ impl Evaluator {
     }
 
     fn eval_func_expression(&mut self, node: &FuncExpression) -> Object {
-        let obj = Object::Function(Function {
-            name: node.ident.value.clone(),
-            args: node.args.clone(),
-            body: node.body.clone(),
-        });
-        self.env.set(&node.ident.value, &obj);
-        obj
+        Object::Function(Function {
+            args: node.args.to_owned(),
+            body: node.body.to_owned(),
+        })
     }
 
     fn is_truthy(&mut self, object: &Object) -> bool {

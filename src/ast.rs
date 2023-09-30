@@ -86,6 +86,7 @@ pub struct LocalStatement {
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct VarStatement {
     pub name: Identifier,
+    pub var_type: Type,
     pub value: Expression,
 }
 
@@ -93,6 +94,7 @@ pub struct VarStatement {
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ConstStatement {
     pub name: Identifier,
+    pub const_type: Type,
     pub value: Expression,
 }
 
@@ -184,12 +186,18 @@ pub struct WhileExpression {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct FuncExpression {
-    pub ident: Identifier,
-    pub args: Vec<Identifier>,
-    pub arg_types: Vec<Identifier>,
-    pub return_type: Identifier,
+    pub args: Vec<Arg>,
+    pub return_type: Type,
     pub body: BlockStatement,
 }
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct Arg {
+    pub arg: Identifier,
+    pub arg_type: Type
+}
+
+pub type Type = Option<Identifier>;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct CallExpression {
