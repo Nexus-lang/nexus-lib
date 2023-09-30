@@ -188,6 +188,9 @@ impl Lexer {
                                 push_token!(tokens, TokenType::COMMENT, self.current_pos_line);
                                 self.current_pos += 1;
                                 self.current_pos_line += 1;
+                                while input_chars[self.current_pos] != '\n' {
+                                    self.current_pos += 1;
+                                }
                             } else {
                                 push_token!(tokens, TokenType::DIVIDE, self.current_pos_line);
                             }

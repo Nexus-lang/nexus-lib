@@ -172,7 +172,7 @@ impl Evaluator {
         let right = self.eval_expression(&node.right);
         let operator = &node.operator;
 
-        if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER {
+        if left.get_type() == ObjectType::NUMBER && right.get_type() == ObjectType::NUMBER && operator != &Operator::ASSIGN {
             return self.eval_integer_infix_expression(operator, left, right);
         } else {
             return match operator {
@@ -195,6 +195,7 @@ impl Evaluator {
     }
 
     fn eval_assign_infix_expression(&mut self, node: &InfixExpression, right: Object) -> Object {
+        println!("EEEEEEEEEEEEEEEEEEEe: {:?}", right);
         match &*node.left {
             Expression::IDENTIFIER(ident) => self.env.modify(&ident.value, right),
             _ => todo!(),
@@ -424,11 +425,6 @@ impl Evaluator {
                     Object::BuiltInFunction(func)
                 }
                 _ => {
-                    let old_env = self.env.clone();
-                    let new_env = self.env.clone();
-
-                    self.env = new_env.clone();
-
                     let func = match self.env.get(&ident.value) {
                         Ok(obj) => obj,
                         Err(_) => {
@@ -467,10 +463,6 @@ impl Evaluator {
                             _ => continue,
                         }
                     }
-
-                    self.env = old_env;
-
-                    println!("\n{}", &func.is_local);
 
                     func.obj
                 }
