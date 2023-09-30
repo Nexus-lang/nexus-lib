@@ -1,5 +1,3 @@
-use std::process::id;
-
 use crate::{ast::*, builtins, enviroment::Environment, object::*, util::throw_error};
 
 pub struct Evaluator {
@@ -194,11 +192,7 @@ impl Evaluator {
                 }
                 .value,
             ) {
-                Ok(obj) => return if !obj.is_const {
-                    obj.obj
-                } else {
-                    todo!()
-                },
+                Ok(obj) => return obj.obj,
                 Err(_) => todo!(),
             };
         } else if operator == &Operator::RANGE {

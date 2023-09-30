@@ -37,7 +37,11 @@ impl Environment {
 
     pub fn modify(&mut self, name: &String, new_val: Object) {
         match self.store.get_mut(name) {
-            Some(val) => val.obj = new_val,
+            Some(val) => if !val.is_const {
+                val.obj = new_val
+            } else {
+                todo!()
+            },
             None => todo!(),
         }
     }

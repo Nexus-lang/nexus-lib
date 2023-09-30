@@ -1,5 +1,6 @@
 mod ast;
 mod builtins;
+mod enviroment;
 mod errors;
 mod evaluator;
 mod lexer;
@@ -7,7 +8,6 @@ mod object;
 mod parser;
 mod tokens;
 mod util;
-mod enviroment;
 
 use std::time::Instant;
 
@@ -15,7 +15,11 @@ use lexer::Lexer;
 use parser::Parser;
 use util::{input, FileHandler};
 
-use crate::{evaluator::Evaluator, util::throw_error, object::Error};
+use crate::{
+    evaluator::Evaluator,
+    object::Error,
+    util::throw_error,
+};
 
 fn main() {
     // select the file to interpret
@@ -23,7 +27,7 @@ fn main() {
     print!(">>");
     let input_file = input();
     let dbg_enabled = dbg_enabled();
-    
+
     let start_time = Instant::now();
 
     let example_code = FileHandler::read_file(if input_file != "" {
@@ -76,10 +80,13 @@ fn main() {
         println!("{:?}", debug_eval);
     }
 
-        let seconds = elapsed_time.as_secs();
-        let millis = elapsed_time.subsec_millis();
-    
-        println!("Execution time: {} seconds {} milliseconds", seconds, millis);
+    let seconds = elapsed_time.as_secs();
+    let millis = elapsed_time.subsec_millis();
+
+    println!(
+        "Execution time: {} seconds {} milliseconds",
+        seconds, millis
+    );
 
     print!("PRESS ANY KEY TO EXIT");
     util::input();
@@ -95,7 +102,13 @@ fn dbg_enabled() -> bool {
     } else if input_dbg == "n" {
         false
     } else {
-        throw_error(&Error::new(format!("Invalid input. Expected y/n or empty. Got `{}` instead", input_dbg).as_str()));
+        throw_error(&Error::new(
+            format!(
+                "Invalid input. Expected y/n or empty. Got `{}` instead",
+                input_dbg
+            )
+            .as_str(),
+        ));
         panic!()
     };
     dbg_enabled

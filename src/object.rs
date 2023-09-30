@@ -1,5 +1,5 @@
 use crate::{
-    ast::{BlockStatement, BooleanType, Arg},
+    ast::{Arg, BlockStatement, BooleanType},
     builtins,
 };
 
@@ -75,7 +75,7 @@ impl Literal for Object {
                 fmt_string
             }
             Object::Function(_) => todo!(),
-            Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal())
+            Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal()),
         }
     }
 }

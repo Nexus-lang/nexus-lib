@@ -37,11 +37,7 @@ impl BuiltinFunction {
     }
 
     pub fn read_input(func: &object::BuiltInFunction) -> String {
-        if func.args.len() > 0 {
-            Self::print_val(func);
-        } else if func.args.len() > 1 {
-            throw_error(&Error::new("Function cannot have more than one argument"))
-        }
+        Self::print_val(func);
         input()
     }
 }
