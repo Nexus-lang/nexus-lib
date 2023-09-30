@@ -425,6 +425,11 @@ impl Evaluator {
                     Object::BuiltInFunction(func)
                 }
                 _ => {
+                    let mut old_env = self.env.clone();
+                    let new_env = self.env.clone();
+
+                    self.env = new_env.clone();
+
                     let func = match self.env.get(&ident.value) {
                         Ok(obj) => obj,
                         Err(_) => {
@@ -463,6 +468,32 @@ impl Evaluator {
                             _ => continue,
                         }
                     }
+
+                    // Update all args cuz of mutability
+                    for (index, arg) in node.args.iter().enumerate() {
+                        let call_arg_name = match arg {
+                            Expression::IDENTIFIER(ident) => &ident.value,
+                            _ => todo!()
+                        };
+
+                        let func_arg_name = &func_obj.args[index].arg.value;
+
+                        let call_arg_obj = match self.env.get(call_arg_name) {
+                            Ok(ok) => ok,
+                            Err(_) => todo!(),
+                        };
+
+                        old_env.modify(call_arg_name, match self.env.get(func_arg_name) {
+                            Ok(env_obj) => env_obj.obj,
+                            Err(_) => todo!(),
+                        });
+
+                        println!("Joe mama: {:?}", call_arg_obj)
+
+                        // Take call args and update related vars with values from function
+                    }
+
+                    self.env = old_env;
 
                     func.obj
                 }

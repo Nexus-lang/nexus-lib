@@ -1,14 +1,9 @@
 x := 1
 
 foo := func(y) {
-    y = 0
-    print(y)
+    y = 3
 }
 
-// Variable y gets thrown away together with new value -> value does not change
-
 foo(x)
-
-print(x)
 
 print(y)
