@@ -40,7 +40,7 @@ impl Environment {
             Some(val) => if !val.is_const {
                 val.obj = new_val
             } else {
-                todo!()
+                todo!("Cannot modify a constant variable")
             },
             None => todo!(),
         }

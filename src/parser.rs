@@ -539,7 +539,6 @@ impl Parser {
 
         while !self.peek_token_is(TokenType::RPARENT) && !self.peek_token_is(TokenType::EOF) {
             self.next_token();
-            println!("{:?}", self.cur_token);
 
             let arg = Arg {
                 arg: Identifier::new(self.cur_token.literal.to_string()),
@@ -716,9 +715,6 @@ impl Parser {
             }
 
             // Comma
-            self.next_token();
-
-            // Next expr
             self.next_token();
         }
         list

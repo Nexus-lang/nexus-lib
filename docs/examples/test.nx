@@ -1,9 +1,7 @@
-x := 1
-
-foo := func(y) {
-    y = 3
+foo :: func(x) {
+    x(69)
 }
 
-foo(x)
-
-print(y)
+foo(func(y) {
+    print(y)
+})
