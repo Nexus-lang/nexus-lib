@@ -19,7 +19,7 @@ pub enum ObjectType {
     RANGE,
     ERROR,
     UNMETIF,
-    Type,
+    TYPE,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -41,7 +41,8 @@ pub enum Object {
     Function(Function),
     BuiltInFunction(BuiltInFunction),
     Range(Range),
-    Type(Type)
+    Type(Type),
+    List(List)
 }
 
 impl Object {
@@ -58,7 +59,8 @@ impl Object {
             Self::BuiltInFunction(_) => ObjectType::BUILTINFUNCTION,
             Self::Function(_) => ObjectType::FUNCTION,
             Self::Range(_) => ObjectType::RANGE,
-            Self::Type(_) => ObjectType::Type,
+            Self::Type(_) => ObjectType::TYPE,
+            Self::List(_) => ObjectType::LIST,
         }
     }
 }
@@ -66,15 +68,15 @@ impl Object {
 impl Literal for Object {
     fn literal(&self) -> String {
         match self {
-            Object::Num(num) => num.value.to_string(),
-            Object::Bool(bool) => format!("{:?}", bool.value).to_lowercase(),
-            Object::Str(str) => str.value.to_string(),
-            Object::None(_) => String::from("none"),
-            Object::Error(_) => todo!(),
-            Object::UnMetExpr(_) => todo!(),
-            Object::Return(ret) => format!("return {}", ret.value.literal()),
-            Object::Var(_) => todo!(),
-            Object::BuiltInFunction(func) => {
+            Self::Num(num) => num.value.to_string(),
+            Self::Bool(bool) => format!("{:?}", bool.value).to_lowercase(),
+            Self::Str(str) => str.value.to_string(),
+            Self::None(_) => String::from("none"),
+            Self::Error(_) => todo!(),
+            Self::UnMetExpr(_) => todo!(),
+            Self::Return(ret) => format!("return {}", ret.value.literal()),
+            Self::Var(_) => todo!(),
+            Self::BuiltInFunction(func) => {
                 let mut fmt_string = format!("{}(", func.func.literal());
                 func.args.iter().for_each(|x| {
                     fmt_string.push_str(x.literal().as_str());
@@ -83,12 +85,13 @@ impl Literal for Object {
                 fmt_string.push(')');
                 fmt_string
             }
-            Object::Function(_) => todo!(),
-            Object::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal()),
-            Object::Type(type_type) => match &type_type {
+            Self::Function(_) => todo!(),
+            Self::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal()),
+            Self::Type(type_type) => match &type_type {
                 Type::NORMAL(normal) => normal.type_name.to_string(),
                 Type::BUILTIN(builtin) => builtin.literal(),
             },
+            Self::List(list) => format!("{:?}", list.content),
         }
     }
 }
@@ -179,6 +182,12 @@ pub struct Range {
 pub struct TypeLit {
     type_name: String,
     is_builtin: bool,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct List {
+    pub content: Vec<Object>,
+    pub length: i64,
 }
 
 pub trait Literal {

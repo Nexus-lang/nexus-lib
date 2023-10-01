@@ -80,8 +80,8 @@ impl Evaluator {
             Expression::FOR(for_loop) => self.eval_for_expression(for_loop),
             Expression::FUNC(func) => self.eval_func_expression(func),
             Expression::CALL(call) => self.eval_call(call),
-            Expression::LIST(_) => todo!(),
-            Expression::INDEX(_) => todo!(),
+            Expression::LIST(list) => self.eval_list_literal(list),
+            Expression::INDEX(index) => self.eval_index(index),
             Expression::ANNOTATION(_) => todo!(),
             Expression::NONE(_) => Object::None(NoneLit),
             Expression::EMPTY => {
@@ -352,6 +352,16 @@ impl Evaluator {
         }
     }
 
+    fn eval_list_literal(&mut self, node: &ListExpression) -> Object {
+        let mut content: Vec<Object> = Vec::new();
+        node.content.iter().for_each(|entry| content.push(self.eval_expression(entry)));
+
+        Object::List(List {
+            content,
+            length: node.length,
+        })
+    }
+
     fn eval_when_expression(&mut self, node: &WhenExpression) -> Object {
         let compare_value = &*node.value;
 
@@ -396,6 +406,39 @@ impl Evaluator {
             self.eval_block_statement(&node.consequence);
         }
         return self.eval_block_statement(&node.consequence);
+    }
+
+    fn eval_index(&mut self, node: &IndexExpression) -> Object {
+        let list = self.eval_expression(&*node.list);
+        match list {
+            Object::Num(_) => todo!(),
+            Object::Bool(_) => todo!(),
+            Object::Str(_) => todo!(),
+            Object::None(_) => todo!(),
+            Object::Error(_) => todo!(),
+            Object::UnMetExpr(_) => todo!(),
+            Object::Return(_) => todo!(),
+            Object::Var(_) => todo!(),
+            Object::Function(_) => todo!(),
+            Object::BuiltInFunction(_) => todo!(),
+            Object::Range(_) => todo!(),
+            Object::Type(_) => todo!(),
+            Object::List(list_obj) => list_obj.content.get(match self.eval_expression(&node.index) {
+                Object::Num(num) => num.value as usize,
+                Object::Bool(_) => todo!(),
+                Object::Str(_) => todo!(),
+                Object::None(_) => todo!(),
+                Object::Error(_) => todo!(),
+                Object::UnMetExpr(_) => todo!(),
+                Object::Return(_) => todo!(),
+                Object::Var(_) => todo!(),
+                Object::Function(_) => todo!(),
+                Object::BuiltInFunction(_) => todo!(),
+                Object::Range(_) => todo!(),
+                Object::Type(_) => todo!(),
+                Object::List(_) => todo!(),
+            }).unwrap().clone(),
+        }
     }
 
     fn eval_call(&mut self, node: &CallExpression) -> Object {
