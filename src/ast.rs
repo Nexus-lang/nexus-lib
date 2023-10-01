@@ -123,6 +123,16 @@ pub struct BlockStatement {
     pub statements: Vec<Statement>,
 }
 
+impl BlockStatement {
+    pub fn new(stmts: Vec<Statement>) -> Self {
+        Self { statements: stmts }
+    }
+
+    pub fn new_from_single(stmt: Statement) -> Self {
+        Self::new(vec![stmt])
+    }
+}
+
 // number literal
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct NumberLiteral {

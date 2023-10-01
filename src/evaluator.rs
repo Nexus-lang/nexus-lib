@@ -503,7 +503,7 @@ impl Evaluator {
                     func.obj
                 }
             },
-            _ => todo!(),
+            _ => todo!("{:?}", node.function),
         }
     }
 

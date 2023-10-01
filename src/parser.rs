@@ -555,14 +555,22 @@ impl Parser {
 
         self.next_token();
 
-        if !self.expect_peek(TokenType::LCURLY) {
-            self.peek_error(TokenType::LCURLY);
-            return Expression::EMPTY;
+        if !self.peek_token_is(TokenType::LCURLY) && !self.peek_token_is(TokenType::ARROW) {
+            self.peek_error(TokenType::LCURLY)
         }
 
         self.next_token();
 
-        let consequence = self.parse_block_statement();
+        let consequence: BlockStatement;
+
+        if self.cur_token_is(TokenType::LCURLY) {
+            consequence = self.parse_block_statement();
+        } else if self.cur_token_is(TokenType::ARROW) {
+            self.next_token();
+            consequence = BlockStatement::new_from_single(self.parse_statement())
+        } else {
+            todo!()
+        }
 
         return Expression::FUNC(FuncExpression {
             args,
