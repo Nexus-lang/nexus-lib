@@ -1,4 +1,4 @@
-use crate::{tokens::{Token, TokenType}, ast::{Expression, Statement}};
+use crate::{lexer::tokens::{Token, TokenType}, parser::ast::{Expression, Statement}};
 
 // TODO: simplify error messages for beginners
 

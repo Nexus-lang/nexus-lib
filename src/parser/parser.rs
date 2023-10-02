@@ -1,11 +1,9 @@
 use std::process;
 
 use crate::{
-    ast::*,
-    errors::*,
-    lexer::Lexer,
-    tokens::{Token, TokenType},
-    util,
+    parser::ast::*,
+    lexer::{tokens::{Token, TokenType}, lexer::Lexer},
+    util, builtin::errors::{Error, *},
 };
 /// Parser struct containing
 /// necessary info to

@@ -1,5 +1,5 @@
 use crate::{
-    tokens::{Token, TokenType},
+    lexer::tokens::{Token, TokenType},
     util::{FileHandler, FirstAsChar},
 };
 

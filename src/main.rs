@@ -1,21 +1,19 @@
-mod ast;
-mod builtins;
-mod enviroment;
-mod errors;
+mod builtin;
 mod evaluator;
 mod lexer;
-mod object;
 mod parser;
-mod tokens;
 mod util;
 
 use std::{env, time::Instant};
 
-use lexer::Lexer;
-use parser::Parser;
+use lexer::lexer::Lexer;
+use parser::parser::Parser;
 use util::{input, FileHandler};
 
-use crate::{evaluator::Evaluator, object::Error, util::throw_error};
+use crate::{
+    evaluator::{evaluator::Evaluator, object::Error},
+    util::throw_error,
+};
 
 fn main() {
     let args: Vec<String> = env::args().collect();

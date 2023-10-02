@@ -1,7 +1,0 @@
-struct String
-
-struct Number
-
-struct Boolean
-
-func split(self: String, seperator: String): List[String] {}

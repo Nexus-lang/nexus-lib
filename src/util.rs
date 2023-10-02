@@ -4,7 +4,7 @@ use std::process;
 
 use colored::Colorize;
 
-use crate::object::Error;
+use crate::evaluator::object::Error;
 
 /// Handles files and stores file path
 /// for error messages
@@ -71,4 +71,8 @@ pub fn input() -> String {
 pub fn throw_error(err: &Error) {
     println!("{} {}", "Error:".red(), err.message);
     process::exit(0);
+}
+
+pub trait Literal {
+    fn literal(&self) -> String;
 }

@@ -1,5 +1,0 @@
-var animal = "Animal"
-
-var dog = animal
-
-println(dog)

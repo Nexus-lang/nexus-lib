@@ -1,9 +1,12 @@
 use crate::{
-    ast::*,
-    builtins::{self, BuiltinType},
+    builtin::builtins::{self, *},
+    parser::ast::*,
+    util::*,
+};
+
+use super::{
     enviroment::Environment,
     object::{self, *},
-    util::throw_error,
 };
 
 pub struct Evaluator {
@@ -354,7 +357,9 @@ impl Evaluator {
 
     fn eval_list_literal(&mut self, node: &ListExpression) -> Object {
         let mut content: Vec<Object> = Vec::new();
-        node.content.iter().for_each(|entry| content.push(self.eval_expression(entry)));
+        node.content
+            .iter()
+            .for_each(|entry| content.push(self.eval_expression(entry)));
 
         Object::List(List {
             content,
@@ -411,33 +416,15 @@ impl Evaluator {
     fn eval_index(&mut self, node: &IndexExpression) -> Object {
         let list = self.eval_expression(&*node.list);
         match list {
-            Object::Num(_) => todo!(),
-            Object::Bool(_) => todo!(),
-            Object::Str(_) => todo!(),
-            Object::None(_) => todo!(),
-            Object::Error(_) => todo!(),
-            Object::UnMetExpr(_) => todo!(),
-            Object::Return(_) => todo!(),
-            Object::Var(_) => todo!(),
-            Object::Function(_) => todo!(),
-            Object::BuiltInFunction(_) => todo!(),
-            Object::Range(_) => todo!(),
-            Object::Type(_) => todo!(),
-            Object::List(list_obj) => list_obj.content.get(match self.eval_expression(&node.index) {
-                Object::Num(num) => num.value as usize,
-                Object::Bool(_) => todo!(),
-                Object::Str(_) => todo!(),
-                Object::None(_) => todo!(),
-                Object::Error(_) => todo!(),
-                Object::UnMetExpr(_) => todo!(),
-                Object::Return(_) => todo!(),
-                Object::Var(_) => todo!(),
-                Object::Function(_) => todo!(),
-                Object::BuiltInFunction(_) => todo!(),
-                Object::Range(_) => todo!(),
-                Object::Type(_) => todo!(),
-                Object::List(_) => todo!(),
-            }).unwrap().clone(),
+            Object::List(list_obj) => list_obj
+                .content
+                .get(match self.eval_expression(&node.index) {
+                    Object::Num(num) => num.value as usize,
+                    _ => todo!(),
+                })
+                .unwrap()
+                .clone(),
+            _ => todo!(),
         }
     }
 

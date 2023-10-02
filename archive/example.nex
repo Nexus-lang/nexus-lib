@@ -1,7 +1,0 @@
-test: 0
-test = 1
-
-print(test) // returns 1
-
-test2 c: 0
-test2 = 1 // this throws an error because test2 is a const

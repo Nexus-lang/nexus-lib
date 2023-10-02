@@ -1,7 +1,4 @@
-use crate::{
-    ast::{Arg, BlockStatement, BooleanType},
-    builtins::{self, BuiltinType},
-};
+use crate::{builtin::builtins::{BuiltinType, self}, parser::ast::*, util::Literal};
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum ObjectType {
@@ -188,8 +185,4 @@ pub struct TypeLit {
 pub struct List {
     pub content: Vec<Object>,
     pub length: i64,
-}
-
-pub trait Literal {
-    fn literal(&self) -> String;
 }

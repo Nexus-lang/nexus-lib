@@ -1,7 +1,4 @@
-use crate::{
-    object::{self, Literal},
-    util::input,
-};
+use crate::{evaluator::object, util::*};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum BuiltinFunction {
@@ -19,9 +16,9 @@ pub enum BuiltinType {
 impl Literal for BuiltinType {
     fn literal(&self) -> String {
         match self {
-            BuiltinType::STRING => String::from("Str"),
-            BuiltinType::NUMBER => String::from("Num"),
-            BuiltinType::BOOLEAN => String::from("Bool"),
+            BuiltinType::STRING => String::from("String"),
+            BuiltinType::NUMBER => String::from("Number"),
+            BuiltinType::BOOLEAN => String::from("Boolean"),
         }
     }
 }
