@@ -3,6 +3,15 @@ name = "nexus"
 version = "0.1.0"
 edition = "2021"
 
+description = "A modern and simple scripting language"
+license = "MIT"
+repository = "https://github.com/MuffinGroup/nexus"
+readme = "README.md"
+
+authors = ["Thepigcat76 <benpospo@gmail.com>", "TheHackerChampion"]
+keywords = ["rust", "nexus", "scripting", "language"]
+homepage = "https://muffingroup.github.io/MuffinSite/"
+
 [dependencies]
 colored = "2.0.4"
 maplit = "1.0.2"
