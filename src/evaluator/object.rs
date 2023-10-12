@@ -8,6 +8,7 @@ pub enum ObjectType {
     NONE,
     RETURN,
     VAR,
+    USE,
     FUNCTION,
     BUILTINFUNCTION,
     LIST,
@@ -30,6 +31,7 @@ pub enum Object {
     Num(Num),
     Bool(Bool),
     Str(Str),
+    Use(Use),
     None(NoneLit),
     Error(Error),
     UnMetExpr(UnmetExpr),
@@ -58,6 +60,7 @@ impl Object {
             Self::Range(_) => ObjectType::RANGE,
             Self::Type(_) => ObjectType::TYPE,
             Self::List(_) => ObjectType::LIST,
+            Self::Use(_) => ObjectType::USE,
         }
     }
 }
@@ -89,6 +92,7 @@ impl Literal for Object {
                 Type::BUILTIN(builtin) => builtin.literal(),
             },
             Self::List(list) => format!("{:?}", list.content),
+            Self::Use(_) => todo!(),
         }
     }
 }
@@ -133,6 +137,12 @@ impl Error {
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Return {
     pub value: Box<Object>,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub struct Use {
+    pub file_path: String,
+    pub alias: Option<Identifier>,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]

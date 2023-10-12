@@ -108,9 +108,10 @@ impl Parser {
     fn parse_statement(&mut self) -> Statement {
         match self.cur_token.token_type {
             TokenType::VAR => self.parse_vars(),
-            TokenType::RETURN => self.parse_return_statement(),
+            TokenType::RETURN => self.parse_return_stmt(),
             TokenType::CONST => self.parse_vars(),
-            TokenType::LOCAL => self.parse_local_decl(),
+            TokenType::LOCAL => self.parse_local_stmt(),
+            TokenType::USE => self.parse_use_stmt(),
             TokenType::ILLEGAL => {
                 self.next_token();
                 Statement::EMPTY
@@ -133,7 +134,7 @@ impl Parser {
         }
     }
 
-    fn parse_local_decl(&mut self) -> Statement {
+    fn parse_local_stmt(&mut self) -> Statement {
         if self.peek_token_is(TokenType::LOCAL) {
             self.throw_error(invalid_local_decl(&self.peek_token), true);
         }
@@ -146,6 +147,16 @@ impl Parser {
             left: Box::new(left),
         };
         Statement::LOCAL(statement)
+    }
+
+    fn parse_use_stmt(&mut self) -> Statement {
+        self.expect_peek(TokenType::IDENT);
+        let mut path = String::new();
+        while self.cur_token_is(TokenType::IDENT) || self.cur_token_is(TokenType::DOT) {
+            path.push_str(&self.cur_token.literal);
+            self.next_token();
+        }
+        Statement::USE(UseStatement { path })
     }
 
     /// parser var and const
@@ -254,7 +265,7 @@ impl Parser {
         statement
     }
 
-    fn parse_return_statement(&mut self) -> Statement {
+    fn parse_return_stmt(&mut self) -> Statement {
         self.next_token();
         let statement = ReturnStatement {
             return_value: {

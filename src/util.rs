@@ -73,6 +73,11 @@ pub fn throw_error(err: &Error) {
     process::exit(0);
 }
 
+/// Converts use path to actual file path
+pub fn convert_path(use_path: &str) -> String {
+    use_path.replace(".", "/")
+}
+
 pub trait Literal {
     fn literal(&self) -> String;
 }

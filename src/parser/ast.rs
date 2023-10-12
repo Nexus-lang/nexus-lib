@@ -7,6 +7,7 @@ pub enum Statement {
     CONST(ConstStatement),
     RETURN(ReturnStatement),
     LOCAL(LocalStatement),
+    USE(UseStatement),
     /// Statement wrapper for expressions
     ///
     /// Required because The ast only
@@ -103,6 +104,11 @@ pub struct ConstStatement {
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub struct ReturnStatement {
     pub return_value: Expression,
+}
+
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
+pub struct UseStatement {
+    pub path: String,
 }
 
 // expression (literals, arithmetic operations, functions, if, while...)

@@ -62,9 +62,11 @@ impl Evaluator {
                 Statement::LOCAL(_) => todo!(),
                 Statement::EXPRESSION(_) => todo!(),
                 Statement::EMPTY => todo!(),
+                Statement::USE(_) => todo!(),
             },
             Statement::EXPRESSION(expr) => self.eval_expression(&expr.expression),
             Statement::EMPTY => todo!(),
+            Statement::USE(use_stmt) => self.eval_use_stmt(use_stmt),
         }
     }
 
@@ -114,6 +116,10 @@ impl Evaluator {
                 }
             },
         }
+    }
+
+    fn eval_use_stmt(&mut self, node: &UseStatement) -> Object {
+        Object::Use(Use { file_path: convert_path(&node.path), alias: None })
     }
 
     // TODO: Correct formatting. Example: "{x} is cool" -> " is cool{x}"

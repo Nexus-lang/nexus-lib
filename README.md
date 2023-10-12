@@ -10,7 +10,7 @@
 
 ## Introduction
 
-Nexus is intended to be a smart, modern and powerful scripting language.
+Nexus is  a smart, modern and powerful scripting language.
 
 It was built for creating packages and extensions for [rust](https://www.rust-lang.org/) applications.
 
@@ -21,6 +21,8 @@ Similar to it's father language rust, Nexus has features from both oop and fp.
 This includes polymorphism and in some limited cases inheritance.
 
 As for functional programming it supports higher-order functions, mapping, annonymous functions
+
+[WIP] It also allows you to interact with rust code from your nexus script to create libraries or api bindings
 
 ### Inspiration
 
@@ -61,7 +63,7 @@ Let's improve the code a bit
 ```kotlin
 const message = "Hello, World!"
 
-print("$message <- what a cool message")
+print("{message} <- what a cool message")
 ```
 
 output:
@@ -80,7 +82,7 @@ We can further simplify it
 
 ```kotlin
 message :: "Hello World!"
-print("$message <- what a cool message")
+print("{message} <- what a cool message")
 ```
 
 Using `::` we can quick-assign a const to a value. This also works for vars using `:=`
@@ -94,8 +96,6 @@ This project wouldn't have been possible without the help of these amazing peopl
 - [Thepigcat76](https://github.com/Thepigcat76) - **Project lead** and **lead dev**
 
 - [TheHackerChampion](https://github.com/TheHackerChampion) - **Developer** and **Design team**
-
-- [ReadyPlayerOne14](https://github.com/ReadyPlayerOne14) - **Contributor** and **Design team**
 
 If you want to contribute yourself, follow the [Installation Guide](#installation). Also make sure to read and follow the [Style Guide](STYLE.md)
 

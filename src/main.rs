@@ -29,7 +29,7 @@ fn main() {
         let example_code = FileHandler::read_file(if input_file != "" {
             input_file.as_str()
         } else {
-            "docs/examples/test.nx"
+            "test/test.nx"
         });
         // ----
 
