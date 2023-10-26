@@ -10,27 +10,29 @@ use super::{
 };
 
 pub struct Evaluator {
-    program: Program,
     env: Environment,
 }
 
 impl Evaluator {
-    pub fn new(program: Program) -> Self {
-        let env = Environment::new();
-        Self { program, env }
+    pub fn new() -> Self {
+        Self { env: Environment::new() }
     }
 
     fn eval(&mut self, statement: &Statement) -> Object {
         self.eval_statement(statement, false)
     }
 
-    pub fn eval_program(&mut self) -> Option<Object> {
+    pub fn eval_program(&mut self, program: Program) -> Option<Object> {
         let mut result = Some(Object::None(NoneLit));
-        for statement in &self.program.statements.clone() {
-            result = Some(self.eval(&statement));
+    
+        for statement in program.statements.iter() {
+            let statement_result = self.eval(statement);
+            result = Some(statement_result);
         }
+    
         result
     }
+    
 
     fn eval_statement(&mut self, statement: &Statement, is_local: bool) -> Object {
         match statement {
@@ -78,7 +80,10 @@ impl Evaluator {
             Expression::PREFIX(prefix) => self.eval_prefix_expression(prefix),
             Expression::INFIX(infix) => self.eval_infix_expression(infix),
             Expression::BOOLEAN(bool) => Object::Bool(Bool {
-                value: bool.bool_type.clone(),
+                value: match &bool.bool_type {
+                    BooleanType::TRUE => BooleanType::TRUE,
+                    BooleanType::FALSE => BooleanType::FALSE,
+                },
             }),
             Expression::IF(if_expr) => self.eval_if_expression(if_expr),
             Expression::WHILE(while_loop) => self.eval_while_expression(while_loop),
@@ -329,10 +334,10 @@ impl Evaluator {
 
     fn eval_if_expression(&mut self, node: &IfExpression) -> Object {
         // sussy unweap
-        let condition = match &node.condition.clone() {
+        let condition = match &node.condition {
             Some(condition) => self.eval_expression(&condition),
             None => Object::None(NoneLit),
-        }; // &node.condition.as_ref().clone().unwrap()
+        };
 
         if condition != Object::None(NoneLit) && self.is_truthy(&condition) {
             return self.eval_block_statement(&node.consequence);
@@ -344,14 +349,13 @@ impl Evaluator {
     }
 
     fn eval_else_expression(&mut self, alternative: &Box<IfExpression>) -> Object {
-        let alt = *alternative.clone();
-        let condition = match &alt.condition.clone() {
+        let condition = match &alternative.condition {
             Some(cond) => self.eval_expression(cond),
             None => Object::None(NoneLit),
         };
 
-        if alt.if_type == IfType::ELSE
-            || alt.if_type == IfType::ELSEIF && self.is_truthy(&condition)
+        if &alternative.if_type == &IfType::ELSE
+            || &alternative.if_type == &IfType::ELSEIF && self.is_truthy(&condition)
         {
             return self.eval_block_statement(&alternative.consequence);
         } else if alternative.alternative != None {
@@ -428,16 +432,15 @@ impl Evaluator {
                     Object::Num(num) => num.value as usize,
                     _ => todo!(),
                 })
-                .unwrap()
-                .clone(),
+                .unwrap().clone(),
             _ => todo!(),
         }
     }
 
     fn eval_call(&mut self, node: &CallExpression) -> Object {
-        match *node.function.clone() {
-            Expression::IDENTIFIER(ident) => match ident.value {
-                i if i == builtins::BuiltinFunction::PRINT.literal() => {
+        match &*node.function {
+            Expression::IDENTIFIER(ident) => match &ident.value {
+                i if i == &builtins::BuiltinFunction::PRINT.literal() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
@@ -450,7 +453,7 @@ impl Evaluator {
                     builtins::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
                 }
-                i if i == builtins::BuiltinFunction::INPUT.literal() => {
+                i if i == &builtins::BuiltinFunction::INPUT.literal() => {
                     let mut args: Vec<Object> = Vec::new();
                     for arg in &node.args {
                         let evaluated_arg = self.eval_expression(&arg);
@@ -465,7 +468,7 @@ impl Evaluator {
                 }
                 _ => {
                     let mut old_env = self.env.clone();
-                    let new_env = self.env.clone();
+                    let new_env = &self.env;
 
                     self.env = new_env.clone();
 
@@ -481,13 +484,15 @@ impl Evaluator {
                         }
                     };
 
-                    let func_obj = if let Object::Function(func) = func.obj.clone() {
+                    let empty_func = Function::empty();
+
+                    let func_obj = if let Object::Function(ref func) = func.obj {
                         func
                     } else {
                         throw_error(&Error {
                             message: "Identifier is not a function".to_string(),
                         });
-                        Function::empty()
+                        &empty_func
                     };
 
                     for (index, arg) in func_obj.args.iter().enumerate() {
@@ -499,7 +504,7 @@ impl Evaluator {
                         }
                     }
 
-                    for stmt in func_obj.body.statements {
+                    for stmt in &func_obj.body.statements {
                         let obj = self.eval(&stmt);
                         match obj {
                             Object::Return(ret) => {

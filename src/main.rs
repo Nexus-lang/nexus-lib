@@ -61,10 +61,10 @@ fn main() {
         println!("Output:");
 
         // EVALUATOR
-        let mut evaluator = Evaluator::new(program);
+        let mut evaluator = Evaluator::new();
 
         // evaluate program
-        let debug_eval = evaluator.eval_program();
+        let debug_eval = evaluator.eval_program(program);
 
         println!();
 
@@ -91,8 +91,8 @@ fn main() {
         let mut lexer = Lexer::new(source_file);
         let mut parser = Parser::new(&mut lexer, false).expect("Failed to create parser");
         let program = parser.parse_program();
-        let mut evaluator = Evaluator::new(program);
-        evaluator.eval_program();
+        let mut evaluator = Evaluator::new();
+        evaluator.eval_program(program);
     }
 }
 
