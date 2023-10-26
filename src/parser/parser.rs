@@ -3,17 +3,14 @@ use std::process;
 use crate::{
     parser::ast::*,
     lexer::{tokens::{Token, TokenType}, lexer::Lexer},
-    util, builtin::errors::{Error, *},
+    util::{self, FileHandler}, builtin::errors::{Error, *},
 };
 /// Parser struct containing
 /// necessary info to
 /// construct Evaluator
 /// and keep track of errors
-#[derive(Clone)]
-pub struct Parser {
-    /// Reference to the lexer
-    /// to access file and tokenstream
-    lexer: Lexer,
+pub struct Parser<'a> {
+    file_handler: &'a FileHandler,
     /// Stream constructed from lexer tokens
     token_stream: Vec<Token>,
 
@@ -51,20 +48,20 @@ const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionSt
     expression: Expression::EMPTY,
 });
 
-impl Parser {
+impl<'a> Parser<'a> {
     /// Construct Parser from lexer
-    pub fn new(lexer: &mut Lexer, enable_dbg: bool) -> Result<Self, Error> {
-        let token_stream: Vec<Token> = lexer.lex(None);
+    pub fn new(lexer: &'a mut Lexer, enable_dbg: bool) -> Result<Self, Error> {
+        let token_stream = lexer.lex(None);
 
-        let parser = Parser {
+        let parser: Parser<'a> = Parser {
             cur_token: token_stream.get(0).cloned().ok_or(Error::LexerError)?,
             peek_token: token_stream.get(1).cloned().ok_or(Error::LexerError)?,
             errors: vec![],
             current_pos: 0,
-            lexer: lexer.clone(),
             line_count: 1,
             enable_dbg,
             token_stream,
+            file_handler: &lexer.input,
         };
 
         Ok(parser)
@@ -320,7 +317,7 @@ impl Parser {
 
         while !self.peek_token_is_end() && precedence < self.peek_precedence() {
             self.next_token();
-            left_expression = self.infix_parse(left_expression.clone());
+            left_expression = self.infix_parse(left_expression);
         }
 
         left_expression
@@ -342,13 +339,13 @@ impl Parser {
     }
 
     fn parse_string_literal(&mut self) -> Expression {
-        let mut string_raw: Vec<String> = Vec::new();
+        let mut string_raw: String = String::new();
         let mut references: Vec<Expression> = Vec::new();
         loop {
             if self.cur_token_is(TokenType::STRING) {
-                string_raw.push(self.cur_token.literal.clone());
+                string_raw.push_str(&self.cur_token.literal);
             } else if self.cur_token_is(TokenType::STRINGREFB) {
-                string_raw.push(String::from("{}"));
+                string_raw.push_str(&String::from("{}"));
                 self.next_token();
                 while !self.cur_token_is(TokenType::STRINGREFE)
                     && !self.peek_token_is(TokenType::EOF)
@@ -365,7 +362,7 @@ impl Parser {
             self.next_token();
         }
         let literal = StringLiteral {
-            value: string_raw.join(""),
+            value: string_raw,
             references,
         };
         Expression::STRINGLITERAL(literal)
@@ -375,7 +372,7 @@ impl Parser {
         let content = self.parse_raw_list(TokenType::RSQUAREBRAC);
 
         let expression = ListExpression {
-            length: content.len().clone() as i64,
+            length: content.len() as i64,
             content,
         };
 
@@ -586,6 +583,11 @@ impl Parser {
             return_type: None,
             body: consequence,
         });
+    }
+
+    fn parse_struct_expression(&mut self) -> Expression {
+        self.next_token();
+        panic!()
     }
 
     fn parse_when_expression(&mut self) -> Expression {
@@ -837,7 +839,7 @@ impl Parser {
         let msg = format!(
             "{} error at: {}:{}:{}",
             message,
-            self.lexer.input.file_path,
+            self.file_handler.file_path,
             self.line_count,
             self.peek_token.cur_pos + 1,
         );

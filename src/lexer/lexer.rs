@@ -295,7 +295,7 @@ impl Lexer {
                 // check if reference is passed into string
                 // Reference example: "Hello, {name()}"
                 if input_chars[next_pos] == TokenType::LCURLY.first_as_char() {
-                    push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
+                    push_token!(tokens, TokenType::STRING, identifier, self.current_pos_line);
                     identifier = String::new();
                     next_pos += 1;
                     // update string lexing position after string reference has been tokenized
@@ -309,7 +309,7 @@ impl Lexer {
                 break;
             }
         }
-        push_token!(tokens, TokenType::STRING, identifier.clone(), self.current_pos_line);
+        push_token!(tokens, TokenType::STRING, identifier, self.current_pos_line);
         push_token!(tokens, TokenType::STRINGE, self.current_pos_line);
         next_pos += 1;
         self.current_pos = next_pos;

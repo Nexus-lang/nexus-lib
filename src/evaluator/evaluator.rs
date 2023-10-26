@@ -27,7 +27,7 @@ impl Evaluator {
     pub fn eval_program(&mut self) -> Option<Object> {
         let mut result = Some(Object::None(NoneLit));
         for statement in &self.program.statements.clone() {
-            result = Some(self.eval(statement));
+            result = Some(self.eval(&statement));
         }
         result
     }
