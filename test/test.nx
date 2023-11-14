@@ -1,1 +1,3 @@
-"sus"
+var x = "sus"
+
+print(x)

@@ -35,7 +35,6 @@ impl Literal for BuiltinFunction {
 impl BuiltinFunction {
     /* calling the functions */
     pub fn print_val(func: &object::BuiltInFunction) {
-        println!();
         for (index, arg) in func.args.iter().enumerate() {
             if index + 1 < func.args.len() {
                 print!("{} ", arg.literal())
@@ -43,6 +42,7 @@ impl BuiltinFunction {
                 print!("{}", arg.literal())
             }
         }
+        println!();
     }
 
     pub fn read_input(func: &object::BuiltInFunction) -> String {
