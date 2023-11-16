@@ -4,17 +4,13 @@ mod lexer;
 mod parser;
 mod util;
 
-use std::{env, time::Instant};
+use std::env;
 
-use builtin::errors;
 use lexer::lexer::Lexer;
 use parser::parser::Parser;
-use util::{input, FileHandler};
+use util::FileHandler;
 
-use crate::{
-    evaluator::{evaluator::Evaluator, object::Error},
-    util::throw_error,
-};
+use crate::evaluator::evaluator::Evaluator;
 
 // nexus run <File>
 
@@ -45,10 +41,11 @@ fn main() {
 fn run_interpreter(src: FileHandler) {
     let mut lexer = Lexer::new(src);
 
-    let mut parser = match Parser::new(&mut lexer, false) {
+    let mut parser = match Parser::new(&mut lexer, true) {
         Ok(parser) => parser,
         Err(_) => todo!(),
     };
+
     let ast = parser.parse_program();
 
     let mut evaluator = Evaluator::new();

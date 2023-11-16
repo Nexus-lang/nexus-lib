@@ -110,7 +110,7 @@ impl Num {
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Bool {
-    pub value: BooleanType,
+    pub value: bool,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]

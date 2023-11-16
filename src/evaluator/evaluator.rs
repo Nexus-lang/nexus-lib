@@ -15,7 +15,9 @@ pub struct Evaluator {
 
 impl Evaluator {
     pub fn new() -> Self {
-        Self { env: Environment::new() }
+        Self {
+            env: Environment::new(),
+        }
     }
 
     fn eval(&mut self, statement: &Statement) -> Object {
@@ -24,15 +26,14 @@ impl Evaluator {
 
     pub fn eval_program(&mut self, program: Program) -> Option<Object> {
         let mut result = Some(Object::None(NoneLit));
-    
+
         for statement in program.statements.iter() {
             let statement_result = self.eval(statement);
             result = Some(statement_result);
         }
-    
+
         result
     }
-    
 
     fn eval_statement(&mut self, statement: &Statement, is_local: bool) -> Object {
         match statement {
@@ -80,14 +81,10 @@ impl Evaluator {
             Expression::PREFIX(prefix) => self.eval_prefix_expression(prefix),
             Expression::INFIX(infix) => self.eval_infix_expression(infix),
             Expression::BOOLEAN(bool) => Object::Bool(Bool {
-                value: match &bool.bool_type {
-                    BooleanType::TRUE => BooleanType::TRUE,
-                    BooleanType::FALSE => BooleanType::FALSE,
-                },
+                value: bool.bool_type,
             }),
             Expression::IF(if_expr) => self.eval_if_expression(if_expr),
-            Expression::WHILE(while_loop) => self.eval_while_expression(while_loop),
-            Expression::FOR(for_loop) => self.eval_for_expression(for_loop),
+            Expression::LOOP(_loop) => self.eval_loop_expression(_loop),
             Expression::FUNC(func) => self.eval_func_expression(func),
             Expression::CALL(call) => self.eval_call(call),
             Expression::LIST(list) => self.eval_list_literal(list),
@@ -124,7 +121,10 @@ impl Evaluator {
     }
 
     fn eval_use_stmt(&mut self, node: &UseStatement) -> Object {
-        Object::Use(Use { file_path: convert_path(&node.path), alias: None })
+        Object::Use(Use {
+            file_path: convert_path(&node.path),
+            alias: None,
+        })
     }
 
     // TODO: Correct formatting. Example: "{x} is cool" -> " is cool{x}"
@@ -184,9 +184,12 @@ impl Evaluator {
     }
 
     fn eval_infix_expression(&mut self, node: &InfixExpression) -> Object {
-        let left = self.eval_expression(&node.left);
-        let right = self.eval_expression(&node.right);
         let operator = &node.operator;
+        let left = match operator {
+            Operator::IN => Object::None(NoneLit),
+            _ => self.eval_expression(&node.left),
+        };
+        let right = self.eval_expression(&node.right);
 
         if left.get_type() == ObjectType::NUMBER
             && right.get_type() == ObjectType::NUMBER
@@ -198,6 +201,7 @@ impl Evaluator {
                 Operator::EQUAL => self.native_bool_to_object(left == right),
                 Operator::NOTEQUAL => self.native_bool_to_object(left != right),
                 Operator::AS => self.eval_conversion_infix_expression(node, left),
+                Operator::IN => self.eval_contains_expression(node, right),
                 Operator::RANGE => Object::Range(Range {
                     left: Box::from(left),
                     right: Box::from(right),
@@ -239,21 +243,21 @@ impl Evaluator {
                         value: match &left.literal().parse() {
                             Ok(num) => *num,
                             Err(_) => {
-                                throw_error(&Error::new(format!("Failed to convert {} to a number. This value cannot be convertes", &left.literal())));
+                                throw_error(&Error::new(format!("Failed to convert {} to a number. This value cannot be converted", &left.literal())));
                                 0f64
                             }
                         },
                     }),
                     r if r == &BuiltinType::BOOLEAN.literal() => Object::Bool(Bool {
                         value: match left.literal().as_str() {
-                            "true" => BooleanType::TRUE,
-                            "false" => BooleanType::FALSE,
+                            "true" => true,
+                            "false" => false,
                             _ => {
                                 throw_error(&Error::new(format!(
                                     "Failed to convert {} to a boolean (true or false)",
                                     left.literal()
                                 )));
-                                BooleanType::FALSE
+                                false
                             }
                         },
                     }),
@@ -261,6 +265,30 @@ impl Evaluator {
                 }
             }
             _ => todo!(),
+        }
+    }
+
+    fn eval_contains_expression(&mut self, node: &InfixExpression, right: Object) -> Object {
+        enum Type {
+            LIST,
+            RANGE,
+            STRING,
+            NONE,
+        }
+
+        let _type = match right {
+            Object::Str(_) => Type::STRING,
+            Object::None(_) => Type::NONE,
+            Object::Range(_) => Type::RANGE,
+            Object::List(_) => Type::LIST,
+            _ => todo!(),
+        };
+
+        match _type {
+            Type::LIST => todo!(),
+            Type::RANGE => todo!(),
+            Type::STRING => todo!(),
+            Type::NONE => todo!(),
         }
     }
 
@@ -392,16 +420,52 @@ impl Evaluator {
         block
     }
 
-    fn eval_while_expression(&mut self, node: &WhileExpression) -> Object {
-        let condition = self.eval_expression(&*node.condition);
+    fn eval_loop_expression(&mut self, node: &LoopExpression) -> Object {
+        let condition = match node.loop_type {
+            LoopType::WHILE => self.eval_expression(&*node.condition),
+            LoopType::FOR => {
+                let range = match &*node.condition {
+                    Expression::INFIX(infix) => infix,
+                    _ => todo!(),
+                };
+                let left = match &*range.left {
+                    Expression::IDENTIFIER(ident) => ident,
+                    _ => todo!(),
+                };
+                let right = self.eval_expression(&range.right);
+
+                match right {
+                    // FIXME: Replace as conversion with null save conversion
+                    Object::Range(range) => {
+                        let left_val = match &*range.left {
+                            Object::Num(num) => num.value as i32,
+                            _ => todo!(),
+                        };
+                        let right_val = match &*range.right {
+                            Object::Num(num) => num.value as i32,
+                            _ => todo!(),
+                        };
+                        
+                        for _ in left_val..right_val {
+                            self.eval_block_statement(&node.consequence);
+                        }
+                        
+                        return self.eval_block_statement(&node.consequence);
+                    }
+                    Object::List(list) => todo!(),
+                    _ => todo!(),
+                }
+            }
+        };
+
         while self.is_truthy(&condition) {
             self.eval_block_statement(&node.consequence);
         }
         self.eval_block_statement(&node.consequence)
     }
 
-    fn eval_for_expression(&mut self, node: &ForExpression) -> Object {
-        let range = self.eval_expression(&node.loop_list);
+    fn eval_for_expression(&mut self, node: &LoopExpression) -> Object {
+        /*let range = self.eval_expression(&node.loop_list);
         let range_lit = match range {
             Object::Range(range) => range,
             _ => todo!("{:?}", range),
@@ -421,6 +485,8 @@ impl Evaluator {
             self.eval_block_statement(&node.consequence);
         }
         return self.eval_block_statement(&node.consequence);
+        */
+        todo!()
     }
 
     fn eval_index(&mut self, node: &IndexExpression) -> Object {
@@ -432,7 +498,8 @@ impl Evaluator {
                     Object::Num(num) => num.value as usize,
                     _ => todo!(),
                 })
-                .unwrap().clone(),
+                .unwrap()
+                .clone(),
             _ => todo!(),
         }
     }
@@ -557,10 +624,7 @@ impl Evaluator {
 
     fn is_truthy(&mut self, object: &Object) -> bool {
         match object {
-            Object::Bool(bool) => match bool.value {
-                BooleanType::TRUE => true,
-                BooleanType::FALSE => false,
-            },
+            Object::Bool(bool) => bool.value,
             Object::None(_) => false,
             _ => {
                 throw_error(&Error::new(format!(
@@ -575,26 +639,12 @@ impl Evaluator {
     }
 
     fn native_bool_to_object(&self, bool: bool) -> Object {
-        match bool {
-            true => Object::Bool(Bool {
-                value: BooleanType::TRUE,
-            }),
-            false => Object::Bool(Bool {
-                value: BooleanType::FALSE,
-            }),
-        }
+        Object::Bool(Bool { value: bool })
     }
 
     fn eval_bang_expression(&self, right: Object) -> Object {
         match right {
-            Object::Bool(obj) => match obj.value {
-                BooleanType::TRUE => Object::Bool(Bool {
-                    value: BooleanType::FALSE,
-                }),
-                BooleanType::FALSE => Object::Bool(Bool {
-                    value: BooleanType::TRUE,
-                }),
-            },
+            Object::Bool(obj) => Object::Bool(Bool { value: !obj.value }),
             Object::None(_) => right,
             _ => todo!(),
         }

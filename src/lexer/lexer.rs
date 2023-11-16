@@ -338,9 +338,6 @@ impl Lexer {
             i if *i == TokenType::USE.literal() => {
                 push_token!(tokens, TokenType::USE, self.current_pos_line);
             }
-            i if *i == TokenType::TAG.literal() => {
-                push_token!(tokens, TokenType::TAG, self.current_pos_line);
-            }
             i if *i == TokenType::STRUCT.literal() => {
                 push_token!(tokens, TokenType::STRUCT, self.current_pos_line);
             }
@@ -359,11 +356,8 @@ impl Lexer {
             i if *i == TokenType::RETURN.literal() => {
                 push_token!(tokens, TokenType::RETURN, self.current_pos_line);
             }
-            i if *i == TokenType::FOR.literal() => {
-                push_token!(tokens, TokenType::FOR, self.current_pos_line);
-            }
-            i if *i == TokenType::WHILE.literal() => {
-                push_token!(tokens, TokenType::WHILE, self.current_pos_line);
+            i if *i == TokenType::LOOP.literal() => {
+                push_token!(tokens, TokenType::LOOP, self.current_pos_line);
             }
             i if *i == TokenType::IF.literal() => {
                 push_token!(tokens, TokenType::IF, self.current_pos_line);

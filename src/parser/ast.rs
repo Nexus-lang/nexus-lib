@@ -26,8 +26,7 @@ pub enum Expression {
     INFIX(InfixExpression),
     BOOLEAN(Boolean),
     IF(IfExpression),
-    WHILE(WhileExpression),
-    FOR(ForExpression),
+    LOOP(LoopExpression),
     WHEN(WhenExpression),
     FUNC(FuncExpression),
     CALL(CallExpression),
@@ -35,14 +34,7 @@ pub enum Expression {
     INDEX(IndexExpression),
     ANNOTATION(AnnotationExpression),
     NONE(NoneLiteral),
-    EMPTY,
-}
-
-/// All allowed booleans (true, false)
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
-pub enum BooleanType {
-    TRUE,
-    FALSE,
+    EMPTY, // FIXME: this is deprecated. migrate everything to options
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
@@ -50,6 +42,12 @@ pub enum IfType {
     IF,
     ELSEIF,
     ELSE,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
+pub enum LoopType {
+    WHILE,
+    FOR,
 }
 
 /// Operators for prefix and infix expressions
@@ -67,6 +65,7 @@ pub enum Operator {
     GREATOREQUAL, // in
     LESSOREQUAL,  // in
     AS,           // in
+    IN,           // in
     RANGE,        // in
     ASSIGN,       // assign
     ILLEGAL,
@@ -189,14 +188,8 @@ pub struct CaseStatement {
 }
 
 #[derive(PartialEq, PartialOrd, Debug, Clone)]
-pub struct ForExpression {
-    pub ident: Identifier,
-    pub loop_list: Box<Expression>,
-    pub consequence: BlockStatement,
-}
-
-#[derive(PartialEq, PartialOrd, Debug, Clone)]
-pub struct WhileExpression {
+pub struct LoopExpression {
+    pub loop_type: LoopType,
     pub condition: Box<Expression>,
     pub consequence: BlockStatement,
 }
@@ -245,7 +238,7 @@ pub struct NoneLiteral;
 // booleans (true, false)
 #[derive(PartialEq, PartialOrd, Debug, Clone, Eq)]
 pub struct Boolean {
-    pub bool_type: BooleanType,
+    pub bool_type: bool,
 }
 // ------------- end of all ast types
 

@@ -5,15 +5,13 @@ pub enum TokenType {
     // keywords
     DEP,    // project Dependency
     USE,    // import package
-    TAG,    // tagging code blocks
     STRUCT, // struct with fields
     ENUM,   // list of identifiers
     VAR,    // mutable variable
     CONST,  // immutable variable
     FUNC,   // functions
     RETURN, // return statement
-    FOR,    // for loop
-    WHILE,  // while loop
+    LOOP,    // loop
     IF,     // if statement
     WHEN,   // when statement
     ELSE,   // else statement (if, when)
@@ -94,15 +92,13 @@ impl TokenType {
         match self {
             TokenType::DEP => String::from("dep"),
             TokenType::USE => String::from("use"),
-            TokenType::TAG => String::from("tag"),
             TokenType::STRUCT => String::from("struct"),
             TokenType::ENUM => String::from("enum"),
             TokenType::VAR => String::from("var"),
             TokenType::CONST => String::from("const"),
             TokenType::FUNC => String::from("func"),
             TokenType::RETURN => String::from("return"),
-            TokenType::FOR => String::from("for"),
-            TokenType::WHILE => String::from("while"),
+            TokenType::LOOP => String::from("loop"),
             TokenType::IF => String::from("if"),
             TokenType::WHEN => String::from("when"),
             TokenType::ELSE => String::from("else"),

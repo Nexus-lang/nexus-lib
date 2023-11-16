@@ -1,9 +1,13 @@
 use std::process;
 
 use crate::{
+    builtin::errors::{Error, *},
+    lexer::{
+        lexer::Lexer,
+        tokens::{Token, TokenType},
+    },
     parser::ast::*,
-    lexer::{tokens::{Token, TokenType}, lexer::Lexer},
-    util::{self, FileHandler}, builtin::errors::{Error, *},
+    util::{self, FileHandler},
 };
 /// Parser struct containing
 /// necessary info to
@@ -33,16 +37,17 @@ pub struct Parser<'a> {
 // We see that the product is higher than the sum.
 const LOWEST: i8 = 0;
 const ASSIGN: i8 = 1;
-const RANGE: i8 = 2;
-const EQUALS: i8 = 3; // ==
-const LESSGREATER: i8 = 4; // > or <
-const LESSGREATEREQUAL: i8 = 5; // >= or <=
-const SUM: i8 = 6; // +
-const PRODUCT: i8 = 7; // *
-const PREFIX: i8 = 8; // -x, +x or !x
-const CALL: i8 = 9; // amogus(x)
-const CONVERSION: i8 = 10;
-const INDEX: i8 = 11;
+const CONTAINED: i8 = 2; // if 0 in 0..1
+const RANGE: i8 = 3;
+const EQUALS: i8 = 4; // ==
+const LESSGREATER: i8 = 5; // > or <
+const LESSGREATEREQUAL: i8 = 6; // >= or <=
+const SUM: i8 = 7; // +
+const PRODUCT: i8 = 8; // *
+const PREFIX: i8 = 9; // -x, +x or !x
+const CALL: i8 = 10; // amogus(x)
+const CONVERSION: i8 = 11; // 0 as Str
+const INDEX: i8 = 12; // array[0]
 
 const EMPTY_EXPRESSION_STATEMENT: Statement = Statement::EXPRESSION(ExpressionStatement {
     expression: Expression::EMPTY,
@@ -478,12 +483,19 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_while_expression(&mut self) -> Expression {
+    fn parse_loop_expression(&mut self) -> Expression {
         self.next_token();
+        let loop_type = if self.cur_token_is(TokenType::IF) {
+            self.next_token();
+            LoopType::WHILE
+        } else {
+            LoopType::FOR
+        };
+
         let condition = Box::new(self.parse_expression(LOWEST));
 
         if &condition == &Box::new(Expression::EMPTY) {
-            self.throw_error(empty_condition(&TokenType::WHILE, &condition), true);
+            self.throw_error(empty_condition(&TokenType::LOOP, &condition), true);
             return Expression::EMPTY;
         }
 
@@ -496,46 +508,13 @@ impl<'a> Parser<'a> {
 
         let consequence = self.parse_block_statement();
 
-        let expression = WhileExpression {
+        let expression = LoopExpression {
+            loop_type,
             condition,
             consequence,
         };
-        Expression::WHILE(expression)
-    }
 
-    fn parse_for_expression(&mut self) -> Expression {
-        if !self.expect_peek(TokenType::IDENT) {
-            self.peek_error(TokenType::IDENT);
-            return Expression::EMPTY;
-        }
-
-        let ident = Identifier {
-            value: self.cur_token.literal.to_string(),
-        };
-
-        if !self.expect_peek(TokenType::IN) {
-            self.peek_error(TokenType::IN);
-            return Expression::EMPTY;
-        }
-        self.next_token();
-
-        let loop_list = Box::from(self.parse_expression(LOWEST));
-
-        if !self.expect_peek(TokenType::LCURLY) {
-            self.peek_error(TokenType::LCURLY);
-            return Expression::EMPTY;
-        }
-
-        self.next_token();
-
-        let consequence = self.parse_block_statement();
-
-        let expression = ForExpression {
-            ident,
-            loop_list,
-            consequence,
-        };
-        Expression::FOR(expression)
+        Expression::LOOP(expression)
     }
 
     fn parse_func_expression(&mut self) -> Expression {
@@ -685,7 +664,6 @@ impl<'a> Parser<'a> {
         })
     }
 
-    // TODO: remove mutability. We aren't in go
     fn parse_infix_expression(&mut self, left: Expression) -> Expression {
         let mut expression = InfixExpression {
             operator: self.get_operator(&self.cur_token),
@@ -700,12 +678,8 @@ impl<'a> Parser<'a> {
 
     fn parse_boolean(&mut self) -> Expression {
         match self.cur_token.token_type {
-            TokenType::TRUE => Expression::BOOLEAN(Boolean {
-                bool_type: BooleanType::TRUE,
-            }),
-            TokenType::FALSE => Expression::BOOLEAN(Boolean {
-                bool_type: BooleanType::FALSE,
-            }),
+            TokenType::TRUE => Expression::BOOLEAN(Boolean { bool_type: true }),
+            TokenType::FALSE => Expression::BOOLEAN(Boolean { bool_type: false }),
             _ => Expression::EMPTY,
         }
     }
@@ -753,6 +727,7 @@ impl<'a> Parser<'a> {
             TokenType::GREATEROREQUALTHAN => Operator::GREATOREQUAL,
             TokenType::LESSOREQUALTHAN => Operator::LESSOREQUAL,
             TokenType::AS => Operator::AS,
+            TokenType::IN => Operator::IN,
             TokenType::RANGE => Operator::RANGE,
             TokenType::ASSIGN => Operator::ASSIGN,
             _ => Operator::ILLEGAL,
@@ -772,6 +747,7 @@ impl<'a> Parser<'a> {
             TokenType::DIVIDE => PRODUCT,
             TokenType::MULTIPLY => PRODUCT,
             TokenType::AS => CONVERSION,
+            TokenType::IN => CONTAINED,
             TokenType::LPARENT => CALL,
             TokenType::LSQUAREBRAC => INDEX,
             TokenType::RANGE => RANGE,
@@ -866,6 +842,7 @@ impl<'a> Parser<'a> {
             | TokenType::GREATEROREQUALTHAN
             | TokenType::ASSIGN
             | TokenType::AS
+            | TokenType::IN
             | TokenType::RANGE => self.parse_infix_expression(left),
             TokenType::LPARENT => self.parse_call_expression(left),
             TokenType::LSQUAREBRAC => self.parse_index_expression(left),
@@ -887,8 +864,7 @@ impl<'a> Parser<'a> {
             TokenType::LCURLY => self.parse_hash_literal(),
             */
             TokenType::IF => self.parse_if_expression(),
-            TokenType::WHILE => self.parse_while_expression(),
-            TokenType::FOR => self.parse_for_expression(),
+            TokenType::LOOP => self.parse_loop_expression(),
             TokenType::WHEN => self.parse_when_expression(),
             TokenType::TRUE | TokenType::FALSE => self.parse_boolean(),
             TokenType::BANG | TokenType::MINUS | TokenType::PLUS => self.parse_prefix_expression(),
