@@ -494,7 +494,7 @@ impl<'a> Parser<'a> {
 
         let condition = Box::new(self.parse_expression(LOWEST));
 
-        if &condition == &Box::new(Expression::EMPTY) {
+        if *condition == Expression::EMPTY {
             self.throw_error(empty_condition(&TokenType::LOOP, &condition), true);
             return Expression::EMPTY;
         }

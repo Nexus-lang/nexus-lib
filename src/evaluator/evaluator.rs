@@ -5,18 +5,21 @@ use crate::{
 };
 
 use super::{
-    enviroment::Environment,
+    enviroment::{EnvObj, Environment, Obj, Scope},
     object::{self, *},
 };
 
 pub struct Evaluator {
     env: Environment,
+    /// When scope is None we are in the global scope
+    cur_scope: Option<Scope>,
 }
 
 impl Evaluator {
     pub fn new() -> Self {
         Self {
             env: Environment::new(),
+            cur_scope: None,
         }
     }
 
@@ -38,18 +41,36 @@ impl Evaluator {
     fn eval_statement(&mut self, statement: &Statement, is_local: bool) -> Object {
         match statement {
             Statement::VAR(var) => {
-                let val = self.eval_expression(&var.value);
-                self.env.set(&var.name.value, &val, is_local, false);
+                let val: Object = self.eval_expression(&var.value);
+                match self.cur_scope {
+                    Some(_) => todo!(),
+                    None => self.env.set_global(
+                        &var.name.value,
+                        Obj {
+                            obj: Box::from(val),
+                            is_const: false,
+                        },
+                    ),
+                }
                 Object::Var(Var {
-                    value: Box::from(val),
+                    value: Box::from(self.eval_expression(&var.value)),
                     is_local,
                 })
             }
             Statement::CONST(constant) => {
                 let val = self.eval_expression(&constant.value);
-                self.env.set(&constant.name.value, &val, is_local, true);
+                match self.cur_scope {
+                    Some(_) => todo!(),
+                    None => self.env.set_global(
+                        &constant.name.value,
+                        Obj {
+                            obj: Box::from(val),
+                            is_const: true,
+                        },
+                    ),
+                }
                 Object::Var(Var {
-                    value: Box::from(val),
+                    value: Box::from(self.eval_expression(&constant.value)),
                     is_local,
                 })
             }
@@ -99,23 +120,26 @@ impl Evaluator {
     }
 
     fn eval_identifier(&mut self, ident: &Identifier) -> Object {
-        match self.env.get(&ident.value) {
-            Ok(obj) => obj.obj,
-            Err(_) => match &ident.value {
-                i if i == &BuiltinType::BOOLEAN.literal() => {
-                    Object::Type(object::Type::BUILTIN(BuiltinType::BOOLEAN))
-                }
-                i if i == &BuiltinType::NUMBER.literal() => {
-                    Object::Type(object::Type::BUILTIN(BuiltinType::NUMBER))
-                }
-                i if i == &BuiltinType::STRING.literal() => {
-                    Object::Type(object::Type::BUILTIN(BuiltinType::STRING))
-                }
-                _ => {
-                    let err = Error::new(format!("Cannot find identifier: {}", ident.value));
-                    throw_error(&err);
-                    Object::Error(err)
-                }
+        match self.cur_scope {
+            Some(_) => todo!(),
+            None => match self.env.get_global(&ident.value) {
+                Ok(obj) => *obj.obj,
+                Err(_) => match &ident.value {
+                    i if i == &BuiltinType::BOOLEAN.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::BOOLEAN))
+                    }
+                    i if i == &BuiltinType::NUMBER.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::NUMBER))
+                    }
+                    i if i == &BuiltinType::STRING.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::STRING))
+                    }
+                    _ => {
+                        let err = Error::new(format!("Cannot find identifier: {}", ident.value));
+                        throw_error(&err);
+                        Object::Error(err)
+                    }
+                },
             },
         }
     }
@@ -216,20 +240,25 @@ impl Evaluator {
     }
 
     fn eval_assign_infix_expression(&mut self, node: &InfixExpression, right: Object) -> Object {
-        match &*node.left {
-            Expression::IDENTIFIER(ident) => self.env.modify(&ident.value, right),
-            _ => todo!(),
-        }
-        match self.env.get(
-            &match &*node.left {
-                Expression::IDENTIFIER(ident) => ident,
-                _ => todo!(),
+        match self.cur_scope {
+            Some(_) => todo!(),
+            None => {
+                match &*node.left {
+                    Expression::IDENTIFIER(ident) => self.env.modify_global(&ident.value, right),
+                    _ => todo!(),
+                }
+                match self.env.get_global(
+                    &match &*node.left {
+                        Expression::IDENTIFIER(ident) => ident,
+                        _ => todo!(),
+                    }
+                    .value,
+                ) {
+                    Ok(obj) => return *obj.obj,
+                    Err(_) => todo!(),
+                };
             }
-            .value,
-        ) {
-            Ok(obj) => return obj.obj,
-            Err(_) => todo!(),
-        };
+        }
     }
 
     fn eval_conversion_infix_expression(&mut self, node: &InfixExpression, left: Object) -> Object {
@@ -445,11 +474,11 @@ impl Evaluator {
                             Object::Num(num) => num.value as i32,
                             _ => todo!(),
                         };
-                        
+
                         for _ in left_val..right_val {
                             self.eval_block_statement(&node.consequence);
                         }
-                        
+
                         return self.eval_block_statement(&node.consequence);
                     }
                     Object::List(list) => todo!(),
@@ -533,83 +562,7 @@ impl Evaluator {
                     builtins::BuiltinFunction::read_input(&func);
                     Object::BuiltInFunction(func)
                 }
-                _ => {
-                    let mut old_env = self.env.clone();
-                    let new_env = &self.env;
-
-                    self.env = new_env.clone();
-
-                    let func = match self.env.get(&ident.value) {
-                        Ok(obj) => obj,
-                        Err(_) => {
-                            let err = Error::new(format!(
-                                "Cannot find identifier: {}",
-                                ident.value.as_str()
-                            ));
-                            throw_error(&err);
-                            return Object::Error(err);
-                        }
-                    };
-
-                    let empty_func = Function::empty();
-
-                    let func_obj = if let Object::Function(ref func) = func.obj {
-                        func
-                    } else {
-                        throw_error(&Error {
-                            message: "Identifier is not a function".to_string(),
-                        });
-                        &empty_func
-                    };
-
-                    for (index, arg) in func_obj.args.iter().enumerate() {
-                        if index < node.args.len() {
-                            let cur_arg = self.eval_expression(&node.args[index]);
-                            self.env.set(&arg.arg.value, &cur_arg, false, false);
-                        } else {
-                            break;
-                        }
-                    }
-
-                    for stmt in &func_obj.body.statements {
-                        let obj = self.eval(&stmt);
-                        match obj {
-                            Object::Return(ret) => {
-                                return *ret.value;
-                            }
-                            _ => continue,
-                        }
-                    }
-
-                    // Update all args cuz of mutability
-                    for (index, arg) in node.args.iter().enumerate() {
-                        let call_arg_name = match arg {
-                            Expression::IDENTIFIER(ident) => Some(&ident.value),
-                            _ => None,
-                        };
-
-                        let func_arg_name = &func_obj.args[index].arg.value;
-
-                        match call_arg_name {
-                            Some(arg_name) => {
-                                old_env.modify(
-                                    arg_name,
-                                    match self.env.get(func_arg_name) {
-                                        Ok(env_obj) => env_obj.obj,
-                                        Err(_) => todo!(),
-                                    },
-                                );
-                            }
-                            None => (),
-                        }
-
-                        // Take call args and update related vars with values from function
-                    }
-
-                    self.env = old_env;
-
-                    func.obj
-                }
+                _ => todo!(),
             },
             _ => todo!("{:?}", node.function),
         }
