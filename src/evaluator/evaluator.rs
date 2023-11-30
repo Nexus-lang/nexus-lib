@@ -1,3 +1,5 @@
+use clutils::literal::{LiteralStr, LiteralString};
+
 use crate::{
     builtin::builtins::{self, *},
     parser::ast::*,
@@ -237,7 +239,7 @@ impl Evaluator {
             Expression::IDENTIFIER(right) => {
                 match &right.value {
                     r if r == &BuiltinType::STRING.literal() => Object::Str(Str {
-                        value: left.literal(),
+                        value: left.literal().to_string(),
                     }),
                     r if r == &BuiltinType::NUMBER.literal() => Object::Num(Num {
                         value: match &left.literal().parse() {

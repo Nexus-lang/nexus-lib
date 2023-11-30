@@ -15,18 +15,6 @@ pub trait FirstAsChar {
     fn first_as_char(&self) -> char;
 }
 
-pub trait ToSome<T> {
-    /// Wraps a value in Some(...)
-    /// Built for qol purposes :D
-    fn to_some(self) -> Option<T>;
-}
-
-impl<T> ToSome<T> for T {
-    fn to_some(self) -> Option<T> {
-        Some(self)
-    }
-}
-
 /// Accept input from the console
 pub fn input() -> String {
     io::stdout().flush().expect("Failed to flush output");
@@ -47,8 +35,4 @@ pub fn throw_error(err: &Error) {
 /// Converts use path to actual file path
 pub fn convert_path(use_path: &str) -> String {
     use_path.replace(".", "/")
-}
-
-pub trait Literal {
-    fn literal(&self) -> String;
 }

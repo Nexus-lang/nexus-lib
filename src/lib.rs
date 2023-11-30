@@ -1,19 +1,19 @@
-use clutils::{file_handler::{Extension, FileHandler}, literal::Literal};
+use clutils::{file_handler::{Extension, FileHandler}, literal::LiteralStr};
 use evaluator::evaluator::Evaluator;
 use lexer::lexer::Lexer;
 use parser::parser::Parser;
 
-mod builtin;
-mod evaluator;
-mod lexer;
-mod parser;
-mod util;
+pub mod builtin;
+pub mod evaluator;
+pub mod lexer;
+pub mod parser;
+pub mod util;
 
 pub enum NexusExtensions {
     NX,
 }
 
-impl Literal for NexusExtensions {
+impl LiteralStr for NexusExtensions {
     fn literal(self: &Self) -> &str {
         "nx"
     }

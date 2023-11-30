@@ -1,3 +1,5 @@
+use clutils::literal::{LiteralStr, LiteralString};
+
 use crate::{evaluator::object, util::*};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
@@ -13,21 +15,21 @@ pub enum BuiltinType {
     BOOLEAN,
 }
 
-impl Literal for BuiltinType {
-    fn literal(&self) -> String {
+impl LiteralStr for BuiltinType {
+    fn literal(&self) -> &str {
         match self {
-            BuiltinType::STRING => String::from("String"),
-            BuiltinType::NUMBER => String::from("Number"),
-            BuiltinType::BOOLEAN => String::from("Boolean"),
+            BuiltinType::STRING => "String",
+            BuiltinType::NUMBER => "Number",
+            BuiltinType::BOOLEAN => "Boolean",
         }
     }
 }
 
-impl Literal for BuiltinFunction {
-    fn literal(&self) -> String {
+impl LiteralStr for BuiltinFunction {
+    fn literal(&self) -> &str {
         match self {
-            Self::PRINT => String::from("print"),
-            Self::INPUT => String::from("input"),
+            Self::PRINT => "print",
+            Self::INPUT => "input",
         }
     }
 }

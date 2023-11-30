@@ -23,7 +23,7 @@ fn main() {
     match first_arg.as_str() {
         "run" => {
             // TODO: allowing passing references to file handler
-            let src = FileHandler::new_with_extension(second_arg.clone(), Box::new(NexusExtensions::NX)).expect("Failed to handle file");
+            let src = FileHandler::new_with_extension(second_arg, Box::new(NexusExtensions::NX)).expect("Failed to handle file");
             nexus::run_interpreter(src)
         },
         _ => todo!(),

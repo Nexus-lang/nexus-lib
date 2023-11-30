@@ -1,4 +1,6 @@
-use crate::{builtin::builtins::{BuiltinType, self}, parser::ast::*, util::Literal};
+use clutils::literal::{LiteralString, LiteralStr};
+
+use crate::{builtin::builtins::{BuiltinType, self}, parser::ast::*};
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum ObjectType {
@@ -65,7 +67,7 @@ impl Object {
     }
 }
 
-impl Literal for Object {
+impl LiteralString for Object {
     fn literal(&self) -> String {
         match self {
             Self::Num(num) => num.value.to_string(),
@@ -79,7 +81,7 @@ impl Literal for Object {
             Self::BuiltInFunction(func) => {
                 let mut fmt_string = format!("{}(", func.func.literal());
                 func.args.iter().for_each(|x| {
-                    fmt_string.push_str(x.literal().as_str());
+                    fmt_string.push_str(&x.literal());
                     fmt_string.push_str(", ")
                 });
                 fmt_string.push(')');
@@ -89,7 +91,7 @@ impl Literal for Object {
             Self::Range(range) => format!("{}..{}", range.left.literal(), range.right.literal()),
             Self::Type(type_type) => match &type_type {
                 Type::NORMAL(normal) => normal.type_name.to_string(),
-                Type::BUILTIN(builtin) => builtin.literal(),
+                Type::BUILTIN(builtin) => builtin.literal().to_string(),
             },
             Self::List(list) => format!("{:?}", list.content),
             Self::Use(_) => todo!(),
