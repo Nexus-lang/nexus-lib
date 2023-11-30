@@ -1,3 +1,5 @@
+use std::{borrow::BorrowMut, ops::DerefMut};
+
 use crate::{
     builtin::builtins::{self, *},
     parser::ast::*,
@@ -9,6 +11,7 @@ use super::{
     object::{self, *},
 };
 
+#[derive(Debug, Clone)]
 pub struct Evaluator {
     env: Environment,
     /// When scope is None we are in the global scope
@@ -120,8 +123,27 @@ impl Evaluator {
     }
 
     fn eval_identifier(&mut self, ident: &Identifier) -> Object {
-        match self.cur_scope {
-            Some(_) => todo!(),
+        match &mut self.cur_scope {
+            Some(scope) => match scope.get(&ident.value) {
+                Ok(obj) => *obj.obj,
+                Err(_) => match &ident.value {
+                    i if i == &BuiltinType::BOOLEAN.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::BOOLEAN))
+                    }
+                    i if i == &BuiltinType::NUMBER.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::NUMBER))
+                    }
+                    i if i == &BuiltinType::STRING.literal() => {
+                        Object::Type(object::Type::BUILTIN(BuiltinType::STRING))
+                    }
+                    _ => {
+                        let err = Error::new(format!("Cannot find identifier: {}", ident.value));
+                        println!("scope: {:#?}", self.cur_scope);
+                        throw_error(&err);
+                        Object::Error(err)
+                    }
+                },
+            },
             None => match self.env.get_global(&ident.value) {
                 Ok(obj) => *obj.obj,
                 Err(_) => match &ident.value {
@@ -562,9 +584,38 @@ impl Evaluator {
                     builtins::BuiltinFunction::read_input(&func);
                     Object::BuiltInFunction(func)
                 }
-                _ => todo!(),
+                _ => {
+                    let scope = self.env.create_scope();
+                    self.cur_scope = Some(scope);
+                    let func = match self.env.get_global(&ident.value) {
+                        Ok(obj) => *obj.obj,
+                        Err(_) => todo!(),
+                    };
+
+                    let func_obj = match func {
+                        Object::Function(func_obj) => func_obj,
+                        _ => todo!(),
+                    };
+
+                    match &mut self.cur_scope {
+                        Some(scope) => {
+                            for (index, arg) in func_obj.args.iter().enumerate() {
+                                if index < node.args.len() {
+                                    self.eval_expression(&Expression::EMPTY);
+                                    scope.set(&String::new(), todo!())
+                                    // cur_scope.set(&arg.arg.value, Obj { obj: Box::new(cur_arg), is_const: false });
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        None => todo!(),
+                    }
+
+                    todo!()
+                }
             },
-            _ => todo!("{:?}", node.function),
+            _ => todo!(),
         }
     }
 

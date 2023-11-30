@@ -4,7 +4,7 @@ use super::object::Object;
 
 type OptionalEnvObj = Option<Box<EnvObj>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EnvObj {
     OBJ(Obj),
     SCOPE(Scope),
@@ -16,20 +16,20 @@ pub struct Obj {
     pub is_const: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Scope {
     objs: HashMap<String, OptionalEnvObj>,
 }
 
 impl Scope {
-    pub fn set(&mut self, name: String, obj: Obj) {
+    pub fn set(&mut self, name: &String, obj: Obj) {
         match self.objs.insert(format!("$var_{}", name), Some(Box::from(EnvObj::OBJ(obj)))) {
             Some(_) => (),
-            None => todo!(),
+            None => (),
         }
     }
 
-    pub fn get(&mut self, name: String) -> Result<Obj, ()> {
+    pub fn get(&mut self, name: &String) -> Result<Obj, ()> {
         match self.objs.get(&format!("$var_{}", name)) {
             Some(obj) => match obj {
                 Some(val) => match &**val {
@@ -43,7 +43,7 @@ impl Scope {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Environment {
     scope_id: i64,
     objs: HashMap<String, EnvObj>,
@@ -62,7 +62,6 @@ impl Environment {
             Some(_) => (),
             None => (),
         }
-        println!("{:?}", self.get_global(name))
     }
 
     pub fn get_global(&self, name: &String) -> Result<Obj, ()> {
@@ -95,11 +94,8 @@ impl Environment {
             format!("#scope_{}", self.scope_id),
             EnvObj::SCOPE(Scope { objs: HashMap::new() }),
         ) {
-            Some(obj) => match obj {
-                EnvObj::OBJ(_) => todo!(),
-                EnvObj::SCOPE(scope) => scope,
-            },
-            None => todo!(),
+            Some(_) => Scope { objs: HashMap::new() },
+            None => Scope { objs: HashMap::new() },
         }
     }
 }
