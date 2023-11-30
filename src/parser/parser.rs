@@ -1,5 +1,7 @@
 use std::process;
 
+use clutils::file_handler::FileHandler;
+
 use crate::{
     builtin::errors::{Error, *},
     lexer::{
@@ -7,8 +9,9 @@ use crate::{
         tokens::{Token, TokenType},
     },
     parser::ast::*,
-    util::{self, FileHandler},
+    util,
 };
+
 /// Parser struct containing
 /// necessary info to
 /// construct Evaluator
@@ -815,7 +818,7 @@ impl<'a> Parser<'a> {
         let msg = format!(
             "{} error at: {}:{}:{}",
             message,
-            self.file_handler.file_path,
+            self.file_handler.full_path,
             self.line_count,
             self.peek_token.cur_pos + 1,
         );

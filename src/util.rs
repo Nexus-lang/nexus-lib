@@ -6,14 +6,6 @@ use colored::Colorize;
 
 use crate::evaluator::object::Error;
 
-/// Handles files and stores file path
-/// for error messages
-#[derive(Clone)]
-pub struct FileHandler {
-    pub file_path: String,
-    pub file_content: String,
-}
-
 pub trait FirstAsChar {
     /// Returns first character of a string as a char.
     /// Most useful when converting string with only
@@ -32,27 +24,6 @@ pub trait ToSome<T> {
 impl<T> ToSome<T> for T {
     fn to_some(self) -> Option<T> {
         Some(self)
-    }
-}
-
-impl FileHandler {
-    /// Constructs FileHandler from file path
-    pub fn read_file(path: &str) -> FileHandler {
-        let mut file = File::open(path).expect(format!("Failed to find file: {}", path).as_str());
-        let mut buffer = String::new();
-        let file_ending = match path.split('.').last() {
-            Some(ending) => ending,
-            None => "unknown",
-        };
-
-        if file_ending != "nx" {
-            panic!("Wrong file format. Current: {}, expected: nx", file_ending);
-        }
-
-        file.read_to_string(&mut buffer)
-            .expect("Failed to read file");
-
-        FileHandler { file_path: path.to_string(), file_content: buffer }
     }
 }
 

@@ -1,6 +1,8 @@
+use clutils::file_handler::FileHandler;
+
 use crate::{
     lexer::tokens::{Token, TokenType},
-    util::{FileHandler, FirstAsChar},
+    util::FirstAsChar,
 };
 
 /// Same as tokens.push() but reduces boilerplate
@@ -16,7 +18,6 @@ macro_rules! push_token {
 /// Lexer struct containing
 /// necessary info to
 /// construct the parser
-#[derive(Clone)]
 pub struct Lexer {
     pub input: FileHandler,
     pub current_pos: usize,
@@ -31,7 +32,7 @@ pub struct Lexer {
 impl Lexer {
     /// Constructs lexer from FileHandler
     pub fn new(input: FileHandler) -> Self {
-        let input_chars: Vec<char> = input.file_content.chars().collect();
+        let input_chars: Vec<char> = input.content.chars().collect();
         if input_chars.len() > 0 {
             return Lexer {
                 input: input,
@@ -50,7 +51,7 @@ impl Lexer {
             Some(alt) => {
                 alt.chars().collect()
             },
-            None => self.input.file_content.chars().collect(),
+            None => self.input.content.chars().collect(),
         };
         let mut tokens: Vec<Token> = Vec::new();
 

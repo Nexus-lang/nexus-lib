@@ -1,16 +1,7 @@
-mod builtin;
-mod evaluator;
-mod lexer;
-mod parser;
-mod util;
-
 use std::env;
 
-use lexer::lexer::Lexer;
-use parser::parser::Parser;
-use util::FileHandler;
-
-use crate::evaluator::evaluator::Evaluator;
+use clutils::file_handler::FileHandler;
+use nexus::NexusExtensions;
 
 // nexus run <File>
 
@@ -31,23 +22,10 @@ fn main() {
 
     match first_arg.as_str() {
         "run" => {
-            let src = FileHandler::read_file(&second_arg);
-            run_interpreter(src)
+            // TODO: allowing passing references to file handler
+            let src = FileHandler::new_with_extension(second_arg.clone(), Box::new(NexusExtensions::NX)).expect("Failed to handle file");
+            nexus::run_interpreter(src)
         },
         _ => todo!(),
     };
-}
-
-fn run_interpreter(src: FileHandler) {
-    let mut lexer = Lexer::new(src);
-
-    let mut parser = match Parser::new(&mut lexer, true) {
-        Ok(parser) => parser,
-        Err(_) => todo!(),
-    };
-
-    let ast = parser.parse_program();
-
-    let mut evaluator = Evaluator::new();
-    evaluator.eval_program(ast);
 }
