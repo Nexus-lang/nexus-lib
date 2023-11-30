@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 foo :: func(x) {
     print(x)
 }
 
 foo(0)
+=======
+var x = [0, 0]
+
+loop i in 0..10 {
+    print(i)
+}
+>>>>>>> parent of 9811e27 (rewrite enviroments)
