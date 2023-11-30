@@ -182,8 +182,15 @@ pub struct WhenExpression {
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub enum CaseType {
+    DEFAULT,
+    ELSE,
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct CaseStatement {
-    pub case_condition: Expression,
+    pub _type: CaseType,
+    pub case_condition: Option<Expression>, // Option cuz it can also be else
     pub case_consequence: BlockStatement,
 }
 

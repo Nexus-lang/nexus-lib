@@ -593,7 +593,17 @@ impl<'a> Parser<'a> {
 
     /// current token needs to be compare value
     fn parse_case_statement(&mut self) -> CaseStatement {
-        let val = self.parse_expression(LOWEST);
+        let _type;
+        let val = match self.cur_token.token_type {
+            TokenType::ELSE => {
+                _type = CaseType::ELSE;
+                None
+            }
+            _ => {
+                _type = CaseType::DEFAULT;
+                Some(self.parse_expression(LOWEST))
+            }
+        };
         self.next_token();
         self.next_token();
         self.next_token();
@@ -602,6 +612,7 @@ impl<'a> Parser<'a> {
         self.next_token();
 
         CaseStatement {
+            _type,
             case_condition: val,
             case_consequence: block,
         }

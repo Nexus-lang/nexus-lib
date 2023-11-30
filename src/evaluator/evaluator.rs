@@ -415,10 +415,15 @@ impl Evaluator {
         let mut block: Object = Object::None(NoneLit);
 
         for case in cases {
-            if self.eval_expression(compare_value) == self.eval_expression(&case.case_condition) {
+            if case._type != CaseType::ELSE && self.eval_expression(compare_value) == self.eval_expression(case.case_condition.as_ref().unwrap()) {
                 block = self.eval_block_statement(&case.case_consequence);
             }
         }
+
+        if block == Object::None(NoneLit) {
+            block = self.eval_block_statement(&cases.last().unwrap().case_consequence)
+        }
+
         block
     }
 
@@ -563,6 +568,10 @@ impl Evaluator {
                         });
                         &empty_func
                     };
+
+                    if node.args.len() != func_obj.args.len() {
+                        panic!("Not enough arguments supplied in func: {}", ident.value)
+                    }
 
                     for (index, arg) in func_obj.args.iter().enumerate() {
                         if index < node.args.len() {

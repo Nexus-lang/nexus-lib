@@ -1,1 +1,18 @@
-print("Good morning!")
+greet :: func(name) {
+    getGreeting :: func(hello) {
+        return when hello {
+            "gumo" -> {
+                "Good morning"
+            }
+            else -> {
+                hello
+            }
+        }
+    }
+
+    const greeting = getGreeting("hell")
+
+    print(greeting, name)
+}
+
+greet("John")
