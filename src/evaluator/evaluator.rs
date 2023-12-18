@@ -415,7 +415,10 @@ impl Evaluator {
         let mut block: Object = Object::None(NoneLit);
 
         for case in cases {
-            if case._type != CaseType::ELSE && self.eval_expression(compare_value) == self.eval_expression(case.case_condition.as_ref().unwrap()) {
+            if case._type != CaseType::ELSE
+                && self.eval_expression(compare_value)
+                    == self.eval_expression(case.case_condition.as_ref().unwrap())
+            {
                 block = self.eval_block_statement(&case.case_consequence);
             }
         }
@@ -428,6 +431,7 @@ impl Evaluator {
     }
 
     fn eval_loop_expression(&mut self, node: &LoopExpression) -> Object {
+        let mut for_val = (&String::new(), 0.0);
         let condition = match node.loop_type {
             LoopType::WHILE => self.eval_expression(&*node.condition),
             LoopType::FOR => {
@@ -441,6 +445,12 @@ impl Evaluator {
                 };
                 let right = self.eval_expression(&range.right);
 
+                self.env
+                    .set(&left.value, &Object::Num(Num::new(0.0)), true, false);
+
+                for_val.0 = &left.value;
+                for_val.1 = 0.0;
+
                 match right {
                     // FIXME: Replace as conversion with null save conversion
                     Object::Range(range) => {
@@ -452,11 +462,14 @@ impl Evaluator {
                             Object::Num(num) => num.value as i32,
                             _ => todo!(),
                         };
-                        
+
                         for _ in left_val..right_val {
+                            self.env
+                                .modify(&for_val.0, Object::Num(Num::new(for_val.1)));
                             self.eval_block_statement(&node.consequence);
+                            for_val.1 += 1.0;
                         }
-                        
+
                         return self.eval_block_statement(&node.consequence);
                     }
                     Object::List(list) => todo!(),
@@ -523,6 +536,7 @@ impl Evaluator {
                     let func = BuiltInFunction {
                         func: builtins::BuiltinFunction::PRINT,
                         args,
+                        ret_val: None,
                     };
                     builtins::BuiltinFunction::print_val(&func);
                     Object::BuiltInFunction(func)
@@ -533,11 +547,13 @@ impl Evaluator {
                         let evaluated_arg = self.eval_expression(&arg);
                         args.push(evaluated_arg)
                     }
-                    let func = BuiltInFunction {
+                    let mut func = BuiltInFunction {
                         func: builtins::BuiltinFunction::PRINT,
                         args,
+                        ret_val: None,
                     };
-                    builtins::BuiltinFunction::read_input(&func);
+                    let input = builtins::BuiltinFunction::read_input(&func);
+                    func.ret_val = Some(Box::from(Object::Str(Str { value: input })));
                     Object::BuiltInFunction(func)
                 }
                 _ => {

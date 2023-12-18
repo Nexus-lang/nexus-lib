@@ -48,7 +48,6 @@ impl BuiltinFunction {
     }
 
     pub fn read_input(func: &object::BuiltInFunction) -> String {
-        Self::print_val(func);
         input()
     }
 }

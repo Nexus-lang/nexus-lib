@@ -179,6 +179,7 @@ pub struct UnmetExpr;
 pub struct BuiltInFunction {
     pub func: builtins::BuiltinFunction,
     pub args: Vec<Object>,
+    pub ret_val: Option<Box<Object>>
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
