@@ -8,6 +8,7 @@ pub enum Token {
     Func,
     Loop,
     If,
+    Else,
     When,
     Var,
     Const,
@@ -23,12 +24,15 @@ pub enum Token {
     Colon,
     QuestionMark,
     ExclamMark,
+    Arrow,
+    Assign,
 
     // The vector is for the string literal as it appears in the source code
     // The hashmap is for args that need to be formatted
     String(Vec<char>, Option<HashMap<Range<usize>, String>>),
     Num(f64),
     Bool(bool),
+    Ident(String),
 
     Equals,
     NotEquals,
@@ -36,11 +40,20 @@ pub enum Token {
     Lesser,
     GreaterEquals,
     LesserEquals,
-    
     Plus,
     Minus,
     Asterisk,
     Slash,
+
+    LParent,
+    RParent,
+    LSquare,
+    RSquare,
+    LCurly,
+    RCurly,
+
+    ConstAssign,
+    VarAssign,
 
     Comment(String),
     Eol,
@@ -84,6 +97,18 @@ impl Display for Token {
             Token::Minus => "-".into(),
             Token::Asterisk => "*".into(),
             Token::Slash => "/".into(),
+            Token::Arrow => "->".into(),
+            Token::LParent => "(".into(),
+            Token::RParent => ")".into(),
+            Token::LSquare => "[".into(),
+            Token::RSquare => "]".into(),
+            Token::LCurly => "{".into(),
+            Token::RCurly => "}".into(),
+            Token::Assign => "=".into(),
+            Token::Else => "else".into(),
+            Token::Ident(ident) => ident.into(),
+            Token::ConstAssign => "::".into(),
+            Token::VarAssign => ":=".into(),
         })
     }
 }
