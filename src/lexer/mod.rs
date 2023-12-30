@@ -86,7 +86,7 @@ impl Lexer {
                             return Token::Eof;
                         }
                     }
-                    let string = self.filehandler.content[first_pos..self.cur_pos].into();
+                    let string = self.filehandler.content[first_pos..self.cur_pos+1].into();
                     Token::Comment(string)
                 }
                 _ => panic!("Invalid symbol: {:?}", &self.cur_char),
@@ -106,24 +106,27 @@ impl Lexer {
         return match string.as_str() {
             "var" => Token::Var,
             "const" => Token::Const,
-            "loop" => Token::Loop,
             "func" => Token::Func,
-            "if" => Token::If,
-            "else" => Token::Else,
-            "return" => Token::Return,
-            "break" => Token::Break,
             "struct" => Token::Struct,
             "enum" => Token::Enum,
+            "use" => Token::Use,
+
+            "loop" => Token::Loop,
+            "if" => Token::If,
+            "else" => Token::Else,
+            "when" => Token::When,
+
             "and" => Token::And,
             "or" => Token::Or,
-            "when" => Token::When,
-            "use" => Token::When,
+
+            "return" => Token::Return,
+            "break" => Token::Break,
 
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),
 
             _ => {
-                    Token::Ident(self.filehandler.content[first_pos..self.cur_pos].into())
+                Token::Ident(self.filehandler.content[first_pos..self.cur_pos].into())
             }
         };
     }

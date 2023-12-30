@@ -6,13 +6,14 @@ pub enum Token {
     Enum,
     Struct,
     Func,
+    Var,
+    Const,
+
     Loop,
     If,
     Else,
     When,
-    Var,
-    Const,
-
+    
     And,
     Or,
 
