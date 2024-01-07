@@ -1,6 +1,8 @@
 pub mod tokens;
 
-use clutils::files::FileHandler;
+use std::{borrow::Borrow, collections::HashMap};
+
+use clutils::{errors::FileHandlerError, files::FileHandler};
 
 use self::tokens::Token;
 
@@ -12,8 +14,8 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(path: String) -> Self {
-        let filehandler = FileHandler::new(path);
+    pub fn new(path: &String) -> Result<Self, FileHandlerError> {
+        let filehandler = FileHandler::new(path)?;
         let mut lexer = Self {
             filehandler: filehandler,
             cur_char: None,
@@ -21,7 +23,7 @@ impl Lexer {
             next_pos: 0,
         };
         lexer.next_char();
-        lexer
+        Ok(lexer)
     }
 
     pub fn tokenize(&mut self) -> Token {
@@ -61,40 +63,57 @@ impl Lexer {
                 '-' => Token::Minus,
                 '*' => Token::Asterisk,
                 '/' => Token::Slash,
-                ';' => todo!(),
+                ';' => Token::Eol,
                 '(' => Token::LParent,
                 ')' => Token::RParent,
                 '{' => Token::LCurly,
                 '}' => Token::RCurly,
-                '"' => {
-                    self.next_char();
-                    let first_pos = self.cur_pos;
-                    while self.cur_char != Some('"') {
-                        self.next_char();
-                    }
-                    let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-                    Token::String(string.chars().collect(), None)
-                }
+                '"' => self.tokenize_string(),
                 ':' => Token::Colon,
                 ',' => Token::Comma,
-                '#' => {
-                    let first_pos = self.next_pos;
-                    while self.filehandler.content.chars().nth(self.next_pos) != Some('\n') {
-                        if self.cur_pos + 1 != self.filehandler.content.len() {
-                            self.next_char();
-                        } else {
-                            return Token::Eof;
-                        }
-                    }
-                    let string = self.filehandler.content[first_pos..self.cur_pos+1].into();
-                    Token::Comment(string)
-                }
+                '#' => self.tokenize_comment(),
                 _ => panic!("Invalid symbol: {:?}", &self.cur_char),
             },
             None => todo!(),
         };
         self.next_char();
         ret
+    }
+
+    fn tokenize_string(&mut self) -> Token {
+        self.next_char();
+        let mut references = HashMap::new();
+        let first_pos = self.cur_pos;
+        while self.cur_char != Some('"') {
+            if self.cur_char == Some('{') {
+                self.next_char();
+                let begin = self.cur_pos;
+                let mut tokens = Vec::new();
+                while self.cur_char != Some('}') {
+                    tokens.push(self.tokenize());
+                }
+                references.insert(
+                    begin..self.cur_pos+1,
+                    tokens,
+                );
+            }
+            self.next_char();
+        }
+        let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
+        Token::String(string.chars().collect(), Some(references))
+    }
+
+    fn tokenize_comment(&mut self) -> Token {
+        self.next_char();
+        while let Some(cur_ch) = self.cur_char {
+            if cur_ch != '\n' && cur_ch != '#' {
+                self.next_char();
+            } else {
+                break;
+            }
+        }
+        self.next_char();
+        self.tokenize()
     }
 
     fn tokenize_ident(&mut self) -> Token {
@@ -125,9 +144,7 @@ impl Lexer {
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),
 
-            _ => {
-                Token::Ident(self.filehandler.content[first_pos..self.cur_pos].into())
-            }
+            _ => Token::Ident(self.filehandler.content[first_pos..self.cur_pos].into()),
         };
     }
 

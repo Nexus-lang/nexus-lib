@@ -30,7 +30,7 @@ pub enum Token {
 
     // The vector is for the string literal as it appears in the source code
     // The hashmap is for args that need to be formatted
-    String(Vec<char>, Option<HashMap<Range<usize>, String>>),
+    String(Vec<char>, Option<HashMap<Range<usize>, Vec<Token>>>),
     Num(f64),
     Bool(bool),
     Ident(String),
@@ -56,7 +56,6 @@ pub enum Token {
     ConstAssign,
     VarAssign,
 
-    Comment(String),
     Eol,
     Eof,
 }
@@ -85,7 +84,6 @@ impl Display for Token {
             Token::String(lit, _) => lit.iter().collect::<String>(),
             Token::Num(num) => num.to_string(),
             Token::Bool(bool) => bool.to_string(),
-            Token::Comment(txt) => format!("# {}", txt),
             Token::Eol => "\n".into(),
             Token::Eof => "Eol".into(),
             Token::Equals => "==".into(),
@@ -111,16 +109,5 @@ impl Display for Token {
             Token::ConstAssign => "::".into(),
             Token::VarAssign => ":=".into(),
         })
-    }
-}
-
-impl Token {
-    fn first_as_char(&self) -> char {
-        let chars: Vec<char> = self.to_string().chars().collect();
-        return if chars.len() > 0 {
-            chars[0]
-        } else {
-            panic!("Cannot convert empty string to char")
-        };
     }
 }

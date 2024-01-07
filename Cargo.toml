@@ -13,5 +13,5 @@ keywords = ["rust", "nexus", "scripting", "language"]
 homepage = "https://muffingroup.github.io/MuffinSite/"
 
 [dependencies]
-clutils = "0.0.5"
+clutils = "0.0.7"
 colored = "2.1.0"
