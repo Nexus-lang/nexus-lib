@@ -70,7 +70,13 @@ impl Lexer {
                 '{' => Token::LCurly,
                 '}' => Token::RCurly,
                 '"' => self.tokenize_string(),
-                ':' => Token::Colon,
+                ':' => match self.filehandler.content.chars().nth(self.next_pos) {
+                    Some(':') => {
+                        self.next_char();
+                        Token::ConstAssign
+                    }
+                    _ => Token::Colon,
+                },
                 ',' => Token::Comma,
                 '#' => self.tokenize_comment(),
                 _ => panic!("Invalid symbol: {:?}", &self.cur_char),
