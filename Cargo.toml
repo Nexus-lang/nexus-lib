@@ -1,17 +1,9 @@
-[package]
-name = "nexus"
-version = "0.1.0"
-edition = "2021"
-
-description = "A modern and simple scripting language"
-license = "MIT"
-repository = "https://github.com/MuffinGroup/nexus"
-readme = "README.md"
-
-authors = ["Thepigcat76 <benpospo@gmail.com>", "TheHackerChampion"]
-keywords = ["rust", "nexus", "scripting", "language"]
-homepage = "https://muffingroup.github.io/MuffinSite/"
-
-[dependencies]
-clutils = "0.0.7"
-colored = "2.1.0"
+[workspace]
+members = [
+    "crates/api",       # Api for building a custom frontend, parsing source code in a rust lib
+    "crates/frontend",  # A basic frontend leveraging the api to execute source code
+    "crates/lexer",     # Lexer for tokenizing source code
+    "crates/parser",    # Parser for parsing token stream produced by lexer
+    "crates/evaluator", # Evaluator for evaluting parsed representation as an alternative to the vm
+]
+resolver = "2"

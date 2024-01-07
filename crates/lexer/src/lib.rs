@@ -1,6 +1,7 @@
 pub mod tokens;
+mod tests;
 
-use std::{borrow::Borrow, collections::HashMap};
+use std::collections::HashMap;
 
 use clutils::{errors::FileHandlerError, files::FileHandler};
 
