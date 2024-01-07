@@ -122,8 +122,8 @@ impl Lexer {
         while self.cur_char.is_some() && self.cur_char.unwrap().is_alphanumeric() {
             self.next_char();
         }
-        let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-        return match string.as_str() {
+        let ident: String = self.filehandler.content[first_pos..self.cur_pos].into();
+        return match ident.as_str() {
             "var" => Token::Var,
             "const" => Token::Const,
             "func" => Token::Func,
@@ -141,6 +141,7 @@ impl Lexer {
 
             "return" => Token::Return,
             "break" => Token::Break,
+            "local" => Token::Local,
 
             "true" => Token::Bool(true),
             "false" => Token::Bool(false),

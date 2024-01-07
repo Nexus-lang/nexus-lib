@@ -19,6 +19,7 @@ pub enum Token {
 
     Break,
     Return,
+    Local,
 
     Dot,
     Comma,
@@ -76,6 +77,7 @@ impl Display for Token {
             Token::Or => "or".into(),
             Token::Break => "break".into(),
             Token::Return => "return".into(),
+            Token::Local => "local".into(),
             Token::Dot => ".".into(),
             Token::Comma => ",".into(),
             Token::Colon => ":".into(),
