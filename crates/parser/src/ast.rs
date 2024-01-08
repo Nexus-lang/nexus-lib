@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, collections::HashMap, ops::Range};
 
 #[derive(Debug, PartialEq)]
 pub enum Statement {
@@ -167,8 +167,10 @@ pub struct CaseStmt {
 pub enum Literal {
     Num(f64),
     Bool(bool),
-    Str(String),
+    Str(StringRefLit),
 }
+
+pub type StringRefLit = (Vec<char>, Option<HashMap<Range<usize>, Vec<Expression>>>);
 
 #[derive(Debug, PartialEq)]
 pub enum PrefixOp {

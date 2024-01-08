@@ -1,9 +1,12 @@
 pub mod ast;
 mod tests;
 
-use std::{error::Error, fmt::Display, mem::swap, process::ExitStatus, thread::panicking};
+use std::{
+    collections::HashMap, error::Error, fmt::Display, mem::swap, ops::Range, process::ExitStatus,
+    thread::panicking, hash::Hash,
+};
 
-use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
+use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, StringRefLit, VarStmt};
 use lexer::{tokens::Token, Lexer};
 
 pub struct Parser<'a> {
@@ -79,9 +82,9 @@ impl<'a> Parser<'a> {
                 if let Token::Ident(_) = self.cur_tok {
                     dbg!("Peek: {}", &self.peek_tok);
                     if self.peek_tok == Token::VarAssign {
-                        return Ok(self.parse_quick_assign(false));
+                        return Ok(self.parse_quick_assign());
                     } else if self.peek_tok == Token::ConstAssign {
-                        return Ok(self.parse_quick_assign(true));
+                        return Ok(self.parse_quick_assign());
                     } else if self.peek_tok == Token::Colon {
                         todo!("Type annotations")
                     }
@@ -101,7 +104,7 @@ impl<'a> Parser<'a> {
             Token::Else => todo!(),
             Token::When => todo!(),
             Token::ExclamMark => todo!(),
-            Token::String(_, _) => todo!(),
+            Token::String(_) => self.parse_string(),
             Token::Num(num) => Expression::Literal(ast::Literal::Num(num)),
             Token::Bool(_) => todo!(),
             Token::Ident(_) => todo!(),
@@ -117,6 +120,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_string(&mut self) -> Expression {
+        let string = match self.cur_tok {
+            Token::String(ref string) => string,
+            _ => todo!(),
+        };
+
+        let raw_lit = &string.0;
+        let references = &string.1;
+        let mut lit = Vec::new();
+        raw_lit.iter().for_each(|ch| lit.push(*ch));
+
+        Expression::Literal(ast::Literal::Str(match references {
+            Some(references) => {
+                let mut new_refs = HashMap::new();
+                references.iter().for_each(|(k, v)| {
+                    new_refs.insert(k, v.iter());
+                });
+                (lit, todo!())
+            }
+            None => (lit, None),
+        }))
+    }
+
     fn parse_variable(&mut self, is_const: bool) -> Statement {
         let name = Ident(match self.peek_tok {
             Token::Ident(_) => self.peek_tok.to_string(),
@@ -125,18 +151,20 @@ impl<'a> Parser<'a> {
 
         self.next_token();
 
-        let _type = if self.peek_tok == Token::Colon {
-            self.next_token();
-            let ident = Ident(self.peek_tok.to_string());
-            self.next_token();
-            self.expect_peek(Token::Assign);
-            self.next_token();
-            Some(ident)
-        } else if self.peek_tok == Token::Assign {
-            self.next_token();
-            None
-        } else {
-            panic!("Expected Assing, received: {}", self.peek_tok)
+        let _type = match self.peek_tok {
+            Token::Colon => {
+                self.next_token();
+                let ident = Ident(self.peek_tok.to_string());
+                self.next_token();
+                self.expect_peek(Token::Assign);
+                self.next_token();
+                Some(ident)
+            }
+            Token::Assign => {
+                self.next_token();
+                None
+            }
+            _ => panic!("Expected Assign, received: {}", self.peek_tok),
         };
 
         self.next_token();
@@ -144,18 +172,12 @@ impl<'a> Parser<'a> {
         let val = self.parse_expr(Precedence::LOWEST);
 
         match is_const {
-            true => Statement::Var(VarStmt {
-                name: OptionallyTypedIdent {
-                    ident: name,
-                    _type,
-                },
+            true => Statement::Const(ConstStmt {
+                name: OptionallyTypedIdent { ident: name, _type },
                 val,
             }),
-            false => Statement::Const(ConstStmt {
-                name: OptionallyTypedIdent {
-                    ident: name,
-                    _type,
-                },
+            false => Statement::Var(VarStmt {
+                name: OptionallyTypedIdent { ident: name, _type },
                 val,
             }),
         }
@@ -168,34 +190,46 @@ impl<'a> Parser<'a> {
             _ => panic!("Expected an identifier, received: {}", self.cur_tok),
         });
 
-        let _type = if self.peek_tok == Token::Colon {
-            self.next_token();
-            let ident = Ident(self.peek_tok.to_string());
-            self.next_token();
-            self.expect_peek(Token::Assign);
-            self.next_token();
-            Some(ident)
-        } else {
-            panic!("Expected Assing, received: {}", self.peek_tok)
+        let is_const;
+
+        let _type = match self.peek_tok {
+            Token::Colon => {
+                self.next_token();
+                let ident = Ident(self.peek_tok.to_string());
+                self.next_token();
+                match self.peek_tok {
+                    Token::ConstAssign => is_const = true,
+                    Token::VarAssign => is_const = false,
+                    _ => panic!(
+                        "Expected ConstAssign or VarAssign, received: {}",
+                        self.peek_tok
+                    ),
+                }
+                Some(ident)
+            }
+            Token::ConstAssign => {
+                is_const = true;
+                None
+            }
+            Token::VarAssign => {
+                is_const = false;
+                None
+            }
+            _ => panic!("Expected Assign, received: {}", self.peek_tok),
         };
 
+        self.next_token();
         self.next_token();
 
         let val = self.parse_expr(Precedence::LOWEST);
 
         match is_const {
-            true => Statement::Var(VarStmt {
-                name: OptionallyTypedIdent {
-                    ident: name,
-                    _type,
-                },
+            true => Statement::Const(ConstStmt {
+                name: OptionallyTypedIdent { ident: name, _type },
                 val,
             }),
-            false => Statement::Const(ConstStmt {
-                name: OptionallyTypedIdent {
-                    ident: name,
-                    _type,
-                },
+            false => Statement::Var(VarStmt {
+                name: OptionallyTypedIdent { ident: name, _type },
                 val,
             }),
         }

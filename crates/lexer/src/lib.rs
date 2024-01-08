@@ -75,6 +75,10 @@ impl Lexer {
                         self.next_char();
                         Token::ConstAssign
                     }
+                    Some('=') => {
+                        self.next_char();
+                        Token::VarAssign
+                    }
                     _ => Token::Colon,
                 },
                 ',' => Token::Comma,
@@ -107,7 +111,7 @@ impl Lexer {
             self.next_char();
         }
         let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-        Token::String(string.chars().collect(), Some(references))
+        Token::String((string.chars().collect(), Some(references)))
     }
 
     fn tokenize_comment(&mut self) -> Token {

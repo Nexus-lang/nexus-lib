@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fmt::Display, ops::Range};
 
+pub type StringRef = (Vec<char>, Option<HashMap<Range<usize>, Vec<Token>>>);
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Use,
@@ -31,7 +33,7 @@ pub enum Token {
 
     // The vector is for the string literal as it appears in the source code
     // The hashmap is for args that need to be formatted
-    String(Vec<char>, Option<HashMap<Range<usize>, Vec<Token>>>),
+    String(StringRef),
     Num(f64),
     Bool(bool),
     Ident(String),
@@ -83,7 +85,7 @@ impl Display for Token {
             Token::Colon => ":".into(),
             Token::QuestionMark => "?".into(),
             Token::ExclamMark => "!".into(),
-            Token::String(lit, _) => lit.iter().collect::<String>(),
+            Token::String(lit) => lit.0.iter().collect::<String>(),
             Token::Num(num) => num.to_string(),
             Token::Bool(bool) => bool.to_string(),
             Token::Eol => "\n".into(),
