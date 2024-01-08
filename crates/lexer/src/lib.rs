@@ -3,7 +3,7 @@ mod tests;
 
 
 use clutils::{errors::FileHandlerError, files::FileHandler};
-use tokens::Literal;
+use tokens::{Literal, Operator};
 
 use self::tokens::Token;
 
@@ -56,14 +56,14 @@ impl Lexer {
                 '=' => match self.filehandler.content.chars().nth(self.next_pos) {
                     Some('=') => {
                         self.next_char();
-                        Token::Equals
+                        Token::Operator(Operator::Equals)
                     }
                     _ => Token::Assign,
                 },
-                '+' => Token::Plus,
-                '-' => Token::Minus,
-                '*' => Token::Asterisk,
-                '/' => Token::Slash,
+                '+' => Token::Operator(Operator::Plus),
+                '-' => Token::Operator(Operator::Minus),
+                '*' => Token::Operator(Operator::Asterisk),
+                '/' => Token::Operator(Operator::Slash),
                 ';' => Token::Eol,
                 '(' => Token::LParent,
                 ')' => Token::RParent,

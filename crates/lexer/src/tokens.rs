@@ -1,6 +1,4 @@
-use std::
-    fmt::Display
-;
+use std::fmt::{write, Display};
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -18,6 +16,7 @@ pub enum Token {
 
     And,
     Or,
+    Operator(Operator),
 
     Break,
     Return,
@@ -33,17 +32,6 @@ pub enum Token {
 
     Literal(Literal),
     Ident(String),
-
-    Equals,
-    NotEquals,
-    Greater,
-    Lesser,
-    GreaterEquals,
-    LesserEquals,
-    Plus,
-    Minus,
-    Asterisk,
-    Slash,
 
     LParent,
     RParent,
@@ -66,6 +54,20 @@ pub enum Literal {
     Bool(bool),
 }
 
+#[derive(Debug, PartialEq)]
+pub enum Operator {
+    Equals,
+    NotEquals,
+    Greater,
+    Lesser,
+    GreaterEquals,
+    LesserEquals,
+    Plus,
+    Minus,
+    Asterisk,
+    Slash,
+}
+
 impl Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -75,6 +77,27 @@ impl Display for Literal {
                 Literal::Str(str) => str.to_string(),
                 Literal::Num(num) => num.to_string(),
                 Literal::Bool(bool) => bool.to_string(),
+            }
+        )
+    }
+}
+
+impl Display for Operator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Operator::Equals => "==",
+                Operator::NotEquals => "!=",
+                Operator::Greater => ">",
+                Operator::Lesser => "<",
+                Operator::GreaterEquals => ">=",
+                Operator::LesserEquals => "<=",
+                Operator::Plus => "+",
+                Operator::Minus => "-",
+                Operator::Asterisk => "*",
+                Operator::Slash => "/",
             }
         )
     }
@@ -105,16 +128,7 @@ impl Display for Token {
             Token::ExclamMark => "!".into(),
             Token::Eol => "\n".into(),
             Token::Eof => "Eol".into(),
-            Token::Equals => "==".into(),
-            Token::NotEquals => "!=".into(),
-            Token::Greater => ">".into(),
-            Token::Lesser => "<".into(),
-            Token::GreaterEquals => ">=".into(),
-            Token::LesserEquals => "<=".into(),
-            Token::Plus => "+".into(),
-            Token::Minus => "-".into(),
-            Token::Asterisk => "*".into(),
-            Token::Slash => "/".into(),
+            Token::Operator(op) => op.to_string(),
             Token::Arrow => "->".into(),
             Token::LParent => "(".into(),
             Token::RParent => ")".into(),

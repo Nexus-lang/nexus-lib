@@ -1,10 +1,10 @@
 pub mod ast;
 mod tests;
 
-use std::{collections::VecDeque, error::Error, fmt::Display, mem::swap, io};
+use std::{error::Error, fmt::Display, mem::swap};
 
 use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
-use lexer::{tokens::{Token, Literal}, Lexer};
+use lexer::{tokens::{Token, Literal, Operator}, Lexer};
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
@@ -256,11 +256,13 @@ impl<'a> Parser<'a> {
     fn get_precedence(&self, token: &Token) -> Precedence {
         match token {
             Token::Assign => Precedence::ASSIGN,
-            Token::Equals | Token::NotEquals => Precedence::EQUALS,
-            Token::Greater | Token::Lesser => Precedence::LESSGREATER,
-            Token::GreaterEquals | Token::LesserEquals => Precedence::LESSGREATEROREQUAL,
-            Token::Plus | Token::Minus => Precedence::SUM,
-            Token::Asterisk | Token::Slash => Precedence::PRODUCT,
+            Token::Operator(op) => match op {
+                Operator::Equals | Operator::NotEquals => Precedence::EQUALS,
+                Operator::Greater | Operator::Lesser => Precedence::LESSGREATER,
+                Operator::GreaterEquals | Operator::LesserEquals => Precedence::LESSGREATEROREQUAL,
+                Operator::Plus | Operator::Minus => Precedence::SUM,
+                Operator::Asterisk | Operator::Slash => Precedence::PRODUCT,
+            }
             Token::LParent => Precedence::CALL,
             Token::LSquare => Precedence::INDEX,
             _ => Precedence::LOWEST,
