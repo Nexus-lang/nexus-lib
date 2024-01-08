@@ -1,9 +1,9 @@
 pub mod tokens;
 mod tests;
 
-use std::collections::HashMap;
 
 use clutils::{errors::FileHandlerError, files::FileHandler};
+use tokens::Literal;
 
 use self::tokens::Token;
 
@@ -47,7 +47,7 @@ impl Lexer {
             self.next_char();
         }
         let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-        Token::Num(string.parse().unwrap())
+        Token::Literal(Literal::Num(string.parse().unwrap()))
     }
 
     fn tokenize_symbol(&mut self) -> Token {
@@ -93,25 +93,18 @@ impl Lexer {
 
     fn tokenize_string(&mut self) -> Token {
         self.next_char();
-        let mut references = HashMap::new();
-        let first_pos = self.cur_pos;
-        while self.cur_char != Some('"') {
-            if self.cur_char == Some('{') {
+        let begin_pos = self.cur_pos;
+        while self.filehandler.content.chars().nth(self.cur_pos) != Some('"') {
+            if self.filehandler.content.chars().nth(self.cur_pos) == Some('{') {
                 self.next_char();
-                let begin = self.cur_pos;
-                let mut tokens = Vec::new();
-                while self.cur_char != Some('}') {
-                    tokens.push(self.tokenize());
+                while self.filehandler.content.chars().nth(self.cur_pos) != Some('}') {
+                    self.next_char();
                 }
-                references.insert(
-                    begin..self.cur_pos+1,
-                    tokens,
-                );
             }
             self.next_char();
         }
-        let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-        Token::String((string.chars().collect(), Some(references)))
+        let string = &self.filehandler.content[begin_pos..self.cur_pos];
+        Token::Literal(Literal::Str(string.into()))
     }
 
     fn tokenize_comment(&mut self) -> Token {
@@ -153,8 +146,8 @@ impl Lexer {
             "break" => Token::Break,
             "local" => Token::Local,
 
-            "true" => Token::Bool(true),
-            "false" => Token::Bool(false),
+            "true" => Token::Literal(Literal::Bool(true)),
+            "false" => Token::Literal(Literal::Bool(false)),
 
             _ => Token::Ident(self.filehandler.content[first_pos..self.cur_pos].into()),
         };

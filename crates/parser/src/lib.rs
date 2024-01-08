@@ -1,13 +1,10 @@
 pub mod ast;
 mod tests;
 
-use std::{
-    collections::HashMap, error::Error, fmt::Display, mem::swap, ops::Range, process::ExitStatus,
-    thread::panicking, hash::Hash,
-};
+use std::{collections::VecDeque, error::Error, fmt::Display, mem::swap, io};
 
-use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, StringRefLit, VarStmt};
-use lexer::{tokens::Token, Lexer};
+use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
+use lexer::{tokens::{Token, Literal}, Lexer};
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
@@ -16,6 +13,8 @@ pub struct Parser<'a> {
     peek_tok: Token,
 }
 
+#[repr(u8)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Precedence {
     /// default
     LOWEST,
@@ -52,6 +51,22 @@ enum Precedence {
     /// Index a list
     /// `myList[1]`
     INDEX,
+}
+
+impl PartialOrd for Precedence {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        let iself = *self as i8;
+        let iother = *other as i8;
+        iself.partial_cmp(&iother)
+    }
+}
+
+impl Ord for Precedence {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let iself = *self as i8;
+        let iother = *other as i8;
+        iself.cmp(&iother)
+    }
 }
 
 impl<'a> Parser<'a> {
@@ -95,52 +110,37 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expr(&mut self, precedence: Precedence) -> Expression {
-        match self.cur_tok {
-            Token::Enum => todo!(),
-            Token::Struct => todo!(),
-            Token::Func => todo!(),
-            Token::Loop => todo!(),
-            Token::If => todo!(),
-            Token::Else => todo!(),
-            Token::When => todo!(),
-            Token::ExclamMark => todo!(),
-            Token::String(_) => self.parse_string(),
-            Token::Num(num) => Expression::Literal(ast::Literal::Num(num)),
-            Token::Bool(_) => todo!(),
-            Token::Ident(_) => todo!(),
-            Token::Plus => todo!(),
-            Token::Minus => todo!(),
-            Token::LParent => todo!(),
-            Token::LSquare => todo!(),
-            Token::LCurly => todo!(),
-            _ => panic!(
-                "Received: {:#?}, not a valid token for an expression",
-                self.cur_tok
-            ),
+        let prefix = self.parse_prefix();
+        if let None = prefix {
+            panic!("No prefix parse found for: {}", self.cur_tok)
         }
+
+        let prefix = prefix.unwrap();
+        let mut left_expression = prefix;
+
+        while !self.peek_is_end() && precedence < self.get_precedence(&self.peek_tok) {
+            self.next_token();
+            // Unwrap here might not be safe. Observe this
+            left_expression = match self.parse_infix(left_expression) {
+                Some(expr) => expr,
+                None => panic!("Expr is empty"),
+            };
+        }
+
+        left_expression
+    }
+
+    fn parse_prefix(&mut self) -> Option<Expression> {
+        todo!()
+    }
+
+    fn parse_infix(&mut self, left_expr: Expression) -> Option<Expression> {
+        todo!()
     }
 
     fn parse_string(&mut self) -> Expression {
-        let string = match self.cur_tok {
-            Token::String(ref string) => string,
-            _ => todo!(),
-        };
-
-        let raw_lit = &string.0;
-        let references = &string.1;
-        let mut lit = Vec::new();
-        raw_lit.iter().for_each(|ch| lit.push(*ch));
-
-        Expression::Literal(ast::Literal::Str(match references {
-            Some(references) => {
-                let mut new_refs = HashMap::new();
-                references.iter().for_each(|(k, v)| {
-                    new_refs.insert(k, v.iter());
-                });
-                (lit, todo!())
-            }
-            None => (lit, None),
-        }))
+        // TODO: Parse references
+        Expression::Literal(Literal::Str(self.cur_tok.to_string()))
     }
 
     fn parse_variable(&mut self, is_const: bool) -> Statement {
@@ -241,9 +241,30 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn peek_is_end(&self) -> bool {
+        match self.peek_tok {
+            Token::Eol | Token::Eof => true,
+            _ => false,
+        }
+    }
+
     pub fn next_token(&mut self) {
         swap(&mut self.cur_tok, &mut self.peek_tok);
         self.peek_tok = self.lexer.tokenize();
+    }
+
+    fn get_precedence(&self, token: &Token) -> Precedence {
+        match token {
+            Token::Assign => Precedence::ASSIGN,
+            Token::Equals | Token::NotEquals => Precedence::EQUALS,
+            Token::Greater | Token::Lesser => Precedence::LESSGREATER,
+            Token::GreaterEquals | Token::LesserEquals => Precedence::LESSGREATEROREQUAL,
+            Token::Plus | Token::Minus => Precedence::SUM,
+            Token::Asterisk | Token::Slash => Precedence::PRODUCT,
+            Token::LParent => Precedence::CALL,
+            Token::LSquare => Precedence::INDEX,
+            _ => Precedence::LOWEST,
+        }
     }
 }
 

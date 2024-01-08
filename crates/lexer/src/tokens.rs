@@ -1,8 +1,8 @@
-use std::{collections::HashMap, fmt::Display, ops::Range};
+use std::
+    fmt::Display
+;
 
-pub type StringRef = (Vec<char>, Option<HashMap<Range<usize>, Vec<Token>>>);
-
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Token {
     Use,
     Enum,
@@ -15,7 +15,7 @@ pub enum Token {
     If,
     Else,
     When,
-    
+
     And,
     Or,
 
@@ -31,11 +31,7 @@ pub enum Token {
     Arrow,
     Assign,
 
-    // The vector is for the string literal as it appears in the source code
-    // The hashmap is for args that need to be formatted
-    String(StringRef),
-    Num(f64),
-    Bool(bool),
+    Literal(Literal),
     Ident(String),
 
     Equals,
@@ -63,9 +59,30 @@ pub enum Token {
     Eof,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum Literal {
+    Str(String),
+    Num(f64),
+    Bool(bool),
+}
+
+impl Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Literal::Str(str) => str.to_string(),
+                Literal::Num(num) => num.to_string(),
+                Literal::Bool(bool) => bool.to_string(),
+            }
+        )
+    }
+}
+
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&match self {
+        let lit: String = match self {
             Token::Use => "use".into(),
             Token::Enum => "enum".into(),
             Token::Struct => "struct".into(),
@@ -80,14 +97,12 @@ impl Display for Token {
             Token::Break => "break".into(),
             Token::Return => "return".into(),
             Token::Local => "local".into(),
+            Token::Literal(lit) => lit.to_string(),
             Token::Dot => ".".into(),
             Token::Comma => ",".into(),
             Token::Colon => ":".into(),
             Token::QuestionMark => "?".into(),
             Token::ExclamMark => "!".into(),
-            Token::String(lit) => lit.0.iter().collect::<String>(),
-            Token::Num(num) => num.to_string(),
-            Token::Bool(bool) => bool.to_string(),
             Token::Eol => "\n".into(),
             Token::Eof => "Eol".into(),
             Token::Equals => "==".into(),
@@ -112,6 +127,7 @@ impl Display for Token {
             Token::Ident(ident) => ident.into(),
             Token::ConstAssign => "::".into(),
             Token::VarAssign => ":=".into(),
-        })
+        };
+        write!(f, "{}", lit)
     }
 }

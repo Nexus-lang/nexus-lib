@@ -1,4 +1,6 @@
-use std::{fmt::Display, collections::HashMap, ops::Range};
+use std::fmt::Display;
+
+use lexer::tokens::Literal;
 
 #[derive(Debug, PartialEq)]
 pub enum Statement {
@@ -162,15 +164,6 @@ pub struct CaseStmt {
     /// This should be None unless the WhenExpr.comp_val is None
     pub comp_val: Option<Box<Expression>>
 }
-
-#[derive(Debug, PartialEq)]
-pub enum Literal {
-    Num(f64),
-    Bool(bool),
-    Str(StringRefLit),
-}
-
-pub type StringRefLit = (Vec<char>, Option<HashMap<Range<usize>, Vec<Expression>>>);
 
 #[derive(Debug, PartialEq)]
 pub enum PrefixOp {
