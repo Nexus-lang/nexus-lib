@@ -4,7 +4,10 @@ mod tests;
 use std::{error::Error, fmt::Display, mem::swap};
 
 use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
-use lexer::{tokens::{Token, Literal, Operator}, Lexer};
+use lexer::{
+    tokens::{Literal, Operator, Token},
+    Lexer,
+};
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
@@ -131,7 +134,26 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_prefix(&mut self) -> Option<Expression> {
-        todo!()
+        match self.cur_tok {
+            Token::Ident(_) => self.parse_ident(),
+            Token::Literal(Literal::Num(_)) => self.parse_num_lit(),
+            Token::Literal(Literal::Str(_)) => self.parse_str_lit(),
+            // Token::NONE => Expression::NONE(NoneLiteral),
+            Token::LParent => self.parse_grouped_expr(),
+            Token::Func => self.parse_func_expr(),
+            Token::LSquare => self.parse_list_lit(),
+            // TODO: add hashes
+            /*
+            TokenType::LCURLY => self.parse_hash_literal(),
+            */
+            Token::If => self.parse_if_expr(),
+            Token::Loop => self.parse_loop_expr(),
+            Token::When => self.parse_when_expr(),
+            Token::Literal(Literal::Bool(_)) => self.parse_bool_expr(),
+            Token::ExclamMark | Token::Operator(Operator::Plus) | Token::Operator(Operator::Minus) => self.parse_prefix_expression(),
+            // Token::ANNOTATION => self.parse_annotation(),
+            _ => None,
+        }
     }
 
     fn parse_infix(&mut self, left_expr: Expression) -> Option<Expression> {
@@ -262,7 +284,7 @@ impl<'a> Parser<'a> {
                 Operator::GreaterEquals | Operator::LesserEquals => Precedence::LESSGREATEROREQUAL,
                 Operator::Plus | Operator::Minus => Precedence::SUM,
                 Operator::Asterisk | Operator::Slash => Precedence::PRODUCT,
-            }
+            },
             Token::LParent => Precedence::CALL,
             Token::LSquare => Precedence::INDEX,
             _ => Precedence::LOWEST,
