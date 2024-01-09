@@ -58,16 +58,16 @@ enum Precedence {
 
 impl PartialOrd for Precedence {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let iself = *self as i8;
-        let iother = *other as i8;
+        let iself = *self as u8;
+        let iother = *other as u8;
         iself.partial_cmp(&iother)
     }
 }
 
 impl Ord for Precedence {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let iself = *self as i8;
-        let iother = *other as i8;
+        let iself = *self as u8;
+        let iother = *other as u8;
         iself.cmp(&iother)
     }
 }
