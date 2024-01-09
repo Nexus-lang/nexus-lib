@@ -50,7 +50,7 @@ Let's start off simple with a "Hello, World" program
 print("Hello, World")
 ```
 
-Let's start defining some variables to make our code cleaner and life bit easier
+Let's start defining some variables to make our code cleaner and more flexible
 
 ```kotlin
 var message = "Hello, World!"
