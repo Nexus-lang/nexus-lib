@@ -8,7 +8,7 @@ After you have finished the [setup](setup.md), create your first nexus script fi
 
 Note: The file has to end with .nx
 
-Now we can finally start writing code! An important notice though: Especially in more complex examples, copy the code by hand and not some keyboard shortcuts.
+Now we can finally start writing code! An important notice though: Especially in more complex examples, I advise you to type the code by hand and not some keyboard shortcuts.
 
 ## Writing the code
 
