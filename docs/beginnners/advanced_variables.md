@@ -4,7 +4,7 @@ This guide will teach you more about variables and data types.
 
 ## The difference between `const` and `var`
 
-### Mutatable variables
+### Mutable variables
 
 In nexus, there are two ways to define a variable. The first way, we have already talked about is by using `var`.
 
@@ -20,7 +20,7 @@ x = 2 // Here we give the variable x a new value
 print(x) // And here we print the variables value
 ```
 
-This will output the value 2 as we reassigned x before outputting it.
+This will output the value `2` as we reassigned `x` to this value before outputting it.
 
 As you already saw you can reassign variables by using their name (`x`), `=` and the new value (`2`)
 
@@ -35,10 +35,11 @@ Let's look at this for a quick example quick example:
 ```go
 const y = 0 // We assign 0 to the variable y
 
-y = 2 // We try to reassign this value, but it throws an error. Because it is a const
+y = 2 // We try to reassign this value, but it throws an error. Because it is constant
 ```
 
 As you can see it is not possible to reassign this variable because it will throw an error.
+We can still use this like any other variable however.
 
 ## Type annotations
 
@@ -46,7 +47,7 @@ Another common cause of bugs are type modifications.
 
 For example:
 ```go
-// We define the variable name and give it the value "John". As we learned in the previous tutorial, this text's datatype is called string and it always has to be in quotation marks.
+// We define the variable name and give it the value "John". As we learned in the previous tutorial, this variables's datatype is called string and it always has to be in quotation marks.
 var name = "John"
 
 // We mistake this variable for the age and give it the value 45
@@ -99,4 +100,6 @@ y :: 0
 
 We now know how to quickly assign variables. Amazing!
 
-**The end**
+## The end (for now)
+
+Great, you now know everything about variables and constants. In the next tutorial we will take a look at one of the most important features of any programming language: [Functions](functions.md)
