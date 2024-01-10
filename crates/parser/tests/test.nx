@@ -1,1 +1,3 @@
-x := "hello"
+foo :: func(test) {
+    
+}

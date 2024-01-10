@@ -19,7 +19,7 @@ pub struct Parser<'a> {
 #[repr(u8)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Precedence {
-    /// default
+    /// default value
     LOWEST,
     /// Assign new value to variable
     ASSIGN,
@@ -101,10 +101,12 @@ impl<'a> Parser<'a> {
                     dbg!("Peek: {}", &self.peek_tok);
                     if self.peek_tok == Token::VarAssign {
                         return Ok(self.parse_quick_assign());
-                    } else if self.peek_tok == Token::ConstAssign {
-                        return Ok(self.parse_quick_assign());
-                    } else if self.peek_tok == Token::Colon {
-                        todo!("Type annotations")
+                    }
+                    match self.peek_tok {
+                        Token::Colon | Token::ConstAssign | Token::VarAssign => {
+                            return Ok(self.parse_quick_assign())
+                        }
+                        _ => (),
                     }
                 }
                 Statement::Expression(self.parse_expr(Precedence::LOWEST))
@@ -134,35 +136,101 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_prefix(&mut self) -> Option<Expression> {
-        match self.cur_tok {
-            Token::Ident(_) => self.parse_ident(),
-            Token::Literal(Literal::Num(_)) => self.parse_num_lit(),
+        Some(match self.cur_tok {
+            Token::Ident(_) => Expression::Ident(Ident(self.cur_tok.to_string())),
+            Token::Literal(Literal::Bool(ref bool)) => Expression::Literal(Literal::Bool(*bool)),
+            Token::Literal(Literal::Num(ref lit)) => Expression::Literal(Literal::Num(*lit)),
             Token::Literal(Literal::Str(_)) => self.parse_str_lit(),
-            // Token::NONE => Expression::NONE(NoneLiteral),
-            Token::LParent => self.parse_grouped_expr(),
-            Token::Func => self.parse_func_expr(),
             Token::LSquare => self.parse_list_lit(),
             // TODO: add hashes
             /*
             TokenType::LCURLY => self.parse_hash_literal(),
             */
+            // Token::NONE => Expression::NONE(NoneLiteral),
+            Token::LParent => self.parse_grouped_expr(),
+            Token::Func => self.parse_func_expr(),
             Token::If => self.parse_if_expr(),
             Token::Loop => self.parse_loop_expr(),
             Token::When => self.parse_when_expr(),
-            Token::Literal(Literal::Bool(_)) => self.parse_bool_expr(),
-            Token::ExclamMark | Token::Operator(Operator::Plus) | Token::Operator(Operator::Minus) => self.parse_prefix_expression(),
+            Token::ExclamMark
+            | Token::Operator(Operator::Plus)
+            | Token::Operator(Operator::Minus) => self.parse_prefix_expr(),
             // Token::ANNOTATION => self.parse_annotation(),
-            _ => None,
-        }
+            _ => return None,
+        })
     }
 
     fn parse_infix(&mut self, left_expr: Expression) -> Option<Expression> {
         todo!()
     }
 
-    fn parse_string(&mut self) -> Expression {
+    fn parse_str_lit(&mut self) -> Expression {
         // TODO: Parse references
         Expression::Literal(Literal::Str(self.cur_tok.to_string()))
+    }
+
+    fn parse_list_lit(&mut self) -> Expression {
+        todo!()
+    }
+
+    fn parse_grouped_expr(&mut self) -> Expression {
+        todo!()
+    }
+
+    fn parse_func_expr(&mut self) -> Expression {
+        self.expect_peek(Token::LParent);
+        self.next_token();
+        dbg!("Cur tok: {}", &self.cur_tok);
+        let args = self.parse_ident_list(Token::RParent);
+        todo!("{:?}", args)
+    }
+
+    fn parse_if_expr(&mut self) -> Expression {
+        todo!()
+    }
+
+    fn parse_loop_expr(&mut self) -> Expression {
+        todo!()
+    }
+
+    fn parse_when_expr(&mut self) -> Expression {
+        todo!()
+    }
+
+    fn parse_prefix_expr(&mut self) -> Expression {
+        todo!()
+    }
+
+    /// First token needs to be the begin_token like `(` or `{` for example
+    fn parse_ident_list(&mut self, end_tok: Token) -> Vec<OptionallyTypedIdent> {
+        self.next_token();
+        let mut items = Vec::new();
+        let first_item = self.parse_typed_ident();
+        items.push(first_item);
+        while self.peek_tok != end_tok {
+            self.next_token();
+            let ident = self.parse_typed_ident();
+            dbg!("ident: {}", &ident);
+            items.push(ident);
+        }
+        items
+    }
+
+    fn parse_typed_ident(&mut self) -> OptionallyTypedIdent {
+        let ident = Ident(self.cur_tok.to_string());
+        let _type = match self.peek_tok {
+            Token::Colon => {
+                self.next_token();
+                Some(Ident(self.peek_tok.to_string()))
+            }
+            _ => None,
+        };
+        OptionallyTypedIdent { ident, _type }
+    }
+
+    /// First token needs to be the begin_token like `(` or `{` for example
+    fn parse_raw_list(&mut self, end_tok: Token) -> Vec<Expression> {
+        todo!()
     }
 
     fn parse_variable(&mut self, is_const: bool) -> Statement {
