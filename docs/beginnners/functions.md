@@ -6,10 +6,9 @@ You might already know about functions in mathematics but we will still elaborat
 
 ## The theory behind functions
 
-Like variables can be used to store values, functions are used to store a sequence of functions and variables.
+Like variables they can be used to store values, functions in particular mainly are used to store a sequence of functions and variables.
 
-Like most topics it will take some time before you fully understand how functions work
-
+Disclaimer: Like most topics it will take some time before you fully understand how functions work but don't be discouraged by that :)
 ## Functions in Nexus
 
 As previously stated, this will be a learning by doing experience so let's just dive into the code
