@@ -3,7 +3,7 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
-use ast::{BlockStmt, ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
+use ast::{BlockStmt, ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt, LocalStmt};
 use lexer::{
     tokens::{Literal, Operator, Token},
     Lexer,
@@ -92,7 +92,17 @@ impl<'a> Parser<'a> {
             Token::Const => self.parse_variable(true),
             Token::Break => todo!(),
             Token::Return => todo!(),
-            Token::Local => todo!(),
+            Token::Local => {
+                if self.peek_tok == Token::Local {
+                    panic!("Cannot stack multiple `local` statements")
+                }
+                self.next_token();
+                let stmt = self.parse_stmt()
+                    .expect("Encountered End of file instead of a statement after the local statement");
+                Statement::Local(LocalStmt {
+                    val: Box::new(stmt),
+                })
+            },
             Token::Eol => {
                 self.next_token();
                 return self.parse_stmt();
@@ -166,7 +176,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_str_lit(&mut self) -> Expression {
-        // TODO: Parse references
+        // TODO: Parse string interpolation
         Expression::Literal(Literal::Str(self.cur_tok.to_string()))
     }
 
@@ -219,13 +229,23 @@ impl<'a> Parser<'a> {
     /// First token needs to be the begin_token like `(` or `{` for example
     /// This function sets cur_tok to the end_tok
     fn parse_ident_list(&mut self, end_tok: Token) -> Vec<OptionallyTypedIdent> {
+        if self.peek_tok == Token::RParent {
+            self.next_token();
+            return Vec::new();
+        }
+
         self.next_token();
+
         let mut items = Vec::new();
+        
         let first_item = self.parse_typed_ident();
+
         items.push(first_item);
+
         if self.peek_tok == Token::Comma {
             self.next_token();
         }
+
         while self.peek_tok != end_tok {
             self.next_token();
             let ident = self.parse_typed_ident();
@@ -234,6 +254,7 @@ impl<'a> Parser<'a> {
                 self.next_token();
             }
         }
+        
         self.next_token();
         items
     }

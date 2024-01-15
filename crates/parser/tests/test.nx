@@ -1,2 +1,3 @@
-foo :: func(test: Num, deez: Str, nuts: Num) {
+local foo :: func(test): Str {
+    lcl bar := "Bearing deez nuts"
 }
