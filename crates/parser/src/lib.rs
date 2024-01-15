@@ -3,11 +3,13 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
-use ast::{ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
+use ast::{BlockStmt, ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt};
 use lexer::{
     tokens::{Literal, Operator, Token},
     Lexer,
 };
+
+use crate::ast::FuncExpr;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
@@ -98,7 +100,6 @@ impl<'a> Parser<'a> {
             Token::Eof => return Err(EofError),
             _ => {
                 if let Token::Ident(_) = self.cur_tok {
-                    dbg!("Peek: {}", &self.peek_tok);
                     if self.peek_tok == Token::VarAssign {
                         return Ok(self.parse_quick_assign());
                     }
@@ -180,9 +181,23 @@ impl<'a> Parser<'a> {
     fn parse_func_expr(&mut self) -> Expression {
         self.expect_peek(Token::LParent);
         self.next_token();
-        dbg!("Cur tok: {}", &self.cur_tok);
         let args = self.parse_ident_list(Token::RParent);
-        todo!("{:?}", args)
+        let ret_type = match self.peek_tok {
+            Token::Colon => {
+                self.next_token();
+                self.next_token();
+                Some(Ident(self.cur_tok.to_string()))
+            },
+            Token::LCurly => None,
+            _ => panic!()
+        };
+        self.next_token();
+        let block = self.parse_block_stmt();
+        Expression::Func(FuncExpr {
+            ret_type,
+            args,
+            block,
+        })
     }
 
     fn parse_if_expr(&mut self) -> Expression {
@@ -202,18 +217,38 @@ impl<'a> Parser<'a> {
     }
 
     /// First token needs to be the begin_token like `(` or `{` for example
+    /// This function sets cur_tok to the end_tok
     fn parse_ident_list(&mut self, end_tok: Token) -> Vec<OptionallyTypedIdent> {
         self.next_token();
         let mut items = Vec::new();
         let first_item = self.parse_typed_ident();
         items.push(first_item);
+        if self.peek_tok == Token::Comma {
+            self.next_token();
+        }
         while self.peek_tok != end_tok {
             self.next_token();
             let ident = self.parse_typed_ident();
-            dbg!("ident: {}", &ident);
             items.push(ident);
+            if self.peek_tok == Token::Comma {
+                self.next_token();
+            }
         }
+        self.next_token();
         items
+    }
+
+    /// First token needs to be a left curly `{`
+    fn parse_block_stmt(&mut self) -> BlockStmt {
+        let mut stmts = Vec::new();
+        while self.peek_tok != Token::RCurly {
+            self.next_token();
+            let stmt = self
+                .parse_stmt()
+                .expect("Found eof even though the blockstatement was not yet fully parsed");
+            stmts.push(stmt);
+        }
+        BlockStmt { stmts }
     }
 
     fn parse_typed_ident(&mut self) -> OptionallyTypedIdent {
@@ -221,7 +256,8 @@ impl<'a> Parser<'a> {
         let _type = match self.peek_tok {
             Token::Colon => {
                 self.next_token();
-                Some(Ident(self.peek_tok.to_string()))
+                self.next_token();
+                Some(Ident(self.cur_tok.to_string()))
             }
             _ => None,
         };

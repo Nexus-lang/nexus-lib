@@ -1,3 +1,2 @@
-foo :: func(test) {
-    
+foo :: func(test: Num, deez: Str, nuts: Num) {
 }

@@ -129,7 +129,7 @@ pub struct WhenExpr {
 
 #[derive(Debug, PartialEq)]
 pub struct FuncExpr {
-    pub ident: OptionallyTypedIdent,
+    pub ret_type: Option<Ident>,
     pub args: Vec<OptionallyTypedIdent>,
     pub block: BlockStmt,
 }
@@ -152,7 +152,7 @@ pub struct EnumExpr {
 
 #[derive(Debug, PartialEq)]
 pub struct BlockStmt {
-    stmts: Vec<Statement>,
+    pub stmts: Vec<Statement>,
 }
 
 #[derive(Debug, PartialEq)]
