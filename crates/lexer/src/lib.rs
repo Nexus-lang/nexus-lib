@@ -64,6 +64,7 @@ impl Lexer {
                 },
                 '+' => Token::Operator(Operator::Plus),
                 '-' => Token::Operator(Operator::Minus),
+                '!' => Token::ExclamMark,
                 '*' => Token::Operator(Operator::Asterisk),
                 '/' => Token::Operator(Operator::Slash),
                 ';' => Token::Eol,

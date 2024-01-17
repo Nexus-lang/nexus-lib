@@ -5,7 +5,7 @@ use std::{error::Error, fmt::Display, mem::swap};
 
 use ast::{
     BlockStmt, BreakStmt, ConstStmt, Expression, Ident, IfExpr, IfType, LocalStmt, LoopExpr,
-    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt,
+    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt, PrefixExpr, PrefixOp,
 };
 use lexer::{
     tokens::{Literal, Operator, Token},
@@ -309,7 +309,25 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_prefix_expr(&mut self) -> Expression {
-        todo!()
+        let op = match &self.cur_tok {
+            Token::Operator(op) => Self::reg_op_to_pre_op(op),
+            Token::ExclamMark => PrefixOp::Not,
+            other => panic!("Expected operator, got: {other} instead")
+        };
+        self.next_token();
+        let val = Box::from(self.parse_expr(Precedence::LOWEST));
+        Expression::Prefix(PrefixExpr {
+            op,
+            val,
+        })
+    }
+
+    fn reg_op_to_pre_op(op: &Operator) -> PrefixOp {
+        match op {
+            Operator::Plus => PrefixOp::Pos,
+            Operator::Minus => PrefixOp::Neg,
+            other => panic!("Cannot convert operator: {other} to pre op")
+        }
     }
 
     /// First token needs to be the begin_token like `(` or `{` for example
