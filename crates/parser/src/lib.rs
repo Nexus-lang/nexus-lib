@@ -3,7 +3,10 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
-use ast::{BlockStmt, ConstStmt, Expression, Ident, OptionallyTypedIdent, Statement, VarStmt, LocalStmt};
+use ast::{
+    BlockStmt, BreakStmt, ConstStmt, Expression, Ident, IfExpr, IfType, LocalStmt, LoopExpr,
+    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt,
+};
 use lexer::{
     tokens::{Literal, Operator, Token},
     Lexer,
@@ -90,19 +93,38 @@ impl<'a> Parser<'a> {
             Token::Use => todo!(),
             Token::Var => self.parse_variable(false),
             Token::Const => self.parse_variable(true),
-            Token::Break => todo!(),
-            Token::Return => todo!(),
+            Token::Break => {
+                let label = match self.peek_tok {
+                    Token::Ident(_) => {
+                        self.next_token();
+                        Some(Ident(self.cur_tok.to_string()))
+                    }
+                    _ => None,
+                };
+                Statement::Break(BreakStmt { label })
+            }
+            Token::Return => {
+                let val = match self.peek_tok {
+                    Token::Eol => None,
+                    _ => {
+                        self.next_token();
+                        Some(self.parse_expr(Precedence::LOWEST))
+                    }
+                };
+                Statement::Return(ReturnStmt { val })
+            }
             Token::Local => {
                 if self.peek_tok == Token::Local {
                     panic!("Cannot stack multiple `local` statements")
                 }
                 self.next_token();
-                let stmt = self.parse_stmt()
-                    .expect("Encountered End of file instead of a statement after the local statement");
+                let stmt = self.parse_stmt().expect(
+                    "Encountered End of file instead of a statement after the local statement",
+                );
                 Statement::Local(LocalStmt {
                     val: Box::new(stmt),
                 })
-            },
+            }
             Token::Eol => {
                 self.next_token();
                 return self.parse_stmt();
@@ -160,7 +182,7 @@ impl<'a> Parser<'a> {
             // Token::NONE => Expression::NONE(NoneLiteral),
             Token::LParent => self.parse_grouped_expr(),
             Token::Func => self.parse_func_expr(),
-            Token::If => self.parse_if_expr(),
+            Token::If => self.parse_if_expr(IfType::If),
             Token::Loop => self.parse_loop_expr(),
             Token::When => self.parse_when_expr(),
             Token::ExclamMark
@@ -197,9 +219,9 @@ impl<'a> Parser<'a> {
                 self.next_token();
                 self.next_token();
                 Some(Ident(self.cur_tok.to_string()))
-            },
+            }
             Token::LCurly => None,
-            _ => panic!()
+            _ => panic!(),
         };
         self.next_token();
         let block = self.parse_block_stmt();
@@ -210,12 +232,76 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_if_expr(&mut self) -> Expression {
-        todo!()
+    fn parse_if_expr(&mut self, _type: IfType) -> Expression {
+        match _type {
+            // Current token needs to be `if`
+            IfType::If => {
+                self.next_token();
+                let cond = self.parse_expr(Precedence::LOWEST);
+                self.expect_peek(Token::LCurly);
+                self.next_token();
+                let block = self.parse_block_stmt();
+                let alt = match self.peek_tok {
+                    Token::Else => {
+                        self.next_token();
+                        Some(Box::from(match self.peek_tok {
+                            Token::If => {
+                                match self.parse_if_expr(IfType::ElseIf) {
+                                    Expression::If(_if) => _if,
+                                    _ => panic!("UNREACHABLE")
+                                }
+                            }
+                            Token::LCurly => match self.parse_if_expr(IfType::Else) {
+                                Expression::If(_if) => _if,
+                                _ => panic!("UNREACHABLE")
+                            },
+                            ref other => panic!("Exptected `block` or `if` after else, got `{other:?}`"),
+                        }))
+                    }
+                    _ => None,
+                };
+                Expression::If(IfExpr {
+                    cond: Some(Box::from(cond)),
+                    block,
+                    _type,
+                    alt,
+                })
+            }
+            // Current token needs to be `else`
+            IfType::ElseIf => {
+                self.next_token();
+                let _if = match self.parse_if_expr(IfType::If) {
+                    Expression::If(_if) => _if,
+                    other => panic!("Unreachable: Got {other:?} instead of if expression"),
+                };
+                Expression::If(IfExpr { _type, .._if })
+            }
+            // Current token needs to be `else`
+            IfType::Else => {
+                self.next_token();
+                let block = self.parse_block_stmt();
+                Expression::If(IfExpr {
+                    _type,
+                    cond: None,
+                    block,
+                    alt: None,
+                })
+            }
+        }
     }
 
     fn parse_loop_expr(&mut self) -> Expression {
-        todo!()
+        self.next_token();
+        let cond = self.parse_expr(Precedence::LOWEST);
+        self.expect_peek(Token::LCurly);
+        self.next_token();
+        let block = self.parse_block_stmt();
+        Expression::Loop(LoopExpr {
+            _type: LoopType::While,
+            cond: Some(Box::from(cond)),
+            block,
+            alt: None,
+        })
     }
 
     fn parse_when_expr(&mut self) -> Expression {
@@ -237,7 +323,7 @@ impl<'a> Parser<'a> {
         self.next_token();
 
         let mut items = Vec::new();
-        
+
         let first_item = self.parse_typed_ident();
 
         items.push(first_item);
@@ -254,7 +340,7 @@ impl<'a> Parser<'a> {
                 self.next_token();
             }
         }
-        
+
         self.next_token();
         items
     }
@@ -268,7 +354,9 @@ impl<'a> Parser<'a> {
                 .parse_stmt()
                 .expect("Found eof even though the blockstatement was not yet fully parsed");
             stmts.push(stmt);
+            self.next_token();
         }
+        self.next_token();
         BlockStmt { stmts }
     }
 

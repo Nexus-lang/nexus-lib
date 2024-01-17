@@ -1,4 +1,4 @@
-use std::fmt::{write, Display};
+use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -126,8 +126,8 @@ impl Display for Token {
             Token::Colon => ":".into(),
             Token::QuestionMark => "?".into(),
             Token::ExclamMark => "!".into(),
-            Token::Eol => "\n".into(),
-            Token::Eof => "Eol".into(),
+            Token::Eol => "Eol".into(),
+            Token::Eof => "Eof".into(),
             Token::Operator(op) => op.to_string(),
             Token::Arrow => "->".into(),
             Token::LParent => "(".into(),

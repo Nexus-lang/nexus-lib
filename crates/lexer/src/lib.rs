@@ -1,6 +1,5 @@
-pub mod tokens;
 mod tests;
-
+pub mod tokens;
 
 use clutils::{errors::FileHandlerError, files::FileHandler};
 use tokens::{Literal, Operator};
@@ -31,6 +30,10 @@ impl Lexer {
         self.skip_whitespace();
         let tok = match self.cur_char {
             Some(ch) => match ch {
+                '\n' => {
+                    self.next_char();
+                    Token::Eol
+                }
                 c if c.is_numeric() => self.tokenize_num(),
                 c if c.is_alphabetic() => self.tokenize_ident(),
                 _ => self.tokenize_symbol(),
@@ -162,7 +165,7 @@ impl Lexer {
     fn skip_whitespace(&mut self) {
         match self.cur_char {
             Some(mut ch) => {
-                while ch.is_whitespace() {
+                while ch.is_whitespace() && ch != '\n' {
                     self.next_char();
                     match self.cur_char {
                         Some(cch) => ch = cch,

@@ -1,3 +1,5 @@
-local foo :: func(test): Str {
-    lcl bar := "Bearing deez nuts"
+if true {
+    return false
+} else {
+    return true
 }

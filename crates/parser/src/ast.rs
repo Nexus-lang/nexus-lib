@@ -56,12 +56,12 @@ pub struct ConstStmt {
 
 #[derive(Debug, PartialEq)]
 pub struct ReturnStmt {
-    pub val: Ident,
+    pub val: Option<Expression>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct BreakStmt {
-    pub ret_val: Option<Box<Expression>>,
+    pub label: Option<Ident>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -108,7 +108,7 @@ pub struct ListExpr {
 #[derive(Debug, PartialEq)]
 pub struct IfExpr {
     pub _type: IfType,
-    pub cond: Box<Expression>,
+    pub cond: Option<Box<Expression>>,
     pub block: BlockStmt,
     pub alt: Option<Box<IfExpr>>
 }

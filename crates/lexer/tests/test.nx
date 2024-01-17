@@ -1,0 +1,4 @@
+local foo :: func(test): Str {
+    bar := "Bearing deez nuts"
+    return
+}
