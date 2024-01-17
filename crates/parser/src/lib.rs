@@ -1,11 +1,11 @@
 pub mod ast;
 mod tests;
 
-use std::{error::Error, fmt::Display, mem::swap};
+use std::{error::Error, fmt::Display, mem::swap, f32::consts::E};
 
 use ast::{
     BlockStmt, BreakStmt, ConstStmt, Expression, Ident, IfExpr, IfType, LocalStmt, LoopExpr,
-    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt, PrefixExpr, PrefixOp,
+    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt, PrefixExpr, PrefixOp, InfixExpr, InfixOp,
 };
 use lexer::{
     tokens::{Literal, Operator, Token},
@@ -159,10 +159,7 @@ impl<'a> Parser<'a> {
         while !self.peek_is_end() && precedence < self.get_precedence(&self.peek_tok) {
             self.next_token();
             // Unwrap here might not be safe. Observe this
-            left_expression = match self.parse_infix(left_expression) {
-                Some(expr) => expr,
-                None => panic!("Expr is empty"),
-            };
+            left_expression = self.parse_infix_expr(left_expression);
         }
 
         left_expression
@@ -191,10 +188,6 @@ impl<'a> Parser<'a> {
             // Token::ANNOTATION => self.parse_annotation(),
             _ => return None,
         })
-    }
-
-    fn parse_infix(&mut self, left_expr: Expression) -> Option<Expression> {
-        todo!()
     }
 
     fn parse_str_lit(&mut self) -> Expression {
@@ -308,6 +301,21 @@ impl<'a> Parser<'a> {
         todo!()
     }
 
+    fn parse_infix_expr(&mut self, left_expr: Expression) -> Expression {
+        let op = match self.cur_tok {
+            Token::Operator(_) => self.cur_tok_to_in_op(),
+            _ => panic!("Missing operator, got {{other}} instead")
+        };
+        let prec = self.get_precedence(&self.cur_tok);
+        self.next_token();
+        let right_expr = self.parse_expr(prec);
+        Expression::Infix(InfixExpr {
+            left: Box::from(left_expr),
+            right: Box::from(right_expr),
+            op,
+        })
+    }
+
     fn parse_prefix_expr(&mut self) -> Expression {
         let op = match &self.cur_tok {
             Token::Operator(op) => Self::reg_op_to_pre_op(op),
@@ -315,11 +323,18 @@ impl<'a> Parser<'a> {
             other => panic!("Expected operator, got: {other} instead")
         };
         self.next_token();
-        let val = Box::from(self.parse_expr(Precedence::LOWEST));
+        let val = Box::from(self.parse_expr(Precedence::PREFIX));
         Expression::Prefix(PrefixExpr {
             op,
             val,
         })
+    }
+
+    fn cur_tok_to_in_op(&self) -> InfixOp {
+        match &self.cur_tok {
+            Token::Operator(op) => Self::reg_op_to_in_op(op),
+            _ => todo!()
+        }
     }
 
     fn reg_op_to_pre_op(op: &Operator) -> PrefixOp {
@@ -327,6 +342,21 @@ impl<'a> Parser<'a> {
             Operator::Plus => PrefixOp::Pos,
             Operator::Minus => PrefixOp::Neg,
             other => panic!("Cannot convert operator: {other} to pre op")
+        }
+    }
+
+    fn reg_op_to_in_op(op: &Operator) -> InfixOp {
+        match op {
+            Operator::Equals => InfixOp::Eq,
+            Operator::NotEquals => InfixOp::NEq,
+            Operator::Greater => InfixOp::GT,
+            Operator::Lesser => InfixOp::LT,
+            Operator::GreaterEquals => InfixOp::GTEq,
+            Operator::LesserEquals => InfixOp::LTEq,
+            Operator::Plus => InfixOp::Add,
+            Operator::Minus => InfixOp::Sub,
+            Operator::Asterisk => InfixOp::Mul,
+            Operator::Slash => InfixOp::Div,
         }
     }
 
