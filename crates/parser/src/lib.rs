@@ -149,7 +149,7 @@ impl<'a> Parser<'a> {
 
     fn parse_expr(&mut self, precedence: Precedence) -> Expression {
         let prefix = self.parse_prefix();
-        if let None = prefix {
+        if prefix.is_none() {
             panic!("No prefix parse found for: {}", self.cur_tok)
         }
 
@@ -250,7 +250,7 @@ impl<'a> Parser<'a> {
                                     Expression::If(_if) => _if,
                                     _ => panic!("UNREACHABLE")
                                 }
-                            }
+                            },
                             Token::LCurly => match self.parse_if_expr(IfType::Else) {
                                 Expression::If(_if) => _if,
                                 _ => panic!("UNREACHABLE")
@@ -348,6 +348,8 @@ impl<'a> Parser<'a> {
     /// First token needs to be a left curly `{`
     fn parse_block_stmt(&mut self) -> BlockStmt {
         let mut stmts = Vec::new();
+        
+        self.next_token();
         while self.peek_tok != Token::RCurly {
             self.next_token();
             let stmt = self

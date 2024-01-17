@@ -28,7 +28,7 @@ impl Lexer {
 
     pub fn tokenize(&mut self) -> Token {
         self.skip_whitespace();
-        let tok = match self.cur_char {
+        match self.cur_char {
             Some(ch) => match ch {
                 '\n' => {
                     self.next_char();
@@ -39,8 +39,7 @@ impl Lexer {
                 _ => self.tokenize_symbol(),
             },
             None => Token::Eof,
-        };
-        tok
+        }
     }
 
     fn tokenize_num(&mut self) -> Token {
