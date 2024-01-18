@@ -2,10 +2,9 @@ use std::fmt::Display;
 
 use lexer::tokens::Literal;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
-    Var(VarStmt),
-    Const(ConstStmt),
+    Variable(VarStmt),
     Return(ReturnStmt),
     Break(BreakStmt),
     Local(LocalStmt),
@@ -13,7 +12,7 @@ pub enum Statement {
     Expression(Expression),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     Ident(Ident),
     Literal(Literal),
@@ -33,79 +32,76 @@ pub enum Expression {
     Enum(EnumExpr),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Ident(pub String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct OptionallyTypedIdent {
     pub ident: Ident,
     pub _type: Option<Ident>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct VarStmt {
     pub name: OptionallyTypedIdent,
     pub val: Expression,
+    pub is_const: bool,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct ConstStmt {
-    pub name: OptionallyTypedIdent,
-    pub val: Expression,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReturnStmt {
     pub val: Option<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct BreakStmt {
     pub label: Option<Ident>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct LocalStmt {
     pub val: Box<Statement>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct UseStmt {
     // TODO: Import paths
     pub import: Ident,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct PrefixExpr {
     pub op: PrefixOp,
     pub val: Box<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct InfixExpr {
     pub op: InfixOp,
     pub left: Box<Expression>,
     pub right: Box<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndexExpr {
     pub list: Box<Expression>,
     pub pos: usize,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct CallExpr {
-    pub ident: Ident,
+    // needs to be an expression
+    // because of weird infix parsing
+    pub ident: Box<Expression>,
     pub args: Vec<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ListExpr {
     pub list: Vec<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IfExpr {
     pub _type: IfType,
     pub cond: Option<Box<Expression>>,
@@ -113,7 +109,7 @@ pub struct IfExpr {
     pub alt: Option<Box<IfExpr>>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct LoopExpr {
     pub _type: LoopType,
     pub cond: Option<Box<Expression>>,
@@ -121,13 +117,13 @@ pub struct LoopExpr {
     pub alt: Option<Box<LoopExpr>>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct WhenExpr {
     pub comp_val: Option<Box<Expression>>,
     pub cases: Vec<CaseStmt>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FuncExpr {
     pub ret_type: Option<Ident>,
     pub args: Vec<OptionallyTypedIdent>,
@@ -135,27 +131,27 @@ pub struct FuncExpr {
 }
 
 // TODO: Finish this
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AnnotationExpr {
     pub name: Ident,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct StructExpr {
     pub fields: Vec<OptionallyTypedIdent>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct EnumExpr {
     pub consts: Ident,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct BlockStmt {
     pub stmts: Vec<Statement>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct CaseStmt {
     pub _type: CaseType,
     /// This should be Some(...) if the _type is Regular and
@@ -165,14 +161,14 @@ pub struct CaseStmt {
     pub comp_val: Option<Box<Expression>>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum PrefixOp {
     Pos,
     Neg,
     Not,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum InfixOp {
     Add,
     Sub,
@@ -190,14 +186,14 @@ pub enum InfixOp {
     Assign,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum IfType {
     If,
     Else,
     ElseIf,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum LoopType {
     For,
     While,
@@ -206,7 +202,7 @@ pub enum LoopType {
     Else,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum CaseType {
     Regular,
     Else,

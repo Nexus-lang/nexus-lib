@@ -1,11 +1,12 @@
 pub mod ast;
 mod tests;
 
-use std::{error::Error, fmt::Display, mem::swap, f32::consts::E};
+use std::{error::Error, fmt::Display, mem::swap};
 
 use ast::{
-    BlockStmt, BreakStmt, ConstStmt, Expression, Ident, IfExpr, IfType, LocalStmt, LoopExpr,
-    LoopType, OptionallyTypedIdent, ReturnStmt, Statement, VarStmt, PrefixExpr, PrefixOp, InfixExpr, InfixOp,
+    BlockStmt, BreakStmt, Expression, Ident, IfExpr, IfType, InfixExpr, InfixOp,
+    LocalStmt, LoopExpr, LoopType, OptionallyTypedIdent, PrefixExpr, PrefixOp, ReturnStmt,
+    Statement, VarStmt, CallExpr,
 };
 use lexer::{
     tokens::{Literal, Operator, Token},
@@ -159,7 +160,10 @@ impl<'a> Parser<'a> {
         while !self.peek_is_end() && precedence < self.get_precedence(&self.peek_tok) {
             self.next_token();
             // Unwrap here might not be safe. Observe this
-            left_expression = self.parse_infix_expr(left_expression);
+            left_expression = match self.parse_infix(left_expression) {
+                Some(expr) => expr,
+                None => panic!("Invalid infix expression"),
+            };
         }
 
         left_expression
@@ -174,7 +178,7 @@ impl<'a> Parser<'a> {
             Token::LSquare => self.parse_list_lit(),
             // TODO: add hashes
             /*
-            TokenType::LCURLY => self.parse_hash_literal(),
+            Token::LCURLY => self.parse_hash_literal(),
             */
             // Token::NONE => Expression::NONE(NoneLiteral),
             Token::LParent => self.parse_grouped_expr(),
@@ -186,6 +190,26 @@ impl<'a> Parser<'a> {
             | Token::Operator(Operator::Plus)
             | Token::Operator(Operator::Minus) => self.parse_prefix_expr(),
             // Token::ANNOTATION => self.parse_annotation(),
+            _ => return None,
+        })
+    }
+
+    fn parse_infix(&mut self, left: Expression) -> Option<Expression> {
+        Some(match self.cur_tok {
+            Token::Operator(ref op) => match op {
+                Operator::Equals
+                | Operator::NotEquals
+                | Operator::Greater
+                | Operator::Lesser
+                | Operator::GreaterEquals
+                | Operator::LesserEquals
+                | Operator::Plus
+                | Operator::Minus
+                | Operator::Asterisk
+                | Operator::Slash => self.parse_infix_expr(left),
+            },
+            Token::LParent => self.parse_call_expr(left),
+            // Token::LSquare => self.parse_index_expr(left),
             _ => return None,
         })
     }
@@ -238,17 +262,17 @@ impl<'a> Parser<'a> {
                     Token::Else => {
                         self.next_token();
                         Some(Box::from(match self.peek_tok {
-                            Token::If => {
-                                match self.parse_if_expr(IfType::ElseIf) {
-                                    Expression::If(_if) => _if,
-                                    _ => panic!("UNREACHABLE")
-                                }
+                            Token::If => match self.parse_if_expr(IfType::ElseIf) {
+                                Expression::If(_if) => _if,
+                                _ => panic!("UNREACHABLE"),
                             },
                             Token::LCurly => match self.parse_if_expr(IfType::Else) {
                                 Expression::If(_if) => _if,
-                                _ => panic!("UNREACHABLE")
+                                _ => panic!("UNREACHABLE"),
                             },
-                            ref other => panic!("Exptected `block` or `if` after else, got `{other:?}`"),
+                            ref other => {
+                                panic!("Exptected `block` or `if` after else, got `{other:?}`")
+                            }
                         }))
                     }
                     _ => None,
@@ -283,6 +307,7 @@ impl<'a> Parser<'a> {
         }
     }
 
+    // TODO: parse else branches
     fn parse_loop_expr(&mut self) -> Expression {
         self.next_token();
         let cond = self.parse_expr(Precedence::LOWEST);
@@ -304,7 +329,7 @@ impl<'a> Parser<'a> {
     fn parse_infix_expr(&mut self, left_expr: Expression) -> Expression {
         let op = match self.cur_tok {
             Token::Operator(_) => self.cur_tok_to_in_op(),
-            _ => panic!("Missing operator, got {{other}} instead")
+            ref other => panic!("Missing operator, got {other} instead"),
         };
         let prec = self.get_precedence(&self.cur_tok);
         self.next_token();
@@ -320,20 +345,17 @@ impl<'a> Parser<'a> {
         let op = match &self.cur_tok {
             Token::Operator(op) => Self::reg_op_to_pre_op(op),
             Token::ExclamMark => PrefixOp::Not,
-            other => panic!("Expected operator, got: {other} instead")
+            other => panic!("Expected operator, got: {other} instead"),
         };
         self.next_token();
         let val = Box::from(self.parse_expr(Precedence::PREFIX));
-        Expression::Prefix(PrefixExpr {
-            op,
-            val,
-        })
+        Expression::Prefix(PrefixExpr { op, val })
     }
 
     fn cur_tok_to_in_op(&self) -> InfixOp {
         match &self.cur_tok {
             Token::Operator(op) => Self::reg_op_to_in_op(op),
-            _ => todo!()
+            _ => todo!(),
         }
     }
 
@@ -341,7 +363,7 @@ impl<'a> Parser<'a> {
         match op {
             Operator::Plus => PrefixOp::Pos,
             Operator::Minus => PrefixOp::Neg,
-            other => panic!("Cannot convert operator: {other} to pre op")
+            other => panic!("Cannot convert operator: {other} to pre op"),
         }
     }
 
@@ -363,7 +385,7 @@ impl<'a> Parser<'a> {
     /// First token needs to be the begin_token like `(` or `{` for example
     /// This function sets cur_tok to the end_tok
     fn parse_ident_list(&mut self, end_tok: Token) -> Vec<OptionallyTypedIdent> {
-        if self.peek_tok == Token::RParent {
+        if self.peek_tok == end_tok {
             self.next_token();
             return Vec::new();
         }
@@ -393,10 +415,42 @@ impl<'a> Parser<'a> {
         items
     }
 
+    /// First token needs to be the begin_token like `(` or `{` for example
+    fn parse_raw_list(&mut self, end_tok: Token) -> Vec<Expression> {
+        if self.peek_tok == Token::RParent {
+            self.next_token();
+            return Vec::new();
+        }
+
+        self.next_token();
+
+        let mut items = Vec::new();
+
+        let first_item = self.parse_expr(Precedence::LOWEST);
+
+        items.push(first_item);
+
+        if self.peek_tok == Token::Comma {
+            self.next_token();
+        }
+
+        while self.peek_tok != end_tok {
+            self.next_token();
+            let ident = self.parse_expr(Precedence::LOWEST);
+            items.push(ident);
+            if self.peek_tok == Token::Comma {
+                self.next_token();
+            }
+        }
+
+        self.next_token();
+        items
+    }
+
     /// First token needs to be a left curly `{`
     fn parse_block_stmt(&mut self) -> BlockStmt {
         let mut stmts = Vec::new();
-        
+
         self.next_token();
         while self.peek_tok != Token::RCurly {
             self.next_token();
@@ -421,11 +475,6 @@ impl<'a> Parser<'a> {
             _ => None,
         };
         OptionallyTypedIdent { ident, _type }
-    }
-
-    /// First token needs to be the begin_token like `(` or `{` for example
-    fn parse_raw_list(&mut self, end_tok: Token) -> Vec<Expression> {
-        todo!()
     }
 
     fn parse_variable(&mut self, is_const: bool) -> Statement {
@@ -456,16 +505,11 @@ impl<'a> Parser<'a> {
 
         let val = self.parse_expr(Precedence::LOWEST);
 
-        match is_const {
-            true => Statement::Const(ConstStmt {
-                name: OptionallyTypedIdent { ident: name, _type },
-                val,
-            }),
-            false => Statement::Var(VarStmt {
-                name: OptionallyTypedIdent { ident: name, _type },
-                val,
-            }),
-        }
+        Statement::Variable(VarStmt {
+            name: OptionallyTypedIdent { ident: name, _type },
+            val,
+            is_const,
+        })
     }
 
     fn parse_quick_assign(&mut self) -> Statement {
@@ -508,16 +552,19 @@ impl<'a> Parser<'a> {
 
         let val = self.parse_expr(Precedence::LOWEST);
 
-        match is_const {
-            true => Statement::Const(ConstStmt {
-                name: OptionallyTypedIdent { ident: name, _type },
-                val,
-            }),
-            false => Statement::Var(VarStmt {
-                name: OptionallyTypedIdent { ident: name, _type },
-                val,
-            }),
-        }
+        Statement::Variable(VarStmt {
+            name: OptionallyTypedIdent { ident: name, _type },
+            val,
+            is_const,
+        })
+    }
+
+    fn parse_call_expr(&mut self, func: Expression) -> Expression {
+        let args = self.parse_raw_list(Token::RParent);
+        Expression::Call(CallExpr {
+            ident: Box::from(func),
+            args,
+        })
     }
 
     fn expect_peek(&self, expected: Token) {

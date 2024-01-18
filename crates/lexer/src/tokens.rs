@@ -47,7 +47,7 @@ pub enum Token {
     Eof,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Literal {
     Str(String),
     Num(f64),
