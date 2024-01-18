@@ -4,7 +4,13 @@ use crate::objects::Object;
 
 #[derive(Debug)]
 pub struct Environment {
-    store: HashMap<String, Object>
+    store: HashMap<String, EnvObj>
+}
+
+#[derive(Debug)]
+pub struct EnvObj {
+    pub obj: Object,
+    pub is_const: bool,
 }
 
 impl Environment {
@@ -12,11 +18,11 @@ impl Environment {
         Self { store: HashMap::new() }
     }
 
-    pub fn set(&mut self, key: String, obj: Object) {
+    pub fn set(&mut self, key: String, obj: EnvObj) {
         self.store.insert(key, obj);
     }
 
-    pub fn get(&mut self, key: String) -> Option<&Object> {
+    pub fn get(&mut self, key: String) -> Option<&EnvObj> {
         self.store.get(&key)
     }
 }
