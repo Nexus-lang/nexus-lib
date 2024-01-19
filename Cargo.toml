@@ -1,7 +1,6 @@
 [workspace]
 members = [
-    "crates/api",       # Api for building a custom frontend, parsing source code in a rust lib
-    "crates/frontend",  # A basic frontend leveraging the api to execute source code
+    "crates/nx-api",       # Api for building a custom frontend, parsing source code in a rust lib
     "crates/lexer",     # Lexer for tokenizing source code
     "crates/parser",    # Parser for parsing token stream produced by lexer
     "crates/evaluator", # Evaluator for evaluting parsed representation as an alternative to the vm
