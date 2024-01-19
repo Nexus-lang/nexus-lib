@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nx-lexer = { path = "../nx-lexer", version = "*" }
-nx-parser = { path = "../nx-parser", version = "*" }
+nx-lexer = "*"
+nx-parser = "*"

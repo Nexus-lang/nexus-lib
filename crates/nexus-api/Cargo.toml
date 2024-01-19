@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-nx-lexer = { path = "../nx-lexer", version = "*" }
-nx-parser = { path = "../nx-parser", version = "*" }
-nx-evaluator = { path = "../nx-evaluator", version = "*" }
+nx-lexer = "*"
+nx-parser = "*"
+nx-evaluator = "*"
