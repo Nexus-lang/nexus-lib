@@ -8,7 +8,7 @@ After you have finished the [setup](setup.md), create your first nexus script fi
 
 Note: The file has to end with .nx
 
-Now we can finally start writing code! An important notice though: Especially in more complex examples, copy the code by hand and not some keyboard shortcuts.
+Now we can finally start writing code! An important notice though: Especially in more complex examples, I advise you to type the code by hand and not some keyboard shortcuts.
 
 ## Writing the code
 
@@ -55,7 +55,7 @@ In nexus we define variables with the `var` keyword and then assign a value to i
 
 The next thing you might notice is that we have changed the print(...) function. This change allows us to print out the value of the `name` variable. When you see curly brackets (`{...}`) in a String (String = sequence of words encased by quotation marks) most of the time this means that we want to use the value of the variable in the String.
 
-**IMPORTANT:** Variable names are only allowed to have letters (abc...z), numbers (not at the beginning tho) and underscores `_`
+**IMPORTANT:** Variable names are only allowed to have letters `abc...z`, `numbers` (not at the beginning tho) and underscores `_`
 
 **Challenge:** Print your own name and change the variable name to be `my_name`
 
@@ -81,9 +81,15 @@ This can be any number between 0 and infinite
 var age = 9
 ```
 
+Numbers can also be represented more precisely with a floating point
+
+```go
+var age = 0.9123
+```
+
 **Booleans:**
 
-Although the name sounds complex, booleans are very simple. They can represent two values: `true or false`
+Although the name sounds complex, booleans are very simple. They can represent two values: `true` or `false`
 
 ```go
 var is_cool = true
@@ -93,4 +99,4 @@ var has_skill_issue = false
 
 ## The End (for now)
 
-This is the end of the first tutorial. More to come soon!
+The next chapter will cover how to use handle variables even better [Advanced-variables](advanced_variables.md)

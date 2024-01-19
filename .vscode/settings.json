@@ -1,0 +1,5 @@
+{
+    "key": "alt+s",
+    "command": "editor.action.smartSelect.grow",
+    "when": "editorTextFocus"
+}
