@@ -2,10 +2,10 @@ use std::{cell::RefCell, rc::Rc};
 
 use builtins::{BuiltinFunc, Input, Print};
 use env::{EnvObj, Environment};
-use lexer::tokens::Literal;
+use nx_lexer::tokens::Literal;
 use objects::{Comparable, FuncObj, Object};
-use parser::ast::{
-    CallExpr, Expression, FuncExpr, Ident, InfixExpr, InfixOp, PrefixExpr, Statement, VarStmt,
+use nx_parser::ast::{
+    CallExpr, Expression, FuncExpr, Ident, InfixExpr, InfixOp, PrefixExpr, Statement, VarStmt, PrefixOp,
 };
 
 pub mod builtins;
@@ -104,8 +104,8 @@ impl Evaluator {
 
     fn eval_prefix(&mut self, node: PrefixExpr) -> Object {
         match &node.op {
-            parser::ast::PrefixOp::Pos => self.eval_expr(*node.val),
-            parser::ast::PrefixOp::Neg => {
+            PrefixOp::Pos => self.eval_expr(*node.val),
+            PrefixOp::Neg => {
                 let val = self.eval_expr(*node.val);
                 Object::Lit(Literal::Num(match val {
                     Object::Lit(lit) => match lit {
@@ -115,7 +115,7 @@ impl Evaluator {
                     _ => panic!("The obj does not evaluate to a literal"),
                 }))
             }
-            parser::ast::PrefixOp::Not => {
+            PrefixOp::Not => {
                 let val = self.eval_expr(*node.val);
                 Object::Lit(Literal::Bool(match val {
                     Object::Lit(lit) => match lit {

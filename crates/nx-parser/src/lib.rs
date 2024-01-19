@@ -8,7 +8,7 @@ use ast::{
     LocalStmt, LoopExpr, LoopType, OptionallyTypedIdent, PrefixExpr, PrefixOp, ReturnStmt,
     Statement, VarStmt, CallExpr,
 };
-use lexer::{
+use nx_lexer::{
     tokens::{Literal, Operator, Token},
     Lexer,
 };

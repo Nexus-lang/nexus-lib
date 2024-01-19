@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use lexer::Lexer;
-    use parser::Parser;
+    use nx_lexer::Lexer;
+    use nx_parser::Parser;
 
     use crate::Evaluator;
 

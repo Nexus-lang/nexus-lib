@@ -1,6 +1,6 @@
-use evaluator::Evaluator;
-use lexer::Lexer;
-use parser::Parser;
+use nx_evaluator::Evaluator;
+use nx_lexer::Lexer;
+use nx_parser::Parser;
 
 pub fn execute_program(path: &str) {
     // TODO: Update clutils to allow string slices for paths in filehandler

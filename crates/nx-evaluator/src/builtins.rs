@@ -1,6 +1,6 @@
 use std::io;
 
-use lexer::tokens::Literal;
+use nx_lexer::tokens::Literal;
 
 use crate::objects::Object;
 

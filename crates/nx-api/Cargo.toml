@@ -1,9 +1,0 @@
-[package]
-name = "nx-api"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-lexer = { path = "../lexer", version = "*" }
-parser = { path = "../parser", version = "*" }
-evaluator = { path = "../evaluator", version = "*" }

@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use lexer::tokens::Literal;
-use parser::ast::{BlockStmt, Ident, OptionallyTypedIdent};
+use nx_lexer::tokens::Literal;
+use nx_parser::ast::{BlockStmt, Ident, OptionallyTypedIdent};
 
 use crate::{builtins::BuiltinFunc, util};
 

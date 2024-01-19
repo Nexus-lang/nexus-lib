@@ -1,9 +1,6 @@
-use std::{
-    f32::consts::E,
-    fmt::{format, Display},
-};
+use std::fmt::Display;
 
-use lexer::tokens::Literal;
+use nx_lexer::tokens::Literal;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
@@ -229,7 +226,7 @@ impl Display for Statement {
                         true => "const",
                         false => "var",
                     },
-                    todo!(),// var.name,
+                    todo!(), //var.name,
                     var.val,
                 ),
                 Statement::Return(ret) => todo!(),
@@ -263,7 +260,7 @@ impl Display for Expression {
                 Expression::Annotation(_) => todo!(),
                 Expression::Struct(_) => todo!(),
                 Expression::Enum(_) => todo!(),
-                _ => todo!()
+                _ => todo!(),
             }
         )
     }
@@ -303,7 +300,8 @@ impl Display for InfixExpr {
                 InfixOp::LTEq => "<=",
                 InfixOp::As => "as",
                 InfixOp::In => "in",
-                InfixOp::Range => return write!(f, "{}..{}", self.left.to_string(), self.right.to_string()),
+                InfixOp::Range =>
+                    return write!(f, "{}..{}", self.left.to_string(), self.right.to_string()),
                 InfixOp::Assign => "=",
             },
             self.right.to_string()
