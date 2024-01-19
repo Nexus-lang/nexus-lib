@@ -2,6 +2,9 @@
 name = "nexus"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+readme = "README.md"
+description = "The raw implementation of the nexus scripting language"
 
 [dependencies]
 clutils = "0.0.7"
