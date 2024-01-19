@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::Lexer;
+    use crate::lexer::Lexer;
 
     #[test]
     fn test_lexer() {

@@ -1,9 +1,12 @@
 use std::fmt::Display;
 
-use nx_lexer::tokens::Literal;
-use nx_parser::ast::{BlockStmt, Ident, OptionallyTypedIdent};
+use crate::{
+    evaluator::builtins::BuiltinFunc,
+    lexer::tokens::Literal,
+    parser::ast::{BlockStmt, Ident, OptionallyTypedIdent},
+};
 
-use crate::{builtins::BuiltinFunc, util};
+use super::util;
 
 #[derive(Debug, Clone)]
 pub enum Object {

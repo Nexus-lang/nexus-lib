@@ -3,17 +3,11 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
-use ast::{
-    BlockStmt, BreakStmt, Expression, Ident, IfExpr, IfType, InfixExpr, InfixOp,
-    LocalStmt, LoopExpr, LoopType, OptionallyTypedIdent, PrefixExpr, PrefixOp, ReturnStmt,
-    Statement, VarStmt, CallExpr,
-};
-use nx_lexer::{
-    tokens::{Literal, Operator, Token},
+use ast::*;
+use crate::lexer::{
+    tokens::*,
     Lexer,
 };
-
-use crate::ast::FuncExpr;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,

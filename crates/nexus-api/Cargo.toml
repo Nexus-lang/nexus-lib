@@ -1,9 +1,0 @@
-[package]
-name = "nexus-api"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-nx-lexer = "*"
-nx-parser = "*"
-nx-evaluator = "*"

@@ -1,4 +1,4 @@
-use nx_parser::ast::{OptionallyTypedIdent, BlockStmt};
+use crate::parser::ast::{OptionallyTypedIdent, BlockStmt};
 
 pub fn typed_vec_to_string(val: &Vec<OptionallyTypedIdent>) -> String {
     let mut buf = String::new();

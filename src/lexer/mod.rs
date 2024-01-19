@@ -2,9 +2,7 @@ mod tests;
 pub mod tokens;
 
 use clutils::{errors::FileHandlerError, files::FileHandler};
-use tokens::{Literal, Operator};
-
-use self::tokens::Token;
+use tokens::*;
 
 pub struct Lexer {
     filehandler: FileHandler,

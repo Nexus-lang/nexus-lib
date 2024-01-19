@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use nx_lexer::tokens::Literal;
+use crate::lexer::tokens::Literal;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {

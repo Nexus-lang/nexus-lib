@@ -1,8 +1,7 @@
-[workspace]
-members = [
-    "crates/nexus-api",       # Api for building a custom frontend, parsing source code in a rust lib
-    "crates/nx-lexer",     # Lexer for tokenizing source code
-    "crates/nx-parser",    # Parser for parsing token stream produced by lexer
-    "crates/nx-evaluator", # Evaluator for evaluting parsed representation as an alternative to the vm
-]
-resolver = "2"
+[package]
+name = "nexus"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clutils = "0.0.7"

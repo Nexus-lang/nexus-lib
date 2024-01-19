@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::objects::Object;
+use super::objects::Object;
 
 #[derive(Debug)]
 pub struct Environment {

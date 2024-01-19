@@ -1,8 +1,8 @@
 use std::io;
 
-use nx_lexer::tokens::Literal;
+use crate::lexer::tokens::Literal;
 
-use crate::objects::Object;
+use super::objects::Object;
 
 #[derive(Debug, Clone)]
 pub enum BuiltinFunc {

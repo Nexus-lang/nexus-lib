@@ -1,9 +1,0 @@
-[package]
-name = "nx-lexer"
-version = "0.1.0"
-edition = "2021"
-license = "MIT"
-description = "The lexer/tokenizer module for the nexus scripting language"
-
-[dependencies]
-clutils = "0.0.7"
