@@ -3,11 +3,8 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
+use crate::{lexer::{tokens::*, Lexer}, util};
 use ast::*;
-use crate::lexer::{
-    tokens::*,
-    Lexer,
-};
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
@@ -17,65 +14,49 @@ pub struct Parser<'a> {
 }
 
 #[repr(u8)]
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Precedence {
     /// default value
-    LOWEST,
+    Lowest,
     /// Assign new value to variable
-    ASSIGN,
+    Assign,
     /// Check if i is in list/range
     ///
     /// `i in 0..10`
-    CONTAINS,
+    Contains,
     /// Range of numbers
     /// 0..1000
-    RANGE,
+    Range,
     /// Check if value is equivalent
     /// to other value
     ///
     /// `x == 0`
-    EQUALS,
+    Equals,
     /// Lesser and greater
     /// comparison operations
-    LESSGREATER,
+    LessGreater,
     /// Lesser or equal and greater or equal
     /// comparsion operations
-    LESSGREATEROREQUAL,
+    LessGreaterOrEqual,
     /// Sum of two numbers
-    SUM,
+    Sum,
     /// Product of two numbers
-    PRODUCT,
+    Product,
     /// Prefix operators like +, -, !
-    PREFIX,
+    Prefix,
     /// Call a function
-    CALL,
+    Call,
     /// Convert types using `as`
-    CONVERSION,
+    Conversion,
     /// Index a list
     /// `myList[1]`
-    INDEX,
-}
-
-impl PartialOrd for Precedence {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let iself = *self as u8;
-        let iother = *other as u8;
-        iself.partial_cmp(&iother)
-    }
-}
-
-impl Ord for Precedence {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let iself = *self as u8;
-        let iother = *other as u8;
-        iself.cmp(&iother)
-    }
+    Index,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(lexer: &'a mut Lexer) -> Self {
-        let cur_tok = lexer.tokenize();
-        let peek_tok = lexer.tokenize();
+        let cur_tok = util::get_next_tok(lexer);
+        let peek_tok = util::get_next_tok(lexer);
         Self {
             lexer,
             cur_tok,
@@ -103,7 +84,7 @@ impl<'a> Parser<'a> {
                     Token::Eol => None,
                     _ => {
                         self.next_token();
-                        Some(self.parse_expr(Precedence::LOWEST))
+                        Some(self.parse_expr(Precedence::Lowest))
                     }
                 };
                 Statement::Return(ReturnStmt { val })
@@ -137,7 +118,7 @@ impl<'a> Parser<'a> {
                         _ => (),
                     }
                 }
-                Statement::Expression(self.parse_expr(Precedence::LOWEST))
+                Statement::Expression(self.parse_expr(Precedence::Lowest))
             }
         })
     }
@@ -248,7 +229,7 @@ impl<'a> Parser<'a> {
             // Current token needs to be `if`
             IfType::If => {
                 self.next_token();
-                let cond = self.parse_expr(Precedence::LOWEST);
+                let cond = self.parse_expr(Precedence::Lowest);
                 self.expect_peek(Token::LCurly);
                 self.next_token();
                 let block = self.parse_block_stmt();
@@ -304,7 +285,7 @@ impl<'a> Parser<'a> {
     // TODO: parse else branches
     fn parse_loop_expr(&mut self) -> Expression {
         self.next_token();
-        let cond = self.parse_expr(Precedence::LOWEST);
+        let cond = self.parse_expr(Precedence::Lowest);
         self.expect_peek(Token::LCurly);
         self.next_token();
         let block = self.parse_block_stmt();
@@ -342,7 +323,7 @@ impl<'a> Parser<'a> {
             other => panic!("Expected operator, got: {other} instead"),
         };
         self.next_token();
-        let val = Box::from(self.parse_expr(Precedence::PREFIX));
+        let val = Box::from(self.parse_expr(Precedence::Prefix));
         Expression::Prefix(PrefixExpr { op, val })
     }
 
@@ -420,7 +401,7 @@ impl<'a> Parser<'a> {
 
         let mut items = Vec::new();
 
-        let first_item = self.parse_expr(Precedence::LOWEST);
+        let first_item = self.parse_expr(Precedence::Lowest);
 
         items.push(first_item);
 
@@ -430,7 +411,7 @@ impl<'a> Parser<'a> {
 
         while self.peek_tok != end_tok {
             self.next_token();
-            let ident = self.parse_expr(Precedence::LOWEST);
+            let ident = self.parse_expr(Precedence::Lowest);
             items.push(ident);
             if self.peek_tok == Token::Comma {
                 self.next_token();
@@ -497,7 +478,7 @@ impl<'a> Parser<'a> {
 
         self.next_token();
 
-        let val = self.parse_expr(Precedence::LOWEST);
+        let val = self.parse_expr(Precedence::Lowest);
 
         Statement::Variable(VarStmt {
             name: OptionallyTypedIdent { ident: name, _type },
@@ -544,7 +525,7 @@ impl<'a> Parser<'a> {
         self.next_token();
         self.next_token();
 
-        let val = self.parse_expr(Precedence::LOWEST);
+        let val = self.parse_expr(Precedence::Lowest);
 
         Statement::Variable(VarStmt {
             name: OptionallyTypedIdent { ident: name, _type },
@@ -568,30 +549,27 @@ impl<'a> Parser<'a> {
     }
 
     fn peek_is_end(&self) -> bool {
-        match self.peek_tok {
-            Token::Eol | Token::Eof => true,
-            _ => false,
-        }
+        matches!(self.peek_tok, Token::Eol | Token::Eof)
     }
 
     pub fn next_token(&mut self) {
         swap(&mut self.cur_tok, &mut self.peek_tok);
-        self.peek_tok = self.lexer.tokenize();
+        self.peek_tok = util::get_next_tok(self.lexer);
     }
 
     fn get_precedence(&self, token: &Token) -> Precedence {
         match token {
-            Token::Assign => Precedence::ASSIGN,
+            Token::Assign => Precedence::Assign,
             Token::Operator(op) => match op {
-                Operator::Equals | Operator::NotEquals => Precedence::EQUALS,
-                Operator::Greater | Operator::Lesser => Precedence::LESSGREATER,
-                Operator::GreaterEquals | Operator::LesserEquals => Precedence::LESSGREATEROREQUAL,
-                Operator::Plus | Operator::Minus => Precedence::SUM,
-                Operator::Asterisk | Operator::Slash => Precedence::PRODUCT,
+                Operator::Equals | Operator::NotEquals => Precedence::Equals,
+                Operator::Greater | Operator::Lesser => Precedence::LessGreater,
+                Operator::GreaterEquals | Operator::LesserEquals => Precedence::LessGreaterOrEqual,
+                Operator::Plus | Operator::Minus => Precedence::Sum,
+                Operator::Asterisk | Operator::Slash => Precedence::Product,
             },
-            Token::LParent => Precedence::CALL,
-            Token::LSquare => Precedence::INDEX,
-            _ => Precedence::LOWEST,
+            Token::LParent => Precedence::Call,
+            Token::LSquare => Precedence::Index,
+            _ => Precedence::Lowest,
         }
     }
 }

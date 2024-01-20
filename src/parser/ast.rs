@@ -276,7 +276,7 @@ impl Display for PrefixExpr {
                 PrefixOp::Neg => "-",
                 PrefixOp::Not => "!",
             },
-            self.to_string()
+            self.val
         )
     }
 }
@@ -286,7 +286,7 @@ impl Display for InfixExpr {
         write!(
             f,
             "{} {} {}",
-            self.left.to_string(),
+            self.left,
             match self.op {
                 InfixOp::Add => "+",
                 InfixOp::Sub => "-",
@@ -301,10 +301,10 @@ impl Display for InfixExpr {
                 InfixOp::As => "as",
                 InfixOp::In => "in",
                 InfixOp::Range =>
-                    return write!(f, "{}..{}", self.left.to_string(), self.right.to_string()),
+                    return write!(f, "{}..{}", self.left, self.right),
                 InfixOp::Assign => "=",
             },
-            self.right.to_string()
+            self.right
         )
     }
 }

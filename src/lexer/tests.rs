@@ -1,24 +1,58 @@
 #[cfg(test)]
 mod tests {
-    use crate::lexer::Lexer;
+    use crate::{lexer::{Lexer, Literal, Token}, util};
 
     #[test]
-    fn test_lexer() {
-        let mut lexer = Lexer::new(&"tests/test.nx".into()).expect("Failed to open file");
-        println!("{:#?}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
-        println!("{}", lexer.tokenize());
+    fn test_tokenize_literals() {
+        let mut lexer = get_lexer("literals");
+        let expected = [
+            // Strings
+            // TODO: UTF-8 support
+            Token::Literal(Literal::Str(String::from(
+                "Hello, my name is John. I am a comedian entertaining cats",
+            ))),
+            // Integers
+            Token::Literal(Literal::Num(9875986234.0)),
+            // Integers with visual seperator
+            Token::Literal(Literal::Num(1254_890.0)),
+            // Floats
+            Token::Literal(Literal::Num(5643877689.9886)),
+            // Booleans
+            Token::Literal(Literal::Bool(true)),
+            Token::Literal(Literal::Bool(false)),
+        ];
+        for expect in expected {
+            let tok = lexer.tokenize();
+            lexer.tokenize();
+            if let Some(tok) = tok {
+                assert_eq!(expect, tok);
+            }
+        }
+    }
+
+    #[test]
+    fn test_keywords() {
+        let mut lexer = get_lexer("keywords");
+        let expected = [
+            Token::Var,
+            Token::Enum,
+            Token::Else,
+            Token::Const,
+            Token::Loop,
+            Token::Local,
+            // TODO: UTF-8 support
+            Token::Ident(String::from("vari")),
+            Token::Ident(String::from("_const")),
+            Token::Ident(String::from("iff")),
+        ];
+        for expect in expected {
+            let tok = util::get_next_tok(&mut lexer);
+            lexer.tokenize();
+            assert_eq!(expect, tok)
+        }
+    }
+
+    fn get_lexer(test: &str) -> Lexer {
+        Lexer::new(&format!("tests/lexer/{}.nx", test)).expect("Failed to open file")
     }
 }
