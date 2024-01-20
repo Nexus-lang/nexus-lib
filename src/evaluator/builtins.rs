@@ -28,7 +28,7 @@ pub struct Input {
 }
 
 impl Input {
-    pub fn input(print_val: Option<String>) -> Self {
+    pub fn new(print_val: Option<String>) -> Self {
         let mut input = String::new();
 
         if let Some(val) = print_val {
@@ -50,7 +50,7 @@ impl Input {
 pub struct Print;
 
 impl Print {
-    pub fn print_val(val: Option<Object>) -> Self {
+    pub fn new(val: Option<Object>) -> Self {
         println!(
             "{}",
             match val {

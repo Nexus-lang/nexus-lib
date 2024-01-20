@@ -15,10 +15,16 @@ pub mod builtins;
 pub mod env;
 pub mod objects;
 mod tests;
-pub mod util;
 
+#[derive(Debug)]
 pub struct Evaluator {
     pub env: Rc<RefCell<Environment>>,
+}
+
+impl Default for Evaluator {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Evaluator {
@@ -85,13 +91,13 @@ impl Evaluator {
         };
 
         match name.as_str() {
-            "print" => Object::BuiltinFunc(BuiltinFunc::Print(Print::print_val(Some(
-                self.eval_expr(match node.args.get(0) {
+            "print" => Object::BuiltinFunc(BuiltinFunc::Print(Print::new(Some(
+                self.eval_expr(match node.args.first() {
                     Some(val) => val.clone(),
-                    None => return Object::BuiltinFunc(BuiltinFunc::Print(Print::print_val(None))),
+                    None => return Object::BuiltinFunc(BuiltinFunc::Print(Print::new(None))),
                 }),
             )))),
-            "input" => Object::BuiltinFunc(BuiltinFunc::Input(Input::input(None))),
+            "input" => Object::BuiltinFunc(BuiltinFunc::Input(Input::new(None))),
             _ => {
                 todo!()
             }
@@ -187,7 +193,7 @@ impl Evaluator {
     fn eval_infix_to_num(&mut self, left: Expression, right: Expression) -> (f64, f64) {
         let left = self.eval_expr(left);
         let right = self.eval_expr(right);
-        return (
+        (
             match Self::conv_to_num(left) {
                 Some(val) => val,
                 None => panic!("Left of the infix expression cannot is not a number"),
@@ -196,7 +202,7 @@ impl Evaluator {
                 Some(val) => val,
                 None => panic!("Right of the infix expression cannot is not a number"),
             },
-        );
+        )
     }
 
     fn eval_infix_to_comp(
@@ -206,7 +212,7 @@ impl Evaluator {
     ) -> (Comparable, Comparable) {
         let left = self.eval_expr(left);
         let right = self.eval_expr(right);
-        return (
+        (
             match left {
                 Object::Lit(lit) => Comparable::Lit(lit),
                 Object::None => Comparable::None,
@@ -223,15 +229,12 @@ impl Evaluator {
                     &right
                 ),
             },
-        );
+        )
     }
 
     fn conv_to_num(obj: Object) -> Option<f64> {
         match obj {
-            Object::Lit(lit) => match lit {
-                Literal::Num(num) => Some(num),
-                _ => None,
-            },
+            Object::Lit(Literal::Num(num)) => Some(num),
             _ => None,
         }
     }

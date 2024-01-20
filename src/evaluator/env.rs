@@ -13,6 +13,12 @@ pub struct EnvObj {
     pub is_const: bool,
 }
 
+impl Default for Environment {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Environment {
     pub fn new() -> Self {
         Self { store: HashMap::new() }

@@ -15,7 +15,7 @@ impl Lexer {
     pub fn new(path: &String) -> Result<Self, FileHandlerError> {
         let filehandler = FileHandler::new(path)?;
         let mut lexer = Self {
-            filehandler: filehandler,
+            filehandler,
             cur_char: None,
             cur_pos: 0,
             next_pos: 0,
@@ -24,33 +24,47 @@ impl Lexer {
         Ok(lexer)
     }
 
-    pub fn tokenize(&mut self) -> Token {
+    pub fn tokenize(&mut self) -> Option<Token> {
         self.skip_whitespace();
-        match self.cur_char {
+        Some(match self.cur_char {
             Some(ch) => match ch {
                 '\n' => {
                     self.next_char();
                     Token::Eol
                 }
                 c if c.is_numeric() => self.tokenize_num(),
-                c if c.is_alphabetic() => self.tokenize_ident(),
-                _ => self.tokenize_symbol(),
+                c if c.is_alphabetic() || c == '_' => self.tokenize_ident(),
+                _ => return self.tokenize_symbol(),
             },
             None => Token::Eof,
-        }
+        })
     }
 
     fn tokenize_num(&mut self) -> Token {
         // TODO: floating points
         let first_pos = self.cur_pos;
-        while self.cur_char.is_some() && self.cur_char.unwrap().is_numeric() {
-            self.next_char();
+        let mut found_fp = false;
+        while let Some(ch) = self.cur_char {
+            if ch.is_numeric() || ch == '_' {
+                self.next_char();
+            } else if !found_fp && ch == '.' {
+                found_fp = true;
+                self.next_char();
+            } else {
+                break;
+            }
         }
         let string: String = self.filehandler.content[first_pos..self.cur_pos].into();
-        Token::Literal(Literal::Num(string.parse().unwrap()))
+        // Remove all underscores to ensure that parsing works
+        let string: String = string.chars().filter(|&c| c != '_').collect();
+        Token::Literal(Literal::Num(
+            string
+                .parse()
+                .expect(&format!("Failed to parse string: {} to an integer", string)),
+        ))
     }
 
-    fn tokenize_symbol(&mut self) -> Token {
+    fn tokenize_symbol(&mut self) -> Option<Token> {
         let ret = match self.cur_char {
             Some(ch) => match ch {
                 '=' => match self.filehandler.content.chars().nth(self.next_pos) {
@@ -83,13 +97,13 @@ impl Lexer {
                     _ => Token::Colon,
                 },
                 ',' => Token::Comma,
-                '#' => self.tokenize_comment(),
+                '#' => return self.tokenize_comment(),
                 _ => panic!("Invalid symbol: {:?}", &self.cur_char),
             },
             None => todo!(),
         };
         self.next_char();
-        ret
+        Some(ret)
     }
 
     fn tokenize_string(&mut self) -> Token {
@@ -108,7 +122,7 @@ impl Lexer {
         Token::Literal(Literal::Str(string.into()))
     }
 
-    fn tokenize_comment(&mut self) -> Token {
+    fn tokenize_comment(&mut self) -> Option<Token> {
         self.next_char();
         while let Some(cur_ch) = self.cur_char {
             if cur_ch != '\n' && cur_ch != '#' {
@@ -118,13 +132,17 @@ impl Lexer {
             }
         }
         self.next_char();
-        self.tokenize()
+        None
     }
 
     fn tokenize_ident(&mut self) -> Token {
         let first_pos = self.cur_pos;
-        while self.cur_char.is_some() && self.cur_char.unwrap().is_alphanumeric() {
-            self.next_char();
+        while let Some(ch) = self.cur_char {
+            if ch.is_alphanumeric() || ch == '_' {
+                self.next_char();
+            } else {
+                break;
+            }
         }
         let ident: String = self.filehandler.content[first_pos..self.cur_pos].into();
         return match ident.as_str() {
@@ -167,11 +185,11 @@ impl Lexer {
                     self.next_char();
                     match self.cur_char {
                         Some(cch) => ch = cch,
-                        None => return,
+                        None => (),
                     }
                 }
             }
-            None => return,
+            None => (),
         }
     }
 }

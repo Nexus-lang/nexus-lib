@@ -6,7 +6,7 @@ use crate::{
     parser::ast::{BlockStmt, Ident, OptionallyTypedIdent},
 };
 
-use super::util;
+use crate::util;
 
 #[derive(Debug, Clone)]
 pub enum Object {

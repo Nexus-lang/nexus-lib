@@ -1,0 +1,9 @@
+var
+enum
+else
+const
+loop
+local
+vari # Test if slightly modified keywords are marked as idents
+_const
+iff
