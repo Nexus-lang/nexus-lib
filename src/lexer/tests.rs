@@ -2,6 +2,8 @@
 mod tests {
     use crate::{lexer::{Lexer, Literal, Token, Operator}, util};
 
+    /// Test for checking if literals like numbers, booleans
+    /// and strings get tokenized correctly
     #[test]
     fn test_tokenize_literals() {
         let mut lexer = get_lexer("literals");
@@ -30,8 +32,13 @@ mod tests {
         }
     }
 
+    /// Test for checking if language-builtin keywords
+    /// are tokenized correctly as well as checking idents
+    /// that contain a keyword. This also server as the
+    /// ident test
     #[test]
     fn test_keywords() {
+        // TODO: UTF-8 support
         let mut lexer = get_lexer("keywords");
         let expected = [
             Token::Var,
@@ -40,7 +47,6 @@ mod tests {
             Token::Const,
             Token::Loop,
             Token::Local,
-            // TODO: UTF-8 support
             Token::Ident(String::from("vari")),
             Token::Ident(String::from("_const")),
             Token::Ident(String::from("iff")),
@@ -52,6 +58,9 @@ mod tests {
         }
     }
 
+    /// Test for checking if single character
+    /// and multi character tokens are tokenized
+    /// correctly
     #[test]
     fn test_symbols() {
         let mut lexer = get_lexer("symbols");
@@ -70,6 +79,8 @@ mod tests {
         }
     }
 
+    /// Test for checking if both all-line
+    /// and encased comments work
     #[test]
     fn test_comments() {
         let mut lexer = get_lexer("comments");
