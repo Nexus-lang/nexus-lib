@@ -72,6 +72,10 @@ impl Lexer {
                         self.next_char();
                         Token::Operator(Operator::Equals)
                     }
+                    Some('>') => {
+                        self.next_char();
+                        Token::Arrow
+                    }
                     _ => Token::Assign,
                 },
                 '+' => Token::Operator(Operator::Plus),
@@ -79,6 +83,20 @@ impl Lexer {
                 '!' => Token::ExclamMark,
                 '*' => Token::Operator(Operator::Asterisk),
                 '/' => Token::Operator(Operator::Slash),
+                '>' => match self.filehandler.content.chars().nth(self.next_pos) {
+                    Some('=') => {
+                        self.next_char();
+                        Token::Operator(Operator::GreaterEquals)
+                    },
+                    _ => Token::Operator(Operator::Greater),
+                },
+                '<' => match self.filehandler.content.chars().nth(self.next_pos) {
+                    Some('=') => {
+                        self.next_char();
+                        Token::Operator(Operator::LesserEquals)
+                    },
+                    _ => Token::Operator(Operator::Lesser),
+                },
                 ';' => Token::Eol,
                 '(' => Token::LParent,
                 ')' => Token::RParent,
@@ -97,6 +115,7 @@ impl Lexer {
                     _ => Token::Colon,
                 },
                 ',' => Token::Comma,
+                '.' => Token::Dot,
                 '#' => return self.tokenize_comment(),
                 _ => panic!("Invalid symbol: {:?}", &self.cur_char),
             },

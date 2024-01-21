@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::{lexer::{Lexer, Literal, Token}, util};
+    use crate::{lexer::{Lexer, Literal, Token, Operator}, util};
 
     #[test]
     fn test_tokenize_literals() {
@@ -50,6 +50,33 @@ mod tests {
             lexer.tokenize();
             assert_eq!(expect, tok)
         }
+    }
+
+    #[test]
+    fn test_symbols() {
+        let mut lexer = get_lexer("symbols");
+        let expected = [
+            Token::Dot,
+            Token::Comma,
+            Token::Operator(Operator::Minus),
+            Token::Eol,
+            Token::Operator(Operator::Equals),
+            Token::Operator(Operator::GreaterEquals),
+        ];
+        for expect in expected {
+            let tok = util::get_next_tok(&mut lexer);
+            lexer.tokenize();
+            assert_eq!(expect, tok)
+        }
+    }
+
+    #[test]
+    fn test_comments() {
+        let mut lexer = get_lexer("comments");
+        let tok = util::get_next_tok(&mut lexer);
+        assert_eq!(Token::Var, tok);
+        let next_tok = util::get_next_tok(&mut lexer);
+        assert_eq!(Token::Eof, next_tok);
     }
 
     fn get_lexer(test: &str) -> Lexer {
