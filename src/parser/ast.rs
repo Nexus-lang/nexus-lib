@@ -1,3 +1,4 @@
+
 use std::fmt::Display;
 
 use crate::lexer::tokens::Literal;
@@ -226,7 +227,7 @@ impl Display for Statement {
                         true => "const",
                         false => "var",
                     },
-                    todo!(), //var.name,
+                    var.name,
                     var.val,
                 ),
                 Statement::Return(ret) => todo!(),
@@ -236,6 +237,15 @@ impl Display for Statement {
                 Statement::Expression(expr) => expr.to_string(),
             }
         )
+    }
+}
+
+impl Display for OptionallyTypedIdent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.ident, match &self._type {
+            Some(_type) => format!(": {}", _type),
+            None => "".into()
+        })
     }
 }
 
