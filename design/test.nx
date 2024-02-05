@@ -1,0 +1,8 @@
+Test :: container {
+    content: Str,
+}
+
+Test2 :: container
+
+@foreign("Rust")
+print :: func(...args: Str)

@@ -3,7 +3,7 @@ mod tests;
 
 use std::{error::Error, fmt::Display, mem::swap};
 
-use crate::{lexer::{tokens::*, Lexer}, util};
+use crate::{lexer::{tokens::{Token, Operator, Literal as TkLit}, Lexer}, util};
 use ast::*;
 
 pub struct Parser<'a> {
@@ -147,9 +147,9 @@ impl<'a> Parser<'a> {
     fn parse_prefix(&mut self) -> Option<Expression> {
         Some(match self.cur_tok {
             Token::Ident(_) => Expression::Ident(Ident(self.cur_tok.to_string())),
-            Token::Literal(Literal::Bool(ref bool)) => Expression::Literal(Literal::Bool(*bool)),
-            Token::Literal(Literal::Num(ref lit)) => Expression::Literal(Literal::Num(*lit)),
-            Token::Literal(Literal::Str(_)) => self.parse_str_lit(),
+            Token::Literal(TkLit::Bool(ref bool)) => Expression::Literal(Literal::Bool(*bool)),
+            Token::Literal(TkLit::Num(ref lit)) => Expression::Literal(Literal::Num(*lit)),
+            Token::Literal(TkLit::Str(_)) => self.parse_str_lit(),
             Token::LSquare => self.parse_list_lit(),
             // TODO: add hashes
             /*

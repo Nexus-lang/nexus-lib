@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, collections::HashMap, ops::Range};
 
-#[derive(Debug, PartialEq)]
+pub type StringRef = (Vec<char>, Option<HashMap<Range<usize>, Vec<Token>>>);
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Use,
     Enum,
@@ -47,14 +49,14 @@ pub enum Token {
     Eof,
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Literal {
     Str(String),
     Num(f64),
     Bool(bool),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Operator {
     Equals,
     NotEquals,
@@ -129,7 +131,7 @@ impl Display for Token {
             Token::Eol => "Eol".into(),
             Token::Eof => "Eof".into(),
             Token::Operator(op) => op.to_string(),
-            Token::Arrow => "->".into(),
+            Token::Arrow => "=>".into(),
             Token::LParent => "(".into(),
             Token::RParent => ")".into(),
             Token::LSquare => "[".into(),

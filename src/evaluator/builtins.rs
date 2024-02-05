@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::lexer::tokens::Literal;
+use crate::parser::ast::Literal;
 
 use super::objects::Object;
 
@@ -50,14 +50,14 @@ impl Input {
 pub struct Print;
 
 impl Print {
-    pub fn new(val: Option<Object>) -> Self {
-        println!(
-            "{}",
-            match val {
-                Some(val) => val.to_string(),
-                None => "".into(),
-            }
-        );
-        Self {}
+    pub fn new(args: &Vec<Object>) -> Self {
+        let mut buf = String::new();
+        for arg in args {
+            buf.push_str(&arg.to_string());
+            buf.push(' ')
+        }
+        println!("{}", buf);
+
+        Self
     }
 }

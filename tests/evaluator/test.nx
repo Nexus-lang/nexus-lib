@@ -1,0 +1,5 @@
+test :: func(test, deez, nuts) {
+    print(test, deez, nuts)
+}
+
+test(100, 100, 20)

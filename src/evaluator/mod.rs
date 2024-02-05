@@ -1,11 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{RefCell, RefMut},
+    f32::consts::E,
+    rc::Rc,
+};
 
-use crate::{
-    lexer::tokens::Literal,
-    parser::ast::{
-        CallExpr, Expression, FuncExpr, Ident, InfixExpr, InfixOp, PrefixExpr, PrefixOp, Statement,
-        VarStmt,
-    },
+use crate::parser::ast::{
+    BlockStmt, CallExpr, Expression, FuncExpr, Ident, InfixExpr, InfixOp, Literal, PrefixExpr,
+    PrefixOp, Statement, VarStmt,
 };
 use builtins::{BuiltinFunc, Input, Print};
 use env::{EnvObj, Environment};
@@ -55,7 +56,7 @@ impl Evaluator {
             Expression::Call(node) => self.eval_call(node),
             Expression::List(_) => todo!(),
             Expression::None => todo!(),
-            Expression::If(_) => todo!(),
+            Expression::If(node) => self.eval_if(node),
             Expression::Loop(_) => todo!(),
             Expression::When(_) => todo!(),
             Expression::Func(node) => self.eval_func(node),
@@ -91,21 +92,76 @@ impl Evaluator {
         };
 
         match name.as_str() {
-            "print" => Object::BuiltinFunc(BuiltinFunc::Print(Print::new(Some(
-                self.eval_expr(match node.args.first() {
-                    Some(val) => val.clone(),
-                    None => return Object::BuiltinFunc(BuiltinFunc::Print(Print::new(None))),
-                }),
-            )))),
+            "print" => {
+                Object::BuiltinFunc(BuiltinFunc::Print(Print::new(&self.eval_args(node.args))))
+            }
             "input" => Object::BuiltinFunc(BuiltinFunc::Input(Input::new(None))),
             _ => {
-                todo!()
+                let old_env = Rc::clone(&self.env);
+
+                let mut call_args = Vec::new();
+
+                let call_arg_len = node.args.len();
+
+                for arg in node.args {
+                    call_args.push(self.eval_expr(arg));
+                }
+
+                // Get the function and add arguments to self.env
+                let func = {
+                    let mut env = self.env.borrow_mut();
+
+                    let func_obj = env.get(&name).unwrap_or_else(|| {
+                        panic!("Failed to find a function with the name {}", &name)
+                    });
+
+                    let func = Self::get_func(func_obj.obj.clone()).unwrap_or_else(|| {
+                        panic!("Failed to find a function with the name {}", &name)
+                    });
+
+                    if func.args.len() != call_arg_len {
+                        panic!("Amount of expected args: {}, does not match amount of provided args: {} for function: {}", func.args.len(), call_arg_len, name)
+                    }
+
+                    for (arg, call_arg) in func.args.clone().into_iter().zip(call_args) {
+                        env.set(
+                            arg.ident.0,
+                            EnvObj::new(call_arg, false),
+                        );
+                    }
+
+                    func
+                };
+
+                let last = self.eval_block(func.block);
+
+                self.env = old_env;
+                match last {
+                    Some(obj) => obj,
+                    None => Object::Void,
+                }
             }
         }
     }
 
+    fn eval_args(&mut self, args: Vec<Expression>) -> Vec<Object> {
+        args.into_iter().map(|arg| self.eval_expr(arg)).collect()
+    }
+
+    fn eval_block(&mut self, block: BlockStmt) -> Option<Object> {
+        let len = block.stmts.len();
+
+        for (i, stmt) in block.stmts.into_iter().enumerate() {
+            if i == len {
+                return Some(self.eval_stmt(stmt));
+            }
+            self.eval_stmt(stmt);
+        }
+        None
+    }
+
     fn eval_ident(&mut self, node: Ident) -> Object {
-        match self.env.borrow_mut().get(node.0.clone()) {
+        match self.env.borrow().get(&node.0.clone()) {
             Some(obj) => obj.obj.clone(),
             None => panic!("Could not find identifier: {}", node.0),
         }
@@ -235,6 +291,13 @@ impl Evaluator {
     fn conv_to_num(obj: Object) -> Option<f64> {
         match obj {
             Object::Lit(Literal::Num(num)) => Some(num),
+            _ => None,
+        }
+    }
+
+    fn get_func(obj: Object) -> Option<FuncObj> {
+        match obj {
+            Object::Func(func) => Some(func),
             _ => None,
         }
     }

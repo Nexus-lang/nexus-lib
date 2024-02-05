@@ -2,8 +2,7 @@ use std::fmt::Display;
 
 use crate::{
     evaluator::builtins::BuiltinFunc,
-    lexer::tokens::Literal,
-    parser::ast::{BlockStmt, Ident, OptionallyTypedIdent},
+    parser::ast::{BlockStmt, Ident, OptionallyTypedIdent, Literal},
 };
 
 use crate::util;
@@ -12,6 +11,7 @@ use crate::util;
 pub enum Object {
     Lit(Literal),
     None,
+    Void,
     // TODO: Implement error system
     Err,
     // TOOD: Implement multi file shenanigans
@@ -64,6 +64,7 @@ impl Display for Object {
                 Object::Range => todo!(),
                 Object::Type => todo!(),
                 Object::List => todo!(),
+                Object::Void => "()".into()
             }
         )
     }

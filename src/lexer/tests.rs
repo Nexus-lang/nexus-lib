@@ -1,6 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use crate::{lexer::{Lexer, Literal, Token, Operator}, util};
+    use crate::{
+        lexer::{Lexer, Literal, Operator, Token},
+        util,
+    };
+
+    #[test]
+    fn test_string() {
+        let mut lexer = get_lexer("test");
+        lexer.tokenize();
+    }
 
     /// Test for checking if literals like numbers, booleans
     /// and strings get tokenized correctly
@@ -71,6 +80,7 @@ mod tests {
             Token::Eol,
             Token::Operator(Operator::Equals),
             Token::Operator(Operator::GreaterEquals),
+            Token::Arrow,
         ];
         for expect in expected {
             let tok = util::get_next_tok(&mut lexer);

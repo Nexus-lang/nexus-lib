@@ -4,6 +4,7 @@ pub mod tokens;
 use clutils::{errors::FileHandlerError, files::FileHandler};
 use tokens::*;
 
+
 pub struct Lexer {
     filehandler: FileHandler,
     cur_char: Option<char>,
@@ -87,14 +88,14 @@ impl Lexer {
                     Some('=') => {
                         self.next_char();
                         Token::Operator(Operator::GreaterEquals)
-                    },
+                    }
                     _ => Token::Operator(Operator::Greater),
                 },
                 '<' => match self.filehandler.content.chars().nth(self.next_pos) {
                     Some('=') => {
                         self.next_char();
                         Token::Operator(Operator::LesserEquals)
-                    },
+                    }
                     _ => Token::Operator(Operator::Lesser),
                 },
                 ';' => Token::Eol,

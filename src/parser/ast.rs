@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-use crate::lexer::tokens::Literal;
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Variable(VarStmt),
@@ -30,6 +28,27 @@ pub enum Expression {
     Annotation(AnnotationExpr),
     Struct(StructExpr),
     Enum(EnumExpr),
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
+pub enum Literal {
+    Str(String),
+    Num(f64),
+    Bool(bool),
+}
+
+impl Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Literal::Str(str) => str.to_owned(),
+                Literal::Num(num) => num.to_string(),
+                Literal::Bool(bool) => bool.to_string(),
+            }
+        )
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -226,7 +245,7 @@ impl Display for Statement {
                         true => "const",
                         false => "var",
                     },
-                    todo!(), //var.name,
+                    var.name,
                     var.val,
                 ),
                 Statement::Return(ret) => todo!(),
@@ -300,11 +319,24 @@ impl Display for InfixExpr {
                 InfixOp::LTEq => "<=",
                 InfixOp::As => "as",
                 InfixOp::In => "in",
-                InfixOp::Range =>
-                    return write!(f, "{}..{}", self.left, self.right),
+                InfixOp::Range => return write!(f, "{}..{}", self.left, self.right),
                 InfixOp::Assign => "=",
             },
             self.right
+        )
+    }
+}
+
+impl Display for OptionallyTypedIdent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}{}",
+            self.ident,
+            match &self._type {
+                Some(_type) => format!(": {}", _type),
+                None => "".into(),
+            }
         )
     }
 }
