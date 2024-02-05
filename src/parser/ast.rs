@@ -1,3 +1,4 @@
+
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -255,6 +256,15 @@ impl Display for Statement {
                 Statement::Expression(expr) => expr.to_string(),
             }
         )
+    }
+}
+
+impl Display for OptionallyTypedIdent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.ident, match &self._type {
+            Some(_type) => format!(": {}", _type),
+            None => "".into()
+        })
     }
 }
 
